@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Afro Bingo - History</title>
+    <link rel="stylesheet" href="afro-bingo-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+
+    <div style="padding: 16px;">
+        
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-title" style="margin:0;">GAME HISTORY</span>
+            <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 8px;">
+                <span style="font-weight: 600; font-size: 14px;">Game #2XKFRER9</span>
+                <span class="history-badge loss">LOSS</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">2026-04-15, 6:11:16 p.m.</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; color: var(--text-secondary);">
+                <div>Stake: <span style="font-weight:600; color:var(--text-primary);">Br 10.00</span></div>
+                <div>Prize: <span style="font-weight:600; color:var(--text-primary);">Br 2,096.00</span></div>
+                <div>My Boards: <span style="font-weight:600; color:var(--text-primary);">#80</span></div>
+                <div>Winners: <span style="font-weight:600; color:var(--text-primary);">#168, #224</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid #f9f9f9; padding-top: 8px;">Winner count: 2</div>
+        </div>
+        
+        <div style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 12px;">Showing recent 20 games</div>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="game.html" class="nav-item"><i class="fas fa-gamepad"></i><span>Game</span></a>
+        <a href="history.html" class="nav-item active"><i class="fas fa-clock"></i><span>History</span></a>
+        <a href="wallet.html" class="nav-item"><i class="fas fa-wallet"></i><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </nav>
+
+    <script src="afro-bingo-core.js"></script>
+</body>
+</html>

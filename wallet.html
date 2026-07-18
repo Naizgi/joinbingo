@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Afro Bingo - Wallet</title>
+    <link rel="stylesheet" href="afro-bingo-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- App Header -->
+
+
+    <div style="padding: 16px;">
+        
+        <!-- Wallet Card (White) -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span class="card-title">WALLET</span>
+                <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--brand-primary);">Br 0.00</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Total balance</div>
+            
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px;">
+                <div style="background: var(--brand-primary); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">BALANCES</div>
+                <div style="background: var(--brand-light); color: var(--text-secondary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">HISTORY</div>
+            </div>
+        </div>
+
+        <!-- Highlight Card (Deep Purple) -->
+        <div class="wallet-highlight-card">
+            <div style="font-size: 12px; opacity: 0.8;">TOTAL BALANCE</div>
+            <div style="font-size: 26px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
+        </div>
+
+        <!-- 3 Column Stats -->
+        <div class="wallet-stat-grid">
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">MAIN</div>
+            </div>
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">BONUS</div>
+            </div>
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">DEPOSITED</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="game.html" class="nav-item"><i class="fas fa-gamepad"></i><span>Game</span></a>
+        <a href="history.html" class="nav-item"><i class="fas fa-clock"></i><span>History</span></a>
+        <a href="wallet.html" class="nav-item active"><i class="fas fa-wallet"></i><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </nav>
+
+    <script src="afro-bingo-core.js"></script>
+</body>
+</html>

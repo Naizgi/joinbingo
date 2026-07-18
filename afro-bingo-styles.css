@@ -1,0 +1,230 @@
+/* =========================================================
+   AFRO BINGO - UI DESIGN SYSTEM (Based on Spec)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    /* --- Primary Colors --- */
+    --brand-primary: #6A0DAD;       /* Deep Purple (Active nav, buttons, wallet cards) */
+    --brand-secondary: #B88CCF;     /* Secondary Purple (Background sections) */
+    --brand-light: #E9D8F4;         /* Light Purple (Input bg, inactive tabs) */
+    --brand-bg: #CDA7D9;            /* Very Light Lavender (Overall background) */
+
+    /* --- Surface & Layout --- */
+    --surface-white: #FFFFFF;
+    --shadow-soft: 0px 3px 10px rgba(0, 0, 0, 0.08);
+    --radius-card: 20px;
+    --radius-btn: 16px;
+    --radius-tile: 8px;
+
+    /* --- Accents --- */
+    --accent-orange: #F68B1F;       /* Bingo numbers, countdown, active tiles */
+    --accent-green: #3BB54A;        /* Success / Win indicators */
+    --accent-red: #C62828;          /* Loss / Errors */
+
+    /* --- Text Colors --- */
+    --text-primary: #2B2B2B;
+    --text-secondary: #6B6B6B;
+    --text-muted: #A7A7A7;
+    --text-white: #FFFFFF;
+
+    /* --- Spacing --- */
+    --space-xs: 8px;
+    --space-sm: 12px;
+    --space-md: 16px;
+    --space-lg: 20px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background-color: var(--brand-bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding-bottom: 80px; /* Space for Nav */
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================================
+   COMPONENT: App Header
+   ========================================================= */
+.app-header {
+    height: 64px;
+    background: var(--surface-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--space-md);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(106, 13, 173, 0.04);
+}
+.app-header .title { font-size: 26px; font-weight: 700; color: var(--brand-primary); }
+.app-header i { font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+
+/* =========================================================
+   COMPONENT: Bottom Navigation
+   ========================================================= */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: var(--brand-light);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 12px rgba(106, 13, 173, 0.06);
+}
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 100%;
+    text-decoration: none;
+    color: var(--brand-primary); /* Inactive text color */
+    transition: all 0.2s ease;
+}
+.nav-item i { font-size: 22px; margin-bottom: 4px; stroke-width: 2px; }
+.nav-item span { font-size: 12px; font-weight: 500; }
+.nav-item.active {
+    background: var(--brand-primary);
+    color: var(--text-white);
+    border-radius: 18px; /* Rounded pill */
+    height: 50px;
+    width: 70px;
+    margin-top: -10px; /* Slight floating effect */
+    box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+}
+.nav-item.active i, .nav-item.active span { color: var(--text-white); }
+
+/* =========================================================
+   COMPONENT: Cards & Layouts
+   ========================================================= */
+.card {
+    background: var(--surface-white);
+    border-radius: var(--radius-card);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: var(--space-sm);
+}
+.card-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+
+/* Statistic Cards (3 per row usually) */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+}
+.stat-card {
+    background: var(--surface-white);
+    border-radius: var(--radius-btn);
+    padding: var(--space-sm);
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.stat-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.stat-value { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.stat-value.orange { color: var(--accent-orange); }
+.stat-value.green { color: var(--accent-green); }
+
+/* Buttons */
+.btn-primary {
+    background: var(--brand-primary);
+    color: var(--text-white);
+    border: none;
+    border-radius: var(--radius-btn);
+    height: 44px;
+    padding: 0 24px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.12s ease;
+}
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.5; transform: none; }
+
+.btn-secondary {
+    background: var(--surface-white);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* BINGO TILES & GRID (Kept original for functionality but styled to match) */
+.game-grid-container { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0; justify-content: center; }
+.bingo-grid-container {
+    background: var(--surface-white);
+    border-radius: var(--radius-card);
+    padding: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: var(--shadow-soft);
+    width: 150px; height: 400px; overflow-y: auto; flex-shrink: 0;
+}
+.bingo-number-cell {
+    background: var(--accent-orange); color: var(--text-primary); font-weight: 700;
+    border-radius: var(--radius-tile); border: none;
+}
+.bingo-number-cell.called { background: var(--brand-light); color: var(--text-secondary); border: 1px solid #ddd; }
+
+.player-card-container {
+    background: var(--surface-white); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft); width: 210px; height: 330px;
+    border: 1px solid #f0f0f0; padding: 12px; display: flex; flex-direction: column;
+}
+.player-card-cell { background: var(--brand-light); border-radius: 6px; border: none; color: var(--text-primary); }
+.player-card-cell.marked { background: var(--accent-orange) !important; color: white !important; }
+.player-card-cell.free { background: var(--brand-primary); color: white; font-size: 9px; }
+
+/* =========================================================
+   COMPONENT: Wallet & History Specifics
+   ========================================================= */
+.wallet-highlight-card {
+    background: linear-gradient(135deg, var(--brand-primary), #8A2BE2);
+    border-radius: var(--radius-card);
+    padding: var(--space-lg);
+    color: var(--text-white);
+    margin-bottom: var(--space-sm);
+}
+.wallet-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); }
+.wallet-stat-box { background: var(--surface-white); border-radius: var(--radius-btn); padding: var(--space-sm); text-align: center; box-shadow: var(--shadow-soft); }
+
+.history-badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.history-badge.loss { background: #fce4ec; color: var(--accent-red); }
+.history-badge.win { background: #e8f5e9; color: var(--accent-green); }
+
+/* Loading Skeleton */
+.skeleton-box { background: #EFE3F7; border-radius: 8px; position: relative; overflow: hidden; }
+.skeleton-box::after {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }

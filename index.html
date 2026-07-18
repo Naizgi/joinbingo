@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Habesha Bingo - Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Paste your full CSS from your original file here. */
+        :root { /* ... all your CSS variables ... */ }
+        /* ... all your CSS classes ... */
+    </style>
+</head>
+<body>
+    <!-- OVERLAYS -->
+    <div id="access-denied">...</div>
+    <div id="connection-status">...</div>
+    <div id="audio-loading" class="audio-loading">...</div>
+    <div id="audio-prompt" class="audio-prompt">...</div>
+    <div id="notification-toast" class="notification-toast">...</div>
+    <div class="winner-display" id="winner-announcement">...</div>
+
+    <!-- PAGE: GAME -->
+    <div id="page-game" class="container">
+        <!-- Waiting Screen -->
+        <div id="waiting-screen" class="screen active">...</div>
+        <!-- Active Game Screen -->
+        <div id="game-screen" class="screen">...</div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="app-nav" style="position: fixed; bottom:0; width:100%; display:flex; background:#1a1a2e; justify-content:space-around; padding:15px 0;">
+        <a href="index.html" class="nav-btn" style="color: #2ECC71; text-decoration:none; text-align:center;"><i class="fas fa-gamepad"></i><br><span>Game</span></a>
+        <a href="history.html" class="nav-btn" style="color: #BDC3C7; text-decoration:none; text-align:center;"><i class="fas fa-clock"></i><br><span>History</span></a>
+        <a href="wallet.html" class="nav-btn" style="color: #BDC3C7; text-decoration:none; text-align:center;"><i class="fas fa-wallet"></i><br><span>Wallet</span></a>
+        <a href="profile.html" class="nav-btn" style="color: #BDC3C7; text-decoration:none; text-align:center;"><i class="fas fa-user"></i><br><span>Profile</span></a>
+    </nav>
+
+    <script src="game-core.js"></script>
+</body>
+</html>
