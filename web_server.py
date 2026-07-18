@@ -5140,6 +5140,206 @@ async def toggle_card_purchase(request):
         }, status=500)
 
 
+
+
+
+
+# ==================== PLAYER HISTORY API ENDPOINT ====================
+@routes.get('/api/player/history/{user_id}')
+async def player_game_history(request):
+    """Get game history for a specific player with pagination and stats"""
+    try:
+        user_id_str = request.match_info['user_id']
+        user_id = parse_user_id(user_id_str)
+        page = int(request.query.get('page', 1))
+        limit = int(request.query.get('limit', 20))
+        offset = (page - 1) * limit
+
+        from database.db import Database
+
+        with Database.get_cursor() as cursor:
+            # 1. Get total count for pagination
+            cursor.execute("""
+                SELECT COUNT(DISTINCT g.game_id) 
+                FROM games g
+                JOIN player_cards pc ON g.game_id = pc.game_id
+                WHERE pc.user_id = ? AND pc.is_active = 1
+            """, (user_id,))
+            total_row = cursor.fetchone()
+            total_history = total_row[0] if total_row else 0
+
+            # 2. Get Paginated Game History with Details
+            cursor.execute("""
+                SELECT 
+                    g.game_id,
+                    g.round_number,
+                    g.status,
+                    g.prize_pool,
+                    g.created_at as game_date,
+                    g.completed_at,
+                    pc.card_index,
+                    g.winner_id,
+                    (SELECT COUNT(*) FROM player_cards WHERE game_id = g.game_id AND is_active = 1) as total_players,
+                    CASE WHEN g.winner_id = ? THEN 1 ELSE 0 END as is_winner
+                FROM games g
+                JOIN player_cards pc ON g.game_id = pc.game_id
+                WHERE pc.user_id = ? AND pc.is_active = 1
+                ORDER BY g.created_at DESC
+                LIMIT ? OFFSET ?
+            """, (user_id, user_id, limit, offset))
+            
+            rows = cursor.fetchall()
+            history = []
+            for row in rows:
+                history.append({
+                    'game_id': row[0],
+                    'round_number': row[1],
+                    'status': row[2],
+                    'prize_pool': float(row[3] or 0),
+                    'game_date': row[4].isoformat() if row[4] else None,
+                    'completed_at': row[5].isoformat() if row[5] else None,
+                    'card_index': row[6],
+                    'winner_id': row[7],
+                    'total_players': row[8] or 0,
+                    'is_winner': bool(row[9])
+                })
+
+            # 3. Get Summary Statistics
+            cursor.execute("""
+                SELECT 
+                    COUNT(DISTINCT g.game_id) as total_games,
+                    SUM(CASE WHEN g.winner_id = ? THEN 1 ELSE 0 END) as total_wins,
+                    COALESCE(SUM(CASE WHEN g.winner_id = ? THEN g.prize_pool ELSE 0 END), 0) as total_winnings
+                FROM games g
+                JOIN player_cards pc ON g.game_id = pc.game_id
+                WHERE pc.user_id = ? AND pc.is_active = 1
+            """, (user_id, user_id, user_id))
+            
+            stats_row = cursor.fetchone()
+            stats = {
+                'total_games': stats_row[0] or 0,
+                'total_wins': stats_row[1] or 0,
+                'total_winnings': float(stats_row[2] or 0)
+            }
+
+            total_pages = (total_history + limit - 1) // limit if total_history > 0 else 0
+
+            return web.json_response({
+                'success': True,
+                'history': history,
+                'stats': stats,
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total_history,
+                    'pages': total_pages
+                }
+            }, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
+
+    except Exception as e:
+        logger.error(f"Error fetching player history: {e}", exc_info=True)
+        return web.json_response({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+# ==================== PLAYER PROFILE API ENDPOINT ====================
+@routes.get('/api/player/profile/{user_id}')
+async def player_profile(request):
+    """Get detailed profile information for a specific player"""
+    try:
+        user_id_str = request.match_info['user_id']
+        user_id = parse_user_id(user_id_str)
+
+        from database.db import Database
+
+        with Database.get_cursor() as cursor:
+            # 1. Base user info
+            cursor.execute("""
+                SELECT user_id, username, full_name, balance, created_at, status
+                FROM users 
+                WHERE user_id = ?
+            """, (user_id,))
+            user_row = cursor.fetchone()
+
+            if not user_row:
+                return web.json_response({
+                    'success': False,
+                    'message': 'User not found'
+                }, status=404)
+
+            user_profile = {
+                'user_id': user_row[0],
+                'username': user_row[1],
+                'full_name': user_row[2],
+                'balance': float(user_row[3] or 0),
+                'member_since': user_row[4].isoformat() if user_row[4] else None,
+                'status': user_row[5] or 'active'
+            }
+
+            # 2. Lifetime Statistics
+            cursor.execute("""
+                SELECT 
+                    COUNT(DISTINCT g.game_id) as total_games,
+                    SUM(CASE WHEN g.winner_id = ? THEN 1 ELSE 0 END) as total_wins,
+                    COALESCE(SUM(CASE WHEN g.winner_id = ? THEN g.prize_pool ELSE 0 END), 0) as total_winnings,
+                    SUM(CASE WHEN pc.is_active = 1 AND pc.is_fake = 0 THEN 1 ELSE 0 END) as total_cards_bought
+                FROM games g
+                JOIN player_cards pc ON g.game_id = pc.game_id
+                WHERE pc.user_id = ?
+            """, (user_id, user_id, user_id))
+            
+            stats_row = cursor.fetchone()
+            user_profile['stats'] = {
+                'total_games': stats_row[0] or 0,
+                'total_wins': stats_row[1] or 0,
+                'total_winnings': float(stats_row[2] or 0),
+                'total_cards_bought': stats_row[3] or 0
+            }
+
+            # 3. Recent Activity (Last 5 games)
+            cursor.execute("""
+                SELECT 
+                    g.game_id, g.round_number, g.created_at, 
+                    g.status, g.prize_pool,
+                    CASE WHEN g.winner_id = ? THEN 1 ELSE 0 END as did_win
+                FROM games g
+                JOIN player_cards pc ON g.game_id = pc.game_id
+                WHERE pc.user_id = ?
+                ORDER BY g.created_at DESC
+                LIMIT 5
+            """, (user_id, user_id))
+            
+            recent_rows = cursor.fetchall()
+            recent_activity = []
+            for row in recent_rows:
+                recent_activity.append({
+                    'game_id': row[0],
+                    'round_number': row[1],
+                    'date': row[2].isoformat() if row[2] else None,
+                    'status': row[3],
+                    'prize_pool': float(row[4] or 0),
+                    'did_win': bool(row[5])
+                })
+            
+            user_profile['recent_activity'] = recent_activity
+
+            return web.json_response({
+                'success': True,
+                'profile': user_profile
+            }, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
+
+    except Exception as e:
+        logger.error(f"Error fetching player profile: {e}", exc_info=True)
+        return web.json_response({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+
+
 # Add this to web_server.py - replace the existing get_sold_cards endpoint
 
 @routes.get('/api/game/{game_id}/sold-cards')

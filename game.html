@@ -471,24 +471,39 @@
     <!-- ==================== PAGE: HISTORY ==================== -->
     <div id="page-history" class="page-container">
         <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="card-title" style="margin:0;">GAME HISTORY</span>
-            <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+            <span class="card-title" style="margin:0;">MY GAME HISTORY</span>
+            <button class="btn-secondary" onclick="loadPlayerHistory(1)"><i class="fas fa-sync-alt"></i> Reload</button>
         </div>
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 8px;">
-                <span style="font-weight: 600; font-size: 14px;">Game #2XKFRER9</span>
-                <span style="background: #fce4ec; color: var(--accent-red); padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">LOSS</span>
+        
+        <!-- History Stats -->
+        <div class="card" id="history-stats-container" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Total Games</div>
+                    <div id="history-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
+                    <div id="history-total-wins" style="font-size: 20px; font-weight: 700; color: var(--accent-green);">0</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Total Winnings</div>
+                    <div id="history-total-winnings" style="font-size: 20px; font-weight: 700; color: var(--stat-value);">0 birr</div>
+                </div>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">2026-04-15, 6:11:16 p.m.</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; color: var(--text-secondary);">
-                <div>Stake: <span style="font-weight:600; color:var(--text-primary);">Br 10.00</span></div>
-                <div>Prize: <span style="font-weight:600; color:var(--text-primary);">Br 2,096.00</span></div>
-                <div>My Boards: <span style="font-weight:600; color:var(--text-primary);">#80</span></div>
-                <div>Winners: <span style="font-weight:600; color:var(--text-primary);">#168, #224</span></div>
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid #f9f9f9; padding-top: 8px;">Winner count: 2</div>
         </div>
-        <div style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 12px;">Showing recent 20 games</div>
+
+        <!-- History List -->
+        <div id="history-list-container">
+            <div style="text-align: center; padding: 20px; color: var(--text-muted);" id="history-loading-text">Loading history...</div>
+        </div>
+        
+        <!-- Pagination -->
+        <div id="history-pagination" style="display: none; display: flex; justify-content: center; gap: 10px; margin-top: 12px;">
+            <button class="btn-secondary" id="history-prev-btn" onclick="loadPlayerHistory(currentHistoryPage - 1)"><i class="fas fa-chevron-left"></i> Prev</button>
+            <span style="display: flex; align-items: center; font-size: 14px; color: var(--text-secondary);">Page <span id="history-current-page">1</span> of <span id="history-total-pages">1</span></span>
+            <button class="btn-secondary" id="history-next-btn" onclick="loadPlayerHistory(currentHistoryPage + 1)">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
     </div>
 
     <!-- ==================== PAGE: WALLET ==================== -->
@@ -496,9 +511,9 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span class="card-title">WALLET</span>
-                <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+                <button class="btn-secondary" onclick="updateWalletUI()"><i class="fas fa-sync-alt"></i> Reload</button>
             </div>
-            <div style="font-size: 28px; font-weight: 700; color: var(--brand-primary);">Br 0.00</div>
+            <div id="wallet-balance-display" style="font-size: 28px; font-weight: 700; color: var(--brand-primary);">Br 0.00</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Total balance</div>
             <div style="display: flex; gap: 10px;">
                 <div style="background: var(--brand-primary); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">BALANCES</div>
@@ -507,7 +522,7 @@
         </div>
         <div class="wallet-highlight-card" style="background: linear-gradient(135deg, var(--brand-primary), #8A2BE2); border-radius: var(--radius-card); padding: 16px; color: var(--text-white); margin-bottom: 12px; box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);">
             <div style="font-size: 12px; opacity: 0.8;">TOTAL BALANCE</div>
-            <div style="font-size: 26px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
+            <div id="wallet-total-balance" style="font-size: 26px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
         </div>
         <div class="wallet-stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
             <div class="wallet-stat-box" style="background: var(--surface-white); border-radius: var(--radius-btn); padding: 12px; text-align: center; box-shadow: var(--shadow-soft);">
@@ -527,19 +542,47 @@
 
     <!-- ==================== PAGE: PROFILE ==================== -->
     <div id="page-profile" class="page-container">
-        <div class="card" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
-            <div style="width: 80px; height: 80px; background: #EFE3F7; border-radius: 50%;"></div>
-            <div style="height: 20px; width: 60%; background: #EFE3F7; border-radius: 8px;"></div>
-            <div style="height: 15px; width: 40%; background: #EFE3F7; border-radius: 8px;"></div>
+        <!-- Skeleton Loader -->
+        <div id="profile-skeleton">
+            <div class="card" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                <div style="width: 80px; height: 80px; background: #EFE3F7; border-radius: 50%;"></div>
+                <div style="height: 20px; width: 60%; background: #EFE3F7; border-radius: 8px;"></div>
+                <div style="height: 15px; width: 40%; background: #EFE3F7; border-radius: 8px;"></div>
+            </div>
+            <div class="card" style="display: flex; gap: 12px;">
+                <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
+                <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
+            </div>
         </div>
-        <div class="card" style="display: flex; gap: 12px;">
-            <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
-            <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
-        </div>
-        <div class="card">
-            <div style="width: 100%; height: 30px; background: #EFE3F7; border-radius: 8px; margin-bottom: 8px;"></div>
-            <div style="width: 100%; height: 30px; background: #EFE3F7; border-radius: 8px; margin-bottom: 8px;"></div>
-            <div style="width: 70%; height: 30px; background: #EFE3F7; border-radius: 8px;"></div>
+
+        <!-- Real Profile Data -->
+        <div id="profile-data" style="display: none;">
+            <div class="card" style="display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center;">
+                <div style="width: 80px; height: 80px; background: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: 700;">
+                    <span id="profile-avatar-letter">?</span>
+                </div>
+                <div id="profile-fullname" style="font-size: 20px; font-weight: 600;">Loading...</div>
+                <div id="profile-username" style="font-size: 14px; color: var(--text-muted);">@username</div>
+                <div style="margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--stat-value);">Balance: <span id="profile-balance">0.00 birr</span></div>
+            </div>
+
+            <div class="card" style="display: flex; gap: 12px;">
+                <div style="flex: 1; text-align: center;">
+                    <div style="font-size: 11px; color: var(--text-muted);">Total Games</div>
+                    <div id="profile-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
+                    <div id="profile-total-wins" style="font-size: 20px; font-weight: 700; color: var(--accent-green);">0</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div style="font-weight: 600; margin-bottom: 8px;">Recent Activity</div>
+                <div id="profile-recent-activity">
+                    <div style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading activity...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -551,7 +594,7 @@
         <div class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
     </nav>
 
-    <!-- ==================== SCRIPTS (FULL ORIGINAL LOGIC RESTORED) ==================== -->
+    <!-- ==================== SCRIPTS ==================== -->
     <script>
         // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
@@ -569,16 +612,154 @@
                     document.getElementById('game-screen').classList.add('active');
                 }
             }
+            if(tabName === 'history') { loadPlayerHistory(1); }
+            if(tabName === 'profile') { loadPlayerProfile(); }
+            if(tabName === 'wallet') { updateWalletUI(); }
         }
         window.switchTab = switchTab;
 
-        // ==================== CONFIGURATION ====================
+        // ==================== NEW API FUNCTIONS FOR HISTORY & PROFILE ====================
+        let currentHistoryPage = 1;
+        
+        async function loadPlayerHistory(page = 1) {
+            const listContainer = document.getElementById('history-list-container');
+            const statsContainer = document.getElementById('history-stats-container');
+            const loadingText = document.getElementById('history-loading-text');
+            
+            listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>';
+            
+            try {
+                const userId = getUserId(); // Using existing getUserId function
+                const response = await fetch(`/api/player/history/${userId}?page=${page}&limit=10`);
+                
+                if (!response.ok) throw new Error('Failed to fetch history');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update Stats
+                    statsContainer.style.display = 'block';
+                    document.getElementById('history-total-games').textContent = data.stats.total_games;
+                    document.getElementById('history-total-wins').textContent = data.stats.total_wins;
+                    document.getElementById('history-total-winnings').textContent = data.stats.total_winnings.toFixed(2) + ' birr';
+
+                    // Update Pagination
+                    document.getElementById('history-current-page').textContent = data.pagination.page;
+                    document.getElementById('history-total-pages').textContent = data.pagination.pages;
+                    document.getElementById('history-prev-btn').style.display = data.pagination.page > 1 ? 'inline-block' : 'none';
+                    document.getElementById('history-next-btn').style.display = data.pagination.page < data.pagination.pages ? 'inline-block' : 'none';
+                    currentHistoryPage = data.pagination.page;
+
+                    // Render History List
+                    if (data.history.length === 0) {
+                        listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted); padding:20px;">No game history found.</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.history.forEach(game => {
+                        const isWin = game.is_winner;
+                        const statusClass = isWin ? 'win' : 'loss';
+                        const statusText = isWin ? 'WIN' : 'PLAYED';
+                        const bgColor = isWin ? 'var(--accent-green)' : '#fce4ec';
+                        const textColor = isWin ? 'white' : 'var(--accent-red)';
+
+                        html += `
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 8px;">
+                                    <span style="font-weight: 600; font-size: 14px;">Round #${game.round_number}</span>
+                                    <span style="background: ${bgColor}; color: ${textColor}; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${statusText}</span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">${new Date(game.game_date).toLocaleString()}</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; color: var(--text-secondary);">
+                                    <div>Prize Pool: <span style="font-weight:600; color:var(--text-primary);">${game.prize_pool.toFixed(2)} birr</span></div>
+                                    <div>Status: <span style="font-weight:600; color:var(--text-primary);">${game.status}</span></div>
+                                    <div>My Board: <span style="font-weight:600; color:var(--text-primary);">#${game.card_index}</span></div>
+                                    <div>Total Players: <span style="font-weight:600; color:var(--text-primary);">${game.total_players}</span></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listContainer.innerHTML = html;
+                }
+            } catch (error) {
+                console.error("Error loading history:", error);
+                listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--accent-red); padding:20px;">Failed to load history. Please try again.</div>';
+            }
+        }
+
+        async function loadPlayerProfile() {
+            const skeleton = document.getElementById('profile-skeleton');
+            const dataContainer = document.getElementById('profile-data');
+            
+            try {
+                const userId = getUserId();
+                const response = await fetch(`/api/player/profile/${userId}`);
+                
+                if (!response.ok) throw new Error('Failed to fetch profile');
+                const data = await response.json();
+                
+                if (data.success) {
+                    skeleton.style.display = 'none';
+                    dataContainer.style.display = 'block';
+                    
+                    const profile = data.profile;
+                    
+                    // Populate Profile
+                    document.getElementById('profile-avatar-letter').textContent = (profile.full_name || profile.username || 'U').charAt(0).toUpperCase();
+                    document.getElementById('profile-fullname').textContent = profile.full_name || profile.username || 'User';
+                    document.getElementById('profile-username').textContent = '@' + (profile.username || profile.user_id);
+                    document.getElementById('profile-balance').textContent = profile.balance.toFixed(2) + ' birr';
+                    
+                    // Stats
+                    document.getElementById('profile-total-games').textContent = profile.stats.total_games;
+                    document.getElementById('profile-total-wins').textContent = profile.stats.total_wins;
+
+                    // Recent Activity
+                    const activityContainer = document.getElementById('profile-recent-activity');
+                    if (profile.recent_activity && profile.recent_activity.length > 0) {
+                        let html = '';
+                        profile.recent_activity.forEach(game => {
+                            html += `
+                                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 13px;">
+                                    <span>Round #${game.round_number} ${game.did_win ? '🏆' : ''}</span>
+                                    <span style="color: ${game.did_win ? 'var(--accent-green)' : 'var(--text-muted)'};">
+                                        ${game.did_win ? 'Won ' + game.prize_pool.toFixed(2) + ' birr' : 'Played'}
+                                    </span>
+                                </div>
+                            `;
+                        });
+                        activityContainer.innerHTML = html;
+                    } else {
+                        activityContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center;">No recent games played.</div>';
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading profile:", error);
+                document.getElementById('profile-skeleton').innerHTML = '<div class="card" style="text-align:center; color: var(--accent-red); padding:20px;">Failed to load profile.</div>';
+            }
+        }
+
+        async function updateWalletUI() {
+            try {
+                const userId = getUserId();
+                const response = await fetch(`/api/user/balance/${userId}`);
+                if(response.ok) {
+                    const data = await response.json();
+                    const formatted = data.balance.toFixed(2);
+                    document.getElementById('wallet-balance-display').textContent = 'Br ' + formatted;
+                    document.getElementById('wallet-total-balance').textContent = 'Br ' + formatted;
+                }
+            } catch(e) {
+                console.error("Error loading wallet", e);
+            }
+        }
+
+        // ==================== YOUR ORIGINAL LOGIC (Preserved) ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
         const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
         const CARD_PRICE = 10.0;
         const SOUNDS_BASE_URL = `${window.location.protocol}//${window.location.host}/sounds`;
 
-        // ==================== GAME STATE ====================
         const gameState = {
             userId: null, gameId: null, gamePhase: "card_purchase", gameStatus: "card_purchase",
             gameType: "round_based", selectedCardId: null, selectedCardIndex: null,
@@ -604,7 +785,6 @@
             phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0
         };
 
-        // ==================== TELEGRAM CHECK ====================
         const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
         if (!isTelegram) {
             document.getElementById("access-denied").style.display = "flex";
@@ -612,9 +792,7 @@
         }
         const tg = window.Telegram.WebApp; tg.expand();
 
-        // ==================== NOTIFICATION FUNCTION ====================
         function showNotification(message, type = "info", duration = 3000) {
-            console.log(`Notification: ${message} (${type})`);
             const toast = document.getElementById("notification-toast");
             const messageEl = document.getElementById("notification-message");
             const icon = toast?.querySelector("i");
@@ -629,7 +807,6 @@
         }
         window.showNotification = showNotification;
 
-        // ==================== VALIDATE PHASE ====================
         function validateGamePhase(expectedPhase, action) {
             if (gameState.gamePhase !== expectedPhase && gameState.gameStatus !== expectedPhase) {
                 const errorMsg = document.getElementById("phase-error-message");
@@ -637,20 +814,15 @@
                 if (errorMsg && errorText) {
                     if (expectedPhase === "card_purchase") errorText.textContent = "Card purchase is only available during purchase phase.";
                     else if (expectedPhase === "active") errorText.textContent = "Game is not in active phase.";
-                    errorMsg.style.display = "block";
-                    setTimeout(() => { errorMsg.style.display = "none"; }, 5000);
+                    errorMsg.style.display = "block"; setTimeout(() => { errorMsg.style.display = "none"; }, 5000);
                 }
                 return false;
             }
             return true;
         }
 
-        // ==================== AUDIO MANAGEMENT ====================
         function stopAllAudio() {
-            if (gameState.currentAudio) {
-                try { gameState.currentAudio.pause(); gameState.currentAudio.currentTime = 0; } catch (error) {}
-                gameState.currentAudio = null;
-            }
+            if (gameState.currentAudio) { try { gameState.currentAudio.pause(); gameState.currentAudio.currentTime = 0; } catch (error) {} gameState.currentAudio = null; }
             gameState.audioQueue = []; gameState.isPlayingAudio = false;
             Object.values(gameState.audioCache).forEach((audio) => { if (audio) { try { audio.pause(); audio.currentTime = 0; } catch (error) {} } });
             document.querySelectorAll("audio").forEach((audio) => { try { audio.pause(); audio.currentTime = 0; } catch (error) {} });
@@ -673,7 +845,6 @@
         }
 
         async function preloadAudioFiles() {
-            // Full audio logic preserved
             console.log("Preloading MP3 audio files...");
             if (!gameState.audioInitialized) return false;
             const loadingElement = document.getElementById("audio-loading");
@@ -691,14 +862,7 @@
                             if (progressBar) progressBar.style.width = `${gameState.audioLoadProgress}%`;
                             gameState.audioCache[i] = audio; resolve();
                         };
-                        audio.onerror = (error) => {
-                            console.warn(`Failed to load audio for number ${i}:`, error);
-                            loadedCount++; gameState.audioLoadProgress = Math.floor((loadedCount / gameState.totalAudioFiles) * 100);
-                            gameState.audioCache[i] = null;
-                            if (progressElement) progressElement.textContent = `${loadedCount}/${gameState.totalAudioFiles} loaded`;
-                            if (progressBar) progressBar.style.width = `${gameState.audioLoadProgress}%`;
-                            resolve();
-                        };
+                        audio.onerror = (error) => { console.warn(`Failed to load audio for number ${i}:`, error); loadedCount++; gameState.audioLoadProgress = Math.floor((loadedCount / gameState.totalAudioFiles) * 100); gameState.audioCache[i] = null; if (progressElement) progressElement.textContent = `${loadedCount}/${gameState.totalAudioFiles} loaded`; if (progressBar) progressBar.style.width = `${gameState.audioLoadProgress}%`; resolve(); };
                     });
                     audio.src = `${SOUNDS_BASE_URL}/${i}.m4a`; audio.load(); loadPromises.push(loadPromise);
                     if (i % 5 === 0) await new Promise((resolve) => setTimeout(resolve, 50));
@@ -794,7 +958,6 @@
             }
         }
 
-        // ==================== BINGO CLAIM ====================
         async function claimBingo() {
             if (!gameState.gameId || !gameState.hasCard) return showNotification("No active game or card", "error");
             if (!checkForBingo()) return showNotification("You do not have a winning pattern yet", "error");
@@ -826,7 +989,6 @@
         }
         window.claimBingo = claimBingo;
 
-        // ==================== CHECK FOR BINGO ====================
         function checkForBingo() {
             try {
                 if (!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length !== 25) return false;
@@ -841,7 +1003,6 @@
             } catch (error) { console.error("Error checking bingo:", error); return false; }
         }
 
-        // ==================== UPDATE BINGO BUTTON ====================
         function updateBingoButton() {
             const btn = document.getElementById("claim-bingo-btn"); if (!btn) return;
             if (gameState.gameComplete || gameState.winnerAnnounced) { btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; btn.className = "bingo-btn bingo-btn-claimed"; btn.disabled = true; return; }
@@ -859,7 +1020,6 @@
             }
         }
 
-        // ==================== SERVER NUMBER HANDLER ====================
         function handleServerNumberCalled(number, allCalled) {
             gameState.calledNumbers = allCalled;
             updateCalledNumbersDisplay(); updateCurrentCalledDisplay(number); updateBingoGrid();
@@ -922,7 +1082,6 @@
             const numbers = []; for (let i = 0; i < 25; i++) { if (i === 12) numbers.push(0); else numbers.push(Math.floor(Math.random() * 75) + 1); } return numbers;
         }
 
-        // ==================== WEBSOCKET FUNCTIONS ====================
         function sendWebSocketMessage(message) {
             if (!message.timestamp) message.timestamp = Date.now();
             if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) {
@@ -968,7 +1127,6 @@
             }
         }
 
-        // ==================== INSTANT CARD UPDATE ====================
         function instantCardUpdate(cardIndex, newStatus, cardData = null) {
             const cardElement = gameState.cardsCache.cardElements[cardIndex]; if (!cardElement) return;
             cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing");
@@ -981,7 +1139,6 @@
             if (cardData) { if (cardData.prize_pool !== undefined) gameState.prizePool = cardData.prize_pool; if (cardData.total_players !== undefined) gameState.totalPlayers = cardData.total_players; if (cardData.wallet_balance !== undefined) gameState.walletBalance = cardData.wallet_balance; if (cardData.real_players !== undefined) gameState.realPlayers = cardData.real_players; if (cardData.fake_players !== undefined) gameState.fakePlayers = cardData.fake_players; updateGameStats(); }
         }
 
-        // ==================== GET COMPLETE GAME STATE ====================
         async function getCompleteGameState() {
             if (!gameState.gameId) return false;
             if (gameState.fullSyncInProgress) return false;
@@ -1036,7 +1193,6 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
-        // ==================== UPDATE GAME STATS ====================
         function updateGameStats() {
             document.getElementById("card-price").textContent = `${CARD_PRICE.toFixed(2)} birr`;
             document.getElementById("wallet-balance").textContent = `${gameState.walletBalance.toFixed(2)} birr`;
@@ -1048,7 +1204,6 @@
             document.getElementById("current-round-number").textContent = gameState.currentRound;
         }
 
-        // ==================== COUNTDOWN FUNCTIONS ====================
         function startServerCoordinatedCountdown() {
             if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
             if (gameState.gamePhase !== "card_purchase") return;
@@ -1056,7 +1211,6 @@
             gameState.countdownInterval = setInterval(() => {}, 10000);
         }
 
-        // ==================== WEBSOCKET HANDLERS ====================
         async function handleWebSocketMessage(data) {
             console.log("WebSocket message received:", data.type, data); gameState.lastUpdateTime = Date.now();
             if (data.game_id) gameState.gameId = data.game_id;
@@ -1092,7 +1246,6 @@
             }
         }
 
-        // ==================== WINNER HANDLERS ====================
         function handleWinnerConfirmed(data) {
             if (!data) return; stopAllAudio(); let winnerData = null; let winnersList = [];
             if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { winnersList = data.winners; winnerData = winnersList[winnersList.length - 1]; if (winnerData) { if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; } } else if (data.user_id) { winnersList = [data]; winnerData = data; }
@@ -1287,7 +1440,6 @@
         }
         window.showScreen = showScreen;
 
-        // ==================== UI UPDATE FUNCTIONS ====================
         function updateGameUI() {
             if (gameState.isWinnerDisplayActive) return;
             if (gameState.gameComplete && !gameState.isWinnerDisplayActive) { showScreen("waiting-screen"); return; }
@@ -1521,12 +1673,9 @@
 
         function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
-        // ==================== FIXED: The missing function! ====================
         function startSyncInterval() {
             if (gameState.syncInterval) { clearInterval(gameState.syncInterval); }
-            gameState.syncInterval = setInterval(() => {
-                syncWithServer();
-            }, 2000);
+            gameState.syncInterval = setInterval(() => { syncWithServer(); }, 2000);
         }
         window.startSyncInterval = startSyncInterval;
 
