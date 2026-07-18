@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 WEBSERVER_HOST = os.getenv('WEBSERVER_HOST', '0.0.0.0')
-WEBSERVER_PORT = int(os.getenv('WEBSERVER_PORT', '8000'))
+WEBSERVER_PORT = int(os.getenv('WEBSERVER_PORT', '8003'))
 WEB_APP_URL = f"http://{WEBSERVER_HOST}:{WEBSERVER_PORT}"
 
 # Fix for Windows socket issues
@@ -5842,14 +5842,14 @@ async def run_server():
     runner = web.AppRunner(app)
     await runner.setup()
     
-    # Use port 8000
-    site = web.TCPSite(runner, WEBSERVER_HOST, 8000)
+    # Use port 8003
+    site = web.TCPSite(runner, WEBSERVER_HOST, 8003)
     await site.start()
     
-    logger.info(f"✅ Web server started on http://{WEBSERVER_HOST}:8000")
-    logger.info(f"✅ WebSocket server ready on ws://{WEBSERVER_HOST}:8000/ws")
-    logger.info(f"✅ Game interface: http://{WEBSERVER_HOST}:8000/game.html")
-    logger.info(f"✅ Admin panel: http://{WEBSERVER_HOST}:8000/admin.html")
+    logger.info(f"✅ Web server started on http://{WEBSERVER_HOST}:8003")
+    logger.info(f"✅ WebSocket server ready on ws://{WEBSERVER_HOST}:8003/ws")
+    logger.info(f"✅ Game interface: http://{WEBSERVER_HOST}:8003/game.html")
+    logger.info(f"✅ Admin panel: http://{WEBSERVER_HOST}:8003/admin.html")
     logger.info("Press Ctrl+C to stop the server")
     
     try:
