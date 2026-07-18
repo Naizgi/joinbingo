@@ -4,13 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Afro Bingo - Profile</title>
-    <link rel="stylesheet" href="afro-bingo-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        /* =========================================================
+           AFRO BINGO DESIGN SYSTEM (Integrated for Profile)
+           ========================================================= */
+        :root {
+            --brand-primary: #6A0DAD;       /* Deep Purple */
+            --brand-secondary: #B88CCF;     /* Secondary Purple */
+            --brand-light: #E9D8F4;         /* Light Purple */
+            --brand-bg: #CDA7D9;            /* Very Light Lavender (Background) */
+            --surface-white: #FFFFFF;
+            --shadow-soft: 0px 3px 10px rgba(106, 13, 173, 0.08);
+            --radius-card: 20px;
+            --radius-btn: 16px;
+            --radius-tile: 8px;
+            --accent-orange: #F68B1F;       /* Bingo numbers */
+            --accent-green: #3BB54A;        /* Success / Win */
+            --accent-red: #C62828;          /* Loss */
+            --text-primary: #2B2B2B;
+            --text-secondary: #6B6B6B;
+            --text-muted: #A7A7A7;
+            --text-white: #FFFFFF;
+            
+            /* Skeleton colors based on spec */
+            --skeleton-base: #EFE3F7;
+            --skeleton-highlight: #F7F0FB;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--brand-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        .app-header {
+            height: 64px;
+            background: var(--surface-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(106, 13, 173, 0.04);
+        }
+        .app-header .title { font-size: 26px; font-weight: 700; color: var(--brand-primary); }
+        .app-header i { font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+
+        /* --- Bottom Navigation --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--brand-light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -4px 12px rgba(106, 13, 173, 0.06);
+        }
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 100%;
+            text-decoration: none;
+            color: var(--brand-primary);
+            transition: all 0.2s ease;
+        }
+        .nav-btn i { font-size: 22px; margin-bottom: 4px; }
+        .nav-btn span { font-size: 12px; font-weight: 500; }
+        .nav-btn.active {
+            background: var(--brand-primary);
+            color: var(--text-white);
+            border-radius: 18px;
+            height: 50px;
+            width: 70px;
+            margin-top: -10px;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        }
+        .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
+
+        /* --- Components --- */
+        .card {
+            background: var(--surface-white);
+            border-radius: var(--radius-card);
+            padding: 16px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 12px;
+        }
+
+        /* --- Profile Skeleton Loading --- */
+        .skeleton-box {
+            background: var(--skeleton-base);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skeleton-box::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                var(--skeleton-highlight), 
+                transparent
+            );
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* --- Overlays --- */
+        #access-denied { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#1a1a2e; color:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
+    </style>
 </head>
 <body>
 
+    <!-- ==================== OVERLAYS ==================== -->
+    <div id="access-denied">
+        <i class="fas fa-lock" style="font-size: 50px; color: #f44336; margin-bottom: 20px"></i>
+        <h2>Access Restricted</h2>
+        <p>This game can only be played inside the Telegram App.</p>
+    </div>
 
+    <!-- ==================== PAGE HEADER ==================== -->
+    <header class="app-header">
+        <i class="fas fa-times"></i>
+        <span class="title">Profile</span>
+        <i class="fas fa-ellipsis-v"></i>
+    </header>
+
+    <!-- ==================== PAGE CONTENT ==================== -->
     <div style="padding: 16px;">
         
         <!-- Skeleton Loading Placeholders -->
@@ -33,6 +181,7 @@
 
     </div>
 
+    <!-- ==================== BOTTOM NAVIGATION ==================== -->
     <nav class="bottom-nav">
         <a href="game.html" class="nav-item"><i class="fas fa-gamepad"></i><span>Game</span></a>
         <a href="history.html" class="nav-item"><i class="fas fa-clock"></i><span>History</span></a>
