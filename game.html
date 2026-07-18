@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Afro Bingo - Game</title>
+    <title>Afro Bingo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         /* =========================================================
-           AFRO BINGO DESIGN SYSTEM (Fully Integrated)
+           AFRO BINGO DESIGN SYSTEM
            ========================================================= */
         :root {
             --brand-primary: #6A0DAD;       /* Deep Purple */
@@ -29,6 +29,10 @@
             --text-secondary: #6B6B6B;
             --text-muted: #A7A7A7;
             --text-white: #FFFFFF;
+            
+            /* Skeleton colors */
+            --skeleton-base: #EFE3F7;
+            --skeleton-highlight: #F7F0FB;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -86,6 +90,7 @@
             text-decoration: none;
             color: var(--brand-primary);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         .nav-btn i { font-size: 22px; margin-bottom: 4px; }
         .nav-btn span { font-size: 12px; font-weight: 500; }
@@ -100,12 +105,15 @@
         }
         .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
 
-        /* --- Screens & Containers --- */
-        .container { max-width: 100%; padding: 16px; min-width: 320px; }
-        .screen { display: none; animation: fadeIn 0.2s ease; }
-        .screen.active { display: block; }
+        /* --- Pages --- */
+        .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
+        .page-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        .screen { display: none; animation: fadeIn 0.2s ease; }
+        .screen.active { display: block; }
+
+        /* --- Components --- */
         .card {
             background: var(--surface-white);
             border-radius: var(--radius-card);
@@ -113,8 +121,39 @@
             box-shadow: var(--shadow-soft);
             margin-bottom: 12px;
         }
+        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        
+        .btn-secondary {
+            background: var(--surface-white);
+            color: var(--brand-primary);
+            border: 1px solid var(--brand-primary);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: var(--brand-primary);
+            color: var(--text-white);
+            border: none;
+            border-radius: var(--radius-btn);
+            height: 44px;
+            padding: 0 24px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.12s ease;
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.5; transform: none; }
 
-        /* --- Stats Row --- */
+        /* --- Game Components --- */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -135,25 +174,7 @@
         .stat-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
         .stat-value { font-size: 18px; font-weight: 700; color: var(--text-primary); }
         .stat-value.orange { color: var(--accent-orange); }
-        
-        /* --- Buttons --- */
-        .btn-primary {
-            background: var(--brand-primary);
-            color: var(--text-white);
-            border: none;
-            border-radius: var(--radius-btn);
-            height: 44px;
-            padding: 0 24px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.12s ease;
-        }
-        .btn-primary:active { transform: scale(0.97); }
-        .btn-primary:disabled { opacity: 0.5; transform: none; }
 
-        /* --- Game Grid --- */
         .game-grid-container { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0; justify-content: center; }
         .bingo-grid-container {
             background: var(--surface-white);
@@ -174,8 +195,6 @@
         }
         .bingo-number-cell.called { background: var(--surface-white); color: var(--text-secondary); border: 1px solid #ddd; transform: none; }
 
-        /* --- Player Card --- */
-        .player-card-and-button-container { display: flex; flex-direction: column; gap: 10px; width: auto; }
         .player-card-container {
             background: var(--surface-white); border-radius: var(--radius-card);
             box-shadow: var(--shadow-soft); width: 210px; height: 330px;
@@ -192,14 +211,12 @@
         .player-card-cell.free { background: var(--brand-primary); color: white; font-size: 9px; cursor: default; }
         .player-card-cell.empty { background: transparent; color: var(--text-muted); cursor: default; }
 
-        /* --- Called Numbers --- */
         .called-numbers-container { background: var(--surface-white); border-radius: var(--radius-card); padding: 12px; box-shadow: var(--shadow-soft); margin-top: 12px; }
         .called-title { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
         .called-numbers-grid { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
         .called-number { background: var(--accent-orange); color: white; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
         .called-number.recent { border: 2px solid var(--brand-primary); transform: scale(1.1); }
 
-        /* --- Card Selection Grid --- */
         .cards-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(35px, 1fr)); gap: 4px;
             max-height: 350px; overflow-y: auto; padding: 4px;
@@ -213,11 +230,46 @@
         .card-item.owned { background: var(--accent-green); color: white; border: 2px solid #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
         .card-item.selected { background: var(--brand-primary); color: white; transform: scale(1.05); }
 
+        /* --- Wallet Components --- */
+        .wallet-highlight-card {
+            background: linear-gradient(135deg, var(--brand-primary), #8A2BE2);
+            border-radius: var(--radius-card);
+            padding: 16px;
+            color: var(--text-white);
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        }
+        .wallet-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .wallet-stat-box {
+            background: var(--surface-white);
+            border-radius: var(--radius-btn);
+            padding: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* --- History Components --- */
+        .history-badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .history-badge.loss { background: #fce4ec; color: var(--accent-red); }
+        .history-badge.win { background: #e8f5e9; color: var(--accent-green); }
+
+        /* --- Profile Skeleton --- */
+        .skeleton-box {
+            background: var(--skeleton-base);
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-box::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
         /* --- Overlays --- */
         #access-denied { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#1a1a2e; color:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
         .notification-toast { position: fixed; top: 20px; right: 20px; background: var(--accent-green); color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideIn 0.15s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
         .winner-display { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
         .winner-content { background: linear-gradient(135deg, #1a4d2e 0%, #0a2f1a 100%); border-radius: 15px; padding: 20px; text-align: center; max-width: 350px; border: 3px solid var(--accent-green); box-shadow: 0 0 30px rgba(46, 204, 113, 0.3); color: white; }
         .winner-content h2 { font-size: 20px; color: var(--accent-green); margin: 10px 0; }
@@ -249,13 +301,11 @@
         <p>This game can only be played inside the Telegram App.</p>
     </div>
 
-    <!-- Notification Toast -->
     <div id="notification-toast" class="notification-toast">
         <i class="fas fa-check-circle"></i>
         <span id="notification-message">Success!</span>
     </div>
 
-    <!-- Winner Announcement Screen -->
     <div class="winner-display" id="winner-announcement">
         <div class="winner-content">
             <div class="winner-trophy"><i class="fas fa-trophy"></i></div>
@@ -265,12 +315,15 @@
         </div>
     </div>
 
-
+    <!-- ==================== APP HEADER ==================== -->
+    <header class="app-header">
+        <i class="fas fa-times"></i>
+        <span class="title">Afro Bingo</span>
+        <i class="fas fa-ellipsis-v"></i>
+    </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
-    <div id="page-game" class="container">
-        
-        <!-- Stats Row -->
+    <div id="page-game" class="page-container active">
         <div class="stats-row">
             <div class="stat-item">
                 <div class="stat-label">Timer</div>
@@ -286,7 +339,6 @@
             </div>
         </div>
 
-        <!-- Screen 1: Waiting (Card Selection) -->
         <div id="waiting-screen" class="screen active">
             <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--accent-red); border:1px solid var(--accent-red); text-align:center;">
                 <i class="fas fa-exclamation-triangle"></i> <span id="phase-error-text">Card purchase only during purchase phase</span>
@@ -297,9 +349,7 @@
                     <div style="font-size: 14px; font-weight: 600; color: var(--brand-primary);"><i class="fas fa-shopping-cart"></i> Select Board</div>
                     <div style="font-size: 11px; color: var(--text-muted);">Price: <span style="color: var(--brand-primary); font-weight:600;">10 birr</span></div>
                 </div>
-                
                 <div class="cards-grid" id="cards-grid"></div>
-
                 <div style="display: flex; gap: 12px; font-size: 11px; color: var(--text-muted); margin-top: 12px;">
                     <span><span style="display:inline-block; width:10px; height:10px; background:#A0522D; border-radius:50%;"></span> Available</span>
                     <span><span style="display:inline-block; width:10px; height:10px; background:#ddd; border-radius:50%;"></span> Sold</span>
@@ -314,7 +364,6 @@
                         <div style="color:var(--accent-orange); font-weight:600;">10 birr</div>
                     </div>
                     <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">8 birr to prize pool</div>
-                    
                     <div style="background: #f9f9f9; border-radius:12px; padding:12px; display:flex; justify-content:center;">
                         <div class="card-preview-grid" id="card-preview-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; width:160px; height:160px;"></div>
                     </div>
@@ -322,11 +371,8 @@
             </div>
         </div>
 
-        <!-- Screen 2: Active Game -->
         <div id="game-screen" class="screen">
-            
             <div class="game-grid-container">
-                <!-- Master Board -->
                 <div class="bingo-grid-container">
                     <div class="bingo-header-row">
                         <div class="bingo-header-cell" style="color:#A0522D;">B</div>
@@ -338,7 +384,6 @@
                     <div class="bingo-numbers-columns" id="bingo-grid"></div>
                 </div>
 
-                <!-- Player Card -->
                 <div class="player-card-and-button-container">
                     <div class="player-card-container">
                         <div class="player-card-title">
@@ -350,13 +395,11 @@
                         </div>
                         <div class="player-card-grid" id="player-card-grid"></div>
                     </div>
-                    
                     <button class="btn-primary" onclick="window.claimBingo()" id="claim-bingo-btn" disabled>
                         <i class="fas fa-bell"></i> BINGO
                     </button>
                 </div>
             </div>
-
             <div class="called-numbers-container">
                 <div class="called-title">
                     <div>Called Numbers</div>
@@ -367,23 +410,115 @@
         </div>
     </div>
 
+    <!-- ==================== PAGE: HISTORY ==================== -->
+    <div id="page-history" class="page-container">
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-title" style="margin:0;">GAME HISTORY</span>
+            <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+        </div>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 8px;">
+                <span style="font-weight: 600; font-size: 14px;">Game #2XKFRER9</span>
+                <span class="history-badge loss">LOSS</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">2026-04-15, 6:11:16 p.m.</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px; color: var(--text-secondary);">
+                <div>Stake: <span style="font-weight:600; color:var(--text-primary);">Br 10.00</span></div>
+                <div>Prize: <span style="font-weight:600; color:var(--text-primary);">Br 2,096.00</span></div>
+                <div>My Boards: <span style="font-weight:600; color:var(--text-primary);">#80</span></div>
+                <div>Winners: <span style="font-weight:600; color:var(--text-primary);">#168, #224</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid #f9f9f9; padding-top: 8px;">Winner count: 2</div>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 12px;">Showing recent 20 games</div>
+    </div>
+
+    <!-- ==================== PAGE: WALLET ==================== -->
+    <div id="page-wallet" class="page-container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span class="card-title">WALLET</span>
+                <button class="btn-secondary"><i class="fas fa-sync-alt"></i> Reload</button>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--brand-primary);">Br 0.00</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Total balance</div>
+            <div style="display: flex; gap: 10px;">
+                <div style="background: var(--brand-primary); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">BALANCES</div>
+                <div style="background: var(--brand-light); color: var(--text-secondary); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">HISTORY</div>
+            </div>
+        </div>
+        <div class="wallet-highlight-card">
+            <div style="font-size: 12px; opacity: 0.8;">TOTAL BALANCE</div>
+            <div style="font-size: 26px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
+        </div>
+        <div class="wallet-stat-grid">
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">MAIN</div>
+            </div>
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">BONUS</div>
+            </div>
+            <div class="wallet-stat-box">
+                <div style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Br 0.00</div>
+                <div style="font-size: 10px; color: var(--text-muted);">DEPOSITED</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PAGE: PROFILE ==================== -->
+    <div id="page-profile" class="page-container">
+        <div class="card" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+            <div class="skeleton-box" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton-box" style="width: 60%; height: 20px; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="width: 40%; height: 15px; border-radius: 8px;"></div>
+        </div>
+        <div class="card" style="display: flex; gap: 12px;">
+            <div class="skeleton-box" style="flex: 1; height: 60px; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="flex: 1; height: 60px; border-radius: 8px;"></div>
+        </div>
+        <div class="card">
+            <div class="skeleton-box" style="width: 100%; height: 30px; border-radius: 8px; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="width: 100%; height: 30px; border-radius: 8px; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="width: 70%; height: 30px; border-radius: 8px;"></div>
+        </div>
+    </div>
+
     <!-- ==================== BOTTOM NAVIGATION ==================== -->
     <nav class="bottom-nav">
-        <a href="game.html" class="nav-btn active"><i class="fas fa-gamepad"></i><span>Game</span></a>
-        <a href="history.html" class="nav-btn"><i class="fas fa-clock"></i><span>History</span></a>
-        <a href="wallet.html" class="nav-btn"><i class="fas fa-wallet"></i><span>Wallet</span></a>
-        <a href="profile.html" class="nav-btn"><i class="fas fa-user"></i><span>Profile</span></a>
+        <div class="nav-btn active" onclick="switchTab('game')"><i class="fas fa-gamepad"></i><span>Game</span></div>
+        <div class="nav-btn" onclick="switchTab('history')"><i class="fas fa-clock"></i><span>History</span></div>
+        <div class="nav-btn" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+        <div class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
     </nav>
 
-    <!-- ==================== SCRIPTS (GAME LOGIC) ==================== -->
     <script>
-        // ==================== CONFIGURATION ====================
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.nav-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${tabName}`).classList.add('active');
+            
+            if(tabName === 'game') {
+                if(gameState.gamePhase === 'card_purchase') {
+                    document.getElementById('waiting-screen').classList.add('active');
+                    document.getElementById('game-screen').classList.remove('active');
+                } else {
+                    document.getElementById('waiting-screen').classList.remove('active');
+                    document.getElementById('game-screen').classList.add('active');
+                }
+            }
+        }
+        window.switchTab = switchTab;
+
+        // ==================== YOUR ORIGINAL GAME LOGIC ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
         const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
         const CARD_PRICE = 10.0;
         const SOUNDS_BASE_URL = `${window.location.protocol}//${window.location.host}/sounds`;
 
-        // ==================== GAME STATE ====================
         const gameState = {
             userId: null, gameId: null, gamePhase: "card_purchase", gameStatus: "card_purchase",
             gameType: "round_based", selectedCardId: null, selectedCardIndex: null,
@@ -414,7 +549,6 @@
         if (!isTelegram) { document.getElementById("access-denied").style.display = "flex"; throw new Error("Unauthorized: Outside Telegram Environment"); }
         const tg = window.Telegram.WebApp; tg.expand();
 
-        // ==================== NOTIFICATION FUNCTION ====================
         function showNotification(message, type = "info", duration = 3000) {
             console.log(`Notification: ${message} (${type})`);
             const toast = document.getElementById("notification-toast");
@@ -432,11 +566,7 @@
         window.showNotification = showNotification;
 
         // ==================== CORE GAME FUNCTIONS ====================
-        function getBingoLetter(number) {
-            if (number === 0) return "";
-            if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N";
-            if (number <= 60) return "G"; return "O";
-        }
+        function getBingoLetter(number) { if (number === 0) return ""; if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N"; if (number <= 60) return "G"; return "O"; }
 
         function checkForBingo() {
             try {
@@ -490,7 +620,6 @@
                 timestamp: Date.now(), called_numbers: gameState.calledNumbers,
                 card_numbers: gameState.selectedCardNumbers, marked_numbers: Array.from(gameState.markedNumbers),
             });
-            // Fallback to HTTP if WS fails
             if (!success) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, {
