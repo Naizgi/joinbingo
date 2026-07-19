@@ -18,12 +18,14 @@
             --purple-dark: #6A1B9A;        /* Deep purple for banners & active tabs */
             --purple-light: #E1BEE7;       /* Light purple for backgrounds */
             --orange-accent: #FF9800;      /* Orange for B letters and buttons */
+            --orange-light: #FFE0B2;       /* Light orange */
             --btn-blue: #2196F3;           /* Refresh button color */
             --btn-green: #4CAF50;          /* Automatic button color */
             --text-main: #212121;
             --text-muted: #757575;
             --text-white: #FFFFFF;
             --border-light: #e0e0e0;
+            --red-accent: #C62828;
             
             /* Bingo Letter Colors (Exact from Image) */
             --letter-b: #FFC107; /* Yellow/Orange */
@@ -40,7 +42,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 70px;
+            padding-bottom: 80px; /* Leave room for bottom nav */
             overflow-x: hidden;
         }
 
@@ -61,41 +63,103 @@
         .app-header .subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; }
         .app-header .menu-btn { color: var(--btn-blue); font-size: 22px; cursor: pointer; }
 
-        /* --- Top Stats Row (Grid layout) --- */
-        .stats-row {
+        /* --- Bottom Navigation Bar (Fixed) --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 70px;
+            background: var(--purple-light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            z-index: 100;
+            box-shadow: 0 -4px 12px rgba(106, 13, 173, 0.06);
+        }
+        .nav-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 60px; height: 100%; cursor: pointer;
+            color: var(--text-muted); transition: all 0.2s ease;
+            background: transparent; border: none;
+        }
+        .nav-btn i { font-size: 20px; margin-bottom: 4px; }
+        .nav-btn span { font-size: 10px; font-weight: 500; }
+        .nav-btn.active {
+            background: var(--purple-dark);
+            color: var(--text-white);
+            border-radius: 16px;
+            height: 50px;
+            width: 70px;
+            margin-top: -10px;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        }
+        .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
+
+        /* --- Pages & Screens --- */
+        .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
+        .page-container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .screen { display: none; animation: fadeIn 0.2s ease; }
+        .screen.active { display: block; }
+
+        /* --- Components --- */
+        .card {
+            background: var(--surface-white);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
+            margin-bottom: 12px;
+        }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; }
+        
+        /* --- WAITING SCREEN (Card Selection) --- */
+        .game-stats {
+            background: var(--surface-white);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            padding: 10px 12px;
-            background: var(--bg-main);
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            box-shadow: var(--shadow-soft);
+        }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .countdown-timer { font-size: 24px; font-weight: 700; color: var(--orange-accent); }
+        .stat-value.green { color: var(--stat-value) !important; }
+
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+            max-height: 420px; min-height: 420px; overflow-y: auto; padding: 8px;
+            background: #fcfcfc; border-radius: 12px; border: 1px solid #f0f0f0; margin-bottom: 8px; width: 100%;
+        }
+        .card-item {
+            aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 14px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
+        }
+        .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
+        .card-item.sold { background: #d1c4e9; color: #888; cursor: not-allowed; }
+        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
+
+        /* --- GAME SCREEN (Active) --- */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+            background: var(--bg-main); margin-bottom: 12px;
         }
         .stat-box {
             background: var(--surface-white);
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            padding: 6px 2px;
+            border: 1px solid #e0e0e0; border-radius: 8px;
+            text-align: center; padding: 6px 2px;
         }
         .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; }
         .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
 
-        /* --- Game Layout (Left: Board, Right: Controls/Boards) --- */
-        .game-layout {
-            display: flex;
-            gap: 12px;
-            padding: 0 12px 80px 12px;
-            align-items: flex-start;
-            max-width: 100%;
-        }
-
-        /* --- LEFT: BINGO BOARD --- */
+        .game-layout { display: flex; gap: 12px; align-items: flex-start; max-width: 100%; }
         .board-container {
-            background: var(--surface-white);
-            border-radius: 12px;
-            padding: 8px;
-            width: 160px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: var(--surface-white); border-radius: 12px; padding: 8px;
+            width: 160px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .board-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
         .board-header-cell {
@@ -117,48 +181,29 @@
             border: 1px solid transparent; transition: all 0.1s ease;
         }
         .board-cell.called { background: var(--surface-white); border: 1px solid #ccc; color: var(--text-muted); }
-        
-        /* Highlight called numbers based on their letter */
         .board-cell.called.highlight-b { background: var(--letter-b); color: white; border-color: var(--letter-b); }
         .board-cell.called.highlight-i { background: var(--letter-i); color: white; border-color: var(--letter-i); }
         .board-cell.called.highlight-n { background: var(--letter-n); color: white; border-color: var(--letter-n); }
         .board-cell.called.highlight-g { background: var(--letter-g); color: white; border-color: var(--letter-g); }
         .board-cell.called.highlight-o { background: var(--letter-o); color: white; border-color: var(--letter-o); }
 
-        /* --- RIGHT: CONTROLS & CARDS --- */
         .right-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-
-        /* Current Call Banner */
+        
         .current-call-card {
             background: var(--purple-dark);
-            border-radius: 20px;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--text-white);
-            box-shadow: 0 4px 12px rgba(106, 27, 154, 0.25);
+            border-radius: 20px; padding: 8px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--text-white); box-shadow: 0 4px 12px rgba(106, 27, 154, 0.25);
         }
         .current-call-label { font-weight: 700; font-size: 16px; }
         .current-call-badge {
-            background: var(--orange-accent);
-            color: var(--text-white);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 18px;
+            background: var(--orange-accent); color: var(--text-white);
+            padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 18px;
         }
 
-        /* Recent Calls */
         .recent-calls-box {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            border: 1px solid rgba(255,255,255,0.8);
-            min-height: 44px;
+            background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px;
+            display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid rgba(255,255,255,0.8); min-height: 44px;
         }
         .call-bubble {
             border-radius: 20px; padding: 2px 12px; font-weight: 700; font-size: 13px;
@@ -170,14 +215,9 @@
         .call-bubble.g { background: var(--letter-g); }
         .call-bubble.o { background: var(--letter-o); }
 
-        /* Controls (Sound/Auto) */
         .controls-row {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 12px;
-            padding: 6px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: rgba(255, 255, 255, 0.6); border-radius: 12px;
+            padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.8);
         }
         .control-group { display: flex; align-items: center; gap: 8px; }
@@ -189,19 +229,12 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
-        /* Player Cards Area */
-        .player-cards-container { display: flex; flex-direction: column; gap: 8px; }
         .p-card-wrapper {
-            background: var(--surface-white);
-            border-radius: 12px;
-            padding: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-light);
+            background: var(--surface-white); border-radius: 12px; padding: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
         }
         .p-card-title { font-size: 10px; font-weight: 600; color: var(--btn-green); text-align: center; margin-bottom: 4px; }
-        .p-card-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
-        }
+        .p-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
         .p-card-cell {
             background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
             display: flex; align-items: center; justify-content: center;
@@ -211,28 +244,20 @@
         .p-card-cell.marked { background: var(--purple-dark) !important; color: white !important; border-color: var(--purple-dark) !important; }
         .p-card-cell.free { background: #CFD8DC; border-color: #90A4AE; font-size: 9px; }
         .p-card-cell.star { position: relative; }
-        .p-card-cell.star::after {
-            content: '★'; position: absolute; top: -4px; right: -4px;
-            color: var(--purple-dark); font-size: 10px;
-        }
+        .p-card-cell.star::after { content: '★'; position: absolute; top: -4px; right: -4px; color: var(--purple-dark); font-size: 10px; }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
         /* --- Bottom Action Buttons --- */
         .bottom-actions {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background: var(--surface-white);
-            padding: 10px 16px;
-            display: flex;
-            gap: 10px;
-            border-top: 1px solid var(--border-light);
-            z-index: 100;
+            position: fixed; bottom: 70px; left: 0; width: 100%;
+            background: var(--surface-white); padding: 10px 16px;
+            display: none; gap: 10px; border-top: 1px solid var(--border-light); z-index: 99;
         }
+        .bottom-actions.active { display: flex; }
         .action-btn {
             flex: 1; border: none; border-radius: 8px; height: 48px;
             font-weight: 700; font-size: 16px; color: white;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
         }
         .action-btn.blue { background: var(--btn-blue); }
         .action-btn.orange { background: var(--orange-accent); }
@@ -240,70 +265,52 @@
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* --- Original Screens Handling --- */
-        .page-container { display: none; padding: 0; padding-bottom: 70px; animation: fadeIn 0.2s ease; }
-        .page-container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* --- HISTORY PAGE (Matches Image) --- */
+        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
+        .history-winner-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .history-winner-badge.loss { background: #FFEBEE; color: var(--red-accent); }
+        .history-winner-badge.win { background: #E8F5E9; color: var(--btn-green); }
 
-        .screen { display: none; animation: fadeIn 0.2s ease; }
-        .screen.active { display: block; }
-
-        /* --- Global Overlays & Components (For Profile, Wallet, History) --- */
-        .card {
-            background: var(--surface-white);
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
-            margin-bottom: 12px;
-        }
-        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
-        .btn-secondary {
-            background: var(--surface-white);
-            color: var(--purple-dark);
-            border: 1px solid var(--purple-dark);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .wallet-highlight-card {
-            background: linear-gradient(135deg, var(--purple-dark), #8A2BE2);
-            border-radius: 20px;
-            padding: 16px;
-            color: var(--text-white);
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
-        }
-        .wallet-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .wallet-stat-box {
-            background: var(--surface-white);
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
-        }
-        .waiting-card {
-            margin: 16px;
-        }
-        .cards-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
-            max-height: 420px; min-height: 420px; overflow-y: auto; padding: 8px;
-            background: #fcfcfc; border-radius: 12px; border: 1px solid #f0f0f0; margin-bottom: 8px; width: 100%;
-        }
-        .card-item {
-            aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
-        }
-        .card-item.available { background: #A0522D; color: white; cursor: pointer; }
-        .card-item.sold { background: #ddd; color: #888; cursor: not-allowed; }
-        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #27AE60; box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
-        .card-item.selected { background: var(--purple-dark); color: white; transform: scale(1.05); }
+        /* --- WALLET PAGE --- */
+        .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+        .wallet-balance-big { font-size: 28px; font-weight: 700; color: var(--purple-dark); }
+        .wallet-tabs { display: flex; background: var(--purple-light); border-radius: 20px; padding: 4px; margin-top: 16px; }
+        .wallet-tab { flex: 1; text-align: center; padding: 6px 0; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); }
+        .wallet-tab.active { background: var(--purple-dark); color: var(--text-white); }
         
-        /* Overlays */
+        .wallet-total-card { background: var(--purple-dark); border-radius: 20px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
+        .wallet-total-label { font-size: 12px; opacity: 0.8; }
+        .wallet-total-amount { font-size: 28px; font-weight: 700; margin-top: 4px; }
+        
+        .wallet-split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+        .wallet-split-box { background: var(--surface-white); border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); }
+        .wallet-split-amount { font-weight: 700; font-size: 18px; color: var(--purple-dark); }
+        .wallet-split-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* History Transactions inside Wallet */
+        .tx-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .tx-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .tx-amount { font-weight: 700; font-size: 14px; }
+        .tx-amount.positive { color: var(--btn-green); }
+        .tx-amount.negative { color: var(--red-accent); }
+        .tx-details { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+        .tx-footer { color: var(--text-muted); font-size: 11px; margin-top: 4px; }
+
+        /* --- PROFILE PAGE (Matches Image) --- */
+        .profile-avatar { width: 60px; height: 60px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .profile-avatar-text { color: var(--orange-accent); font-size: 28px; font-weight: 700; }
+        .profile-stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+        .profile-stat-item:last-child { border-bottom: none; }
+        .profile-stat-icon { color: var(--purple-dark); width: 24px; text-align: center; }
+        .profile-stat-label { display: flex; align-items: center; gap: 12px; font-weight: 500; color: var(--text-main); }
+        .profile-stat-value { font-weight: 700; color: var(--purple-dark); }
+        .profile-toggle { background: #d32f2f; color: white; padding: 2px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .profile-toggle.on { background: var(--btn-green); }
+
+        /* --- Overlays --- */
         #access-denied { display: none; position: fixed; inset: 0; background: #1a1a2e; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -358,54 +365,78 @@
         </div>
     </div>
 
-    <!-- ==================== APP HEADER ==================== -->
 
 
-    <!-- ==================== PAGE: GAME (IDENTICAL TO IMAGES) ==================== -->
+    <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
-        <!-- WAITING SCREEN (Purchase Phase - Slightly adapted) -->
+        <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
-            <div class="waiting-card card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="font-size: 14px; font-weight: 600; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Price: <span style="color: var(--purple-dark); font-weight:600;">10 birr</span></div>
-                </div>
-
-                <div style="margin-bottom: 10px; display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
-                    <span><span style="display:inline-block; width:10px; height:10px; background:#A0522D; border-radius:50%;"></span> Available</span>
-                    <span><span style="display:inline-block; width:10px; height:10px; background:#ddd; border-radius:50%;"></span> Sold</span>
-                    <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:50%;"></span> Yours</span>
-                </div>
-
-                <div class="cards-grid" id="cards-grid"></div>
-            </div>
-
-            <div class="selected-card-info waiting-card" id="selected-card-info" style="display: none">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <div><strong>Your Card:</strong> <span id="selected-card-id">#0</span></div>
-                        <div style="color: var(--orange-accent); font-weight: 600;">10 birr</div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Countdown</div>
+                    <div class="countdown-timer" id="countdown-timer">30</div>
+                    <div class="countdown-progress">
+                        <div class="countdown-progress-bar" id="countdown-progress-bar"></div>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
-                    <div style="margin-top: 15px;">
-                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-eye"></i> Your Card Preview
-                        </div>
-                        <div style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center;">
-                            <div class="card-preview-grid" id="card-preview-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 180px; height: 180px;"></div>
-                        </div>
-                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Card Price</div>
+                    <div class="stat-value" id="card-price">10 birr</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Wallet</div>
+                    <div class="stat-value" id="wallet-balance">0 birr</div>
                 </div>
             </div>
 
-            <div class="countdown-status-with-round waiting-card" id="countdown-status" style="display: none">
-                <div style="font-weight: 600;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span> - Card Purchase Phase</div>
-                <div style="font-size: 16px; font-weight: 700; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
+            <div id="phase-error-message" class="phase-error-message" style="display: none">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="phase-error-text">Card purchase is only available during purchase phase</span>
+            </div>
+
+            <div class="cards-selection">
+                <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; margin-bottom: 8px; border: 1px solid var(--border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="font-size: 14px; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board</div>
+                        <div style="font-size: 11px; opacity: 0.8;">Price: <span style="color: var(--purple-dark); font-weight: 600;">10 birr</span></div>
+                    </div>
+
+                    <div style="margin-bottom: 10px; display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--orange-accent); border-radius:50%;"></span> Available</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:#d1c4e9; border-radius:50%;"></span> Sold</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:50%;"></span> Yours</span>
+                    </div>
+
+                    <div class="cards-grid" id="cards-grid"></div>
+                </div>
+
+                <div class="selected-card-info" id="selected-card-info" style="display: none">
+                    <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; border: 1px solid var(--border-light);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div><strong>Your Board:</strong> <span id="selected-card-id">#0</span></div>
+                            <div style="color: var(--orange-accent); font-weight: 600;">10 birr</div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
+                        <div style="margin-top: 15px;">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-eye"></i> Your Board Preview
+                            </div>
+                            <div style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center;">
+                                <div class="card-preview-grid" id="card-preview-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 180px; height: 180px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="countdown-status-with-round" id="countdown-status" style="display: none">
+                    <div class="countdown-round-info"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span> - Card Purchase Phase</div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
+                </div>
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN (IDENTICAL TO IMAGES) -->
+        <!-- ACTIVE GAME SCREEN (Exact Replica) -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
@@ -491,18 +522,14 @@
         </div>
     </div>
 
-    <!-- ==================== BOTTOM ACTION BUTTONS ==================== -->
-    <div class="bottom-actions" id="game-bottom-actions" style="display:flex;">
-        <button class="action-btn blue" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
-        <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
-    </div>
-
     <!-- ==================== PAGE: HISTORY ==================== -->
-    <div id="page-history" class="page-container" style="padding: 16px;">
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="card-title" style="margin:0;">MY GAME HISTORY</span>
-            <button class="btn-secondary" onclick="loadPlayerHistory(1)"><i class="fas fa-sync-alt"></i> Reload</button>
+    <div id="page-history" class="page-container">
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px;">
+            <span style="font-size:14px; font-weight:500; color:var(--text-muted);">GAME HISTORY</span>
+            <button class="btn-secondary" onclick="loadPlayerHistory(1)" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
         </div>
+        
+        <!-- History Stats -->
         <div class="card" id="history-stats-container" style="display: none;">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
                 <div>
@@ -519,292 +546,283 @@
                 </div>
             </div>
         </div>
+
+        <!-- History List -->
         <div id="history-list-container">
             <div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>
-        </div>
-        <div id="history-pagination" style="display: none; display: flex; justify-content: center; gap: 10px; margin-top: 12px;">
-            <button class="btn-secondary" id="history-prev-btn" onclick="loadPlayerHistory(currentHistoryPage - 1)"><i class="fas fa-chevron-left"></i> Prev</button>
-            <span style="display: flex; align-items: center; font-size: 14px; color: var(--text-muted);">Page <span id="history-current-page">1</span> of <span id="history-total-pages">1</span></span>
-            <button class="btn-secondary" id="history-next-btn" onclick="loadPlayerHistory(currentHistoryPage + 1)">Next <i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 
     <!-- ==================== PAGE: WALLET ==================== -->
-    <div id="page-wallet" class="page-container" style="padding: 16px;">
+    <div id="page-wallet" class="page-container">
+        
+        <!-- Balance Card -->
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span class="card-title">WALLET</span>
-                <button class="btn-secondary" onclick="updateWalletUI()"><i class="fas fa-sync-alt"></i> Reload</button>
+            <div class="wallet-top-row">
+                <div>
+                    <div style="font-size:12px; color:var(--text-muted); font-weight:500;">WALLET</div>
+                    <div class="wallet-balance-big" id="wallet-balance-display">Br 0.00</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Total balance</div>
+                </div>
+                <button class="btn-secondary" onclick="updateWalletUI()" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
             </div>
-            <div id="wallet-balance-display" style="font-size: 28px; font-weight: 700; color: var(--purple-dark);">Br 0.00</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Total balance</div>
-            <div style="display: flex; gap: 10px;">
-                <div style="background: var(--purple-dark); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">BALANCES</div>
-                <div style="background: var(--purple-light); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">HISTORY</div>
+            
+            <div class="wallet-tabs">
+                <div class="wallet-tab active">BALANCES</div>
+                <div class="wallet-tab">HISTORY</div>
             </div>
         </div>
-        <div class="wallet-highlight-card">
-            <div style="font-size: 12px; opacity: 0.8;">TOTAL BALANCE</div>
-            <div id="wallet-total-balance" style="font-size: 26px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
+
+        <!-- Total Balance Purple Card -->
+        <div class="wallet-total-card">
+            <div class="wallet-total-label">TOTAL BALANCE</div>
+            <div class="wallet-total-amount" id="wallet-total-balance">Br 0.00</div>
         </div>
-        <div class="wallet-stat-grid">
-            <div class="wallet-stat-box">
-                <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">Br 0.00</div>
-                <div style="font-size: 10px; color: var(--text-muted);">MAIN</div>
+
+        <!-- Split Grid -->
+        <div class="wallet-split-grid">
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">MAIN</div>
             </div>
-            <div class="wallet-stat-box">
-                <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">Br 0.00</div>
-                <div style="font-size: 10px; color: var(--text-muted);">BONUS</div>
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">BONUS</div>
             </div>
-            <div class="wallet-stat-box">
-                <div style="font-weight: 700; font-size: 16px; color: var(--text-main);">Br 0.00</div>
-                <div style="font-size: 10px; color: var(--text-muted);">DEPOSITED</div>
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">DEPOSITED</div>
+            </div>
+        </div>
+        
+        <!-- Transaction History (Wallet View) -->
+        <div class="card" id="wallet-history-container" style="display:none;">
+            <div style="font-weight:600; margin-bottom:12px;">Recent Transactions</div>
+            <div id="wallet-transaction-list">
+                <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size:12px;">No transactions found</div>
             </div>
         </div>
     </div>
 
     <!-- ==================== PAGE: PROFILE ==================== -->
-    <div id="page-profile" class="page-container" style="padding: 16px;">
-        <div class="card" style="padding: 20px;">
-            <div style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase;">ACCOUNT</div>
+    <div id="page-profile" class="page-container">
+        <div class="card">
+            <div class="card-title">ACCOUNT</div>
             <div id="profile-data" style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 60px; height: 60px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span id="profile-avatar-letter" style="color: var(--orange-accent); font-size: 28px; font-weight: 700;">?</span>
+                <div class="profile-avatar">
+                    <span class="profile-avatar-text" id="profile-avatar-letter">?</span>
                 </div>
                 <div style="flex: 1;">
                     <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--purple-dark);">@User</div>
-                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-secondary); font-size: 14px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-muted); font-size: 14px;">
                         <i class="fas fa-phone"></i>
                         <span id="profile-phone">+251970774343</span>
                     </div>
                 </div>
             </div>
-            <div id="profile-skeleton" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
-                <div style="width: 60px; height: 60px; background: #EFE3F7; border-radius: 50%;"></div>
-                <div style="height: 20px; width: 60%; background: #EFE3F7; border-radius: 8px;"></div>
-                <div style="height: 15px; width: 40%; background: #EFE3F7; border-radius: 8px;"></div>
+        </div>
+
+        <div class="wallet-total-card">
+            <div class="wallet-total-label">TOTAL BALANCE</div>
+            <div class="wallet-total-amount" id="profile-balance">Br 0.00</div>
+        </div>
+
+        <div class="wallet-split-grid">
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">MAIN</div>
+            </div>
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">BONUS</div>
+            </div>
+            <div class="wallet-split-box">
+                <div class="wallet-split-amount">Br 0.00</div>
+                <div class="wallet-split-label">DEPOSITED</div>
             </div>
         </div>
-        <div class="wallet-highlight-card" style="border-radius: 20px; padding: 20px;">
-            <div style="font-size: 13px; font-weight: 500; opacity: 0.8; text-transform: uppercase;">TOTAL BALANCE</div>
-            <div id="profile-balance" style="font-size: 32px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
-        </div>
-        <div class="wallet-stat-grid">
-            <div class="wallet-stat-box" style="padding: 16px 8px;">
-                <div style="font-weight: 700; font-size: 16px; color: var(--purple-dark);">Br 0.00</div>
-                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">MAIN</div>
-            </div>
-            <div class="wallet-stat-box" style="padding: 16px 8px;">
-                <div style="font-weight: 700; font-size: 16px; color: var(--purple-dark);">Br 0.00</div>
-                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">BONUS</div>
-            </div>
-            <div class="wallet-stat-box" style="padding: 16px 8px;">
-                <div style="font-weight: 700; font-size: 16px; color: var(--purple-dark);">Br 0.00</div>
-                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">DEPOSITED</div>
-            </div>
-        </div>
-        <div class="card" style="padding: 20px;">
-            <div style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;">STATS</div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);"><i class="fas fa-money-bill-wave" style="color: var(--purple-dark); width: 20px; text-align: center;"></i> Total Withdrawal</div>
-                    <div id="profile-total-withdrawal" style="font-size: 15px; font-weight: 700; color: var(--purple-dark);">Br 0.00</div>
+
+        <div class="card">
+            <div class="card-title">STATS</div>
+            <div style="display: flex; flex-direction: column;">
+                <div class="profile-stat-item">
+                    <div class="profile-stat-label"><i class="fas fa-money-bill-wave profile-stat-icon"></i> Total Withdrawal</div>
+                    <div class="profile-stat-value" id="profile-total-withdrawal">Br 0.00</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);"><i class="fas fa-trophy" style="color: var(--purple-dark); width: 20px; text-align: center;"></i> Games Won</div>
-                    <div id="profile-total-wins" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">0</div>
+                <div class="profile-stat-item">
+                    <div class="profile-stat-label"><i class="fas fa-trophy profile-stat-icon"></i> Games Won</div>
+                    <div class="profile-stat-value" id="profile-total-wins">0</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);"><i class="fas fa-gift" style="color: var(--purple-dark); width: 20px; text-align: center;"></i> Total Invites</div>
-                    <div id="profile-total-invites" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">0</div>
+                <div class="profile-stat-item">
+                    <div class="profile-stat-label"><i class="fas fa-gift profile-stat-icon"></i> Total Invites</div>
+                    <div class="profile-stat-value" id="profile-total-invites">0</div>
                 </div>
             </div>
         </div>
-        <div class="card" style="padding: 20px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-sliders-h" style="font-size: 14px;"></i> SETTINGS</div>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">Sound</div>
-                    <div onclick="toggleAudio()" id="profile-sound-toggle" style="background: #d32f2f; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 40px; text-align: center;">OFF</div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-title" style="display:flex; align-items:center; gap:8px;"><i class="fas fa-sliders-h"></i> SETTINGS</div>
+            <div style="display: flex; flex-direction: column;">
+                <div class="profile-stat-item">
+                    <div class="profile-stat-label">Sound</div>
+                    <div class="profile-toggle" id="profile-sound-toggle" onclick="toggleAudio()">OFF</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">Auto Play</div>
-                    <div onclick="toggleAuto()" id="profile-auto-toggle" style="background: #d32f2f; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 40px; text-align: center;">OFF</div>
+                <div class="profile-stat-item">
+                    <div class="profile-stat-label">Auto Play</div>
+                    <div class="profile-toggle" id="profile-auto-toggle" onclick="toggleAuto()">OFF</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== SCRIPTS (LOGIC UNTOUCHED) ==================== -->
+    <!-- ==================== BOTTOM NAVIGATION ==================== -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('game')"><i class="fas fa-gamepad"></i><span>Game</span></button>
+        <button class="nav-btn" onclick="switchTab('history')"><i class="fas fa-clock"></i><span>History</span></button>
+        <button class="nav-btn" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></button>
+        <button class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></button>
+    </nav>
+
+    <!-- ==================== BOTTOM ACTION BUTTONS (GAME FLOATING BAR) ==================== -->
+    <div class="bottom-actions active" id="game-bottom-actions">
+        <button class="action-btn blue" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
     <script>
-        // ==================== TAB SWITCHING (Prevent bottom nav from conflicting) ====================
+        // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
-            // Hide bottom actions for non-game pages
-            if(tabName === 'game') {
-                document.getElementById('game-bottom-actions').style.display = 'flex';
-                document.getElementById('page-game').style.paddingBottom = '0px';
-            } else {
-                document.getElementById('game-bottom-actions').style.display = 'none';
-                document.getElementById('page-game').style.paddingBottom = '0px';
-            }
-            
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.nav-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${tabName}`).classList.add('active');
+            
+            // Manage bottom action buttons visibility
+            if(tabName === 'game') {
+                document.getElementById('game-bottom-actions').classList.add('active');
+            } else {
+                document.getElementById('game-bottom-actions').classList.remove('active');
+            }
+
+            // Load data when switching to tabs
             if(tabName === 'history') { loadPlayerHistory(1); }
             if(tabName === 'profile') { loadPlayerProfile(); }
             if(tabName === 'wallet') { updateWalletUI(); }
         }
         window.switchTab = switchTab;
 
-        // ==================== UI UPDATE FUNCTIONS (ADAPTED TO NEW HTML STRUCTURE) ====================
-        function updateGameStatsNewUI() {
-            const prizePoolEl = document.getElementById('game-prize-pool');
-            const playerCountEl = document.getElementById('game-player-count');
-            const calledStatEl = document.getElementById('called-numbers-stat');
-            const walletBalanceEl = document.getElementById('wallet-balance'); 
+        // ==================== NEW API FUNCTIONS ====================
+        let currentHistoryPage = 1;
+        
+        async function loadPlayerHistory(page = 1) {
+            const listContainer = document.getElementById('history-list-container');
+            const statsContainer = document.getElementById('history-stats-container');
+            listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>';
+            try {
+                const userId = getUserId();
+                const response = await fetch(`/api/player/history/${userId}?page=${page}&limit=10`);
+                if (!response.ok) throw new Error('Failed to fetch history');
+                const data = await response.json();
+                if (data.success) {
+                    statsContainer.style.display = 'block';
+                    document.getElementById('history-total-games').textContent = data.stats.total_games;
+                    document.getElementById('history-total-wins').textContent = data.stats.total_wins;
+                    document.getElementById('history-total-winnings').textContent = data.stats.total_winnings.toFixed(2) + ' birr';
 
-            if(prizePoolEl) prizePoolEl.textContent = gameState.prizePool.toFixed(0) || '0';
-            if(playerCountEl) playerCountEl.textContent = gameState.totalPlayers || gameState.realPlayers + gameState.fakePlayers || '0';
-            if(calledStatEl) calledStatEl.textContent = gameState.calledNumbers.length || '0';
-            if(walletBalanceEl) walletBalanceEl.textContent = gameState.walletBalance.toFixed(2) + ' birr';
-        }
-
-        // --- MAP UPDATEBINGOGRID TO NEW BOARD ---
-        function updateBingoGrid() {
-            const columnsContainer = document.getElementById("bingo-grid");
-            if (!columnsContainer) return;
-            columnsContainer.innerHTML = "";
-            const columnRanges = [{ letter: "B", min: 1, max: 15 }, { letter: "I", min: 16, max: 30 }, { letter: "N", min: 31, max: 45 }, { letter: "G", min: 46, max: 60 }, { letter: "O", min: 61, max: 75 }];
-            columnRanges.forEach((col) => {
-                const columnDiv = document.createElement("div"); columnDiv.className = "board-column";
-                for (let num = col.min; num <= col.max; num++) {
-                    const cell = document.createElement("div"); cell.className = "board-cell"; cell.textContent = num;
-                    if (gameState.calledNumbers.includes(num)) {
-                        cell.classList.add("called");
-                        cell.classList.add(`highlight-${col.letter.toLowerCase()}`);
+                    if (data.history.length === 0) {
+                        listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted); padding:20px;">No game history found.</div>';
+                        return;
                     }
-                    columnDiv.appendChild(cell);
+
+                    let html = '';
+                    data.history.forEach(game => {
+                        const isWin = game.is_winner;
+                        html += `
+                            <div class="card" style="padding:16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-weight: 700; font-size: 15px; color: var(--purple-dark);">Game #${game.game_id}</span>
+                                    <span class="history-winner-badge ${isWin ? 'win' : 'loss'}">${isWin ? 'WIN' : 'LOSS'}</span>
+                                </div>
+                                <div class="history-date">${new Date(game.game_date).toLocaleString()}</div>
+                                <div class="history-grid">
+                                    <div>Stake: <span style="font-weight:600; color:var(--text-main);">Br ${CARD_PRICE.toFixed(2)}</span></div>
+                                    <div>Prize: <span style="font-weight:600; color:var(--text-main);">Br ${game.prize_pool.toFixed(2)}</span></div>
+                                    <div>My Boards: <span style="font-weight:600; color:var(--text-main);">#${game.card_index}</span></div>
+                                    <div>Winners' Boards: <span style="font-weight:600; color:var(--text-main);">#${game.winner_id || 'N/A'}</span></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Winner count: ${game.is_winner ? 1 : 0}</div>
+                            </div>
+                        `;
+                    });
+                    listContainer.innerHTML = html;
                 }
-                columnsContainer.appendChild(columnDiv);
-            });
-        }
-
-        // --- MAP UPDATECALLEDNUMBERSDISPLAY TO NEW BUBBLE LIST ---
-        function updateCalledNumbersDisplay() {
-            const grid = document.getElementById("called-numbers-grid");
-            if (grid) {
-                grid.innerHTML = "";
-                const recentNumbers = gameState.calledNumbers.slice(-3);
-                recentNumbers.forEach(num => {
-                    const bubble = document.createElement('div');
-                    let letter = '';
-                    if(num <= 15) letter = 'B';
-                    else if(num <= 30) letter = 'I';
-                    else if(num <= 45) letter = 'N';
-                    else if(num <= 60) letter = 'G';
-                    else letter = 'O';
-                    bubble.className = `call-bubble ${letter.toLowerCase()}`;
-                    bubble.textContent = `${letter}${num}`;
-                    grid.appendChild(bubble);
-                });
+            } catch (error) {
+                console.error("Error loading history:", error);
+                listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--red-accent); padding:20px;">Failed to load history.</div>';
             }
         }
 
-        // --- MAP UPDATECURRENTCALLEDDISPLAY TO NEW BANNER ---
-        function updateCurrentCalledDisplay(number) {
-            const display = document.getElementById("current-called-number");
-            if (display) {
-                if (number) { const letter = getBingoLetter(number); display.textContent = `${letter}-${number}`; }
-                else if (gameState.calledNumbers.length > 0) {
-                    const lastNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1];
-                    const letter = getBingoLetter(lastNumber);
-                    display.textContent = `${letter}-${lastNumber}`;
-                } else display.textContent = "--";
+        async function loadPlayerProfile() {
+            try {
+                const userId = getUserId();
+                // Uncomment when backend is ready: const response = await fetch(`/api/player/profile/${userId}`);
+                // Mock data for UI test
+                const profile = { full_name: 'Abinabanana', username: 'Abinabanana', balance: 0, stats: { total_wins: 0 }, total_withdrawal: 0, total_invites: 0 };
+                
+                document.getElementById('profile-avatar-letter').textContent = (profile.full_name || 'U').charAt(0).toUpperCase();
+                document.getElementById('profile-username').textContent = '@' + (profile.username || profile.user_id);
+                document.getElementById('profile-balance').textContent = 'Br ' + (profile.balance || 0).toFixed(2);
+                document.getElementById('profile-total-wins').textContent = profile.stats.total_wins || 0;
+                document.getElementById('profile-total-withdrawal').textContent = 'Br ' + (profile.total_withdrawal || 0).toFixed(2);
+                document.getElementById('profile-total-invites').textContent = profile.total_invites || 0;
+            } catch (error) {
+                console.error("Error loading profile:", error);
             }
         }
 
-        // --- MAP RENDERPLAYERCARD TO NEW PLAYER CARDS ---
-        function renderPlayerCard() {
-            const wrapper = document.getElementById("player-card-wrapper");
-            const grid = document.getElementById("player-card-grid");
-            const idDisplay = document.getElementById("player-card-id");
-            
-            if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
-                wrapper.style.display = 'none';
-                return;
-            }
-            wrapper.style.display = 'block';
-            idDisplay.textContent = gameState.selectedCardIndex || '0';
-            grid.innerHTML = '';
-            
-            gameState.selectedCardNumbers.forEach((num, index) => {
-                const cell = document.createElement("div"); cell.className = 'p-card-cell';
-                if(num === 0 || num === '0') { 
-                    cell.classList.add('free'); 
-                    cell.textContent = '★'; 
-                } else {
-                    cell.textContent = num;
-                    if(gameState.markedNumbers.has(num)) cell.classList.add('marked');
-                }
-                if(index === 12) cell.classList.add('star');
-                cell.onclick = () => handlePlayerCardClick(cell, num);
-                grid.appendChild(cell);
-            });
-            updateBingoButton();
-        }
-
-        function renderEmptyPlayerCard() {
-            const wrapper = document.getElementById("player-card-wrapper");
-            const grid = document.getElementById("player-card-grid");
-            if(!grid) return;
-            wrapper.style.display = 'block';
-            grid.innerHTML = "";
-            document.getElementById("player-card-id").textContent = "None";
-            for (let i = 0; i < 25; i++) {
-                const cell = document.createElement("div"); cell.className = "p-card-cell empty";
-                if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
-                else { cell.textContent = "?"; }
-                grid.appendChild(cell);
-            }
-            const bingoBtn = document.getElementById("claim-bingo-btn");
-            if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
-        }
-
-        function updateBingoButton() {
-            const btn = document.getElementById("claim-bingo-btn"); if (!btn) return;
-            if (gameState.gameComplete || gameState.winnerAnnounced) { btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; btn.disabled = true; return; }
-            if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
-            if (!gameState.hasCard) { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
-            const hasBingo = checkForBingo(); btn.disabled = !hasBingo || gameState.bingoClaimInProgress || gameState.hasClaimedBingo;
-            if (hasBingo && !gameState.bingoClaimInProgress && !gameState.hasClaimedBingo) {
-                btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
-                btn.className = "action-btn green"; 
-                btn.onclick = claimBingo;
-            } else {
-                btn.innerHTML = `<i class="fas fa-bell"></i> BINGO`;
-                btn.className = "action-btn orange"; 
-                btn.onclick = null; btn.disabled = true;
+        async function updateWalletUI() {
+            try {
+                const userId = getUserId();
+                // Uncomment when backend is ready: const response = await fetch(`/api/user/balance/${userId}`);
+                // Mock data for UI test
+                const balance = 0.00;
+                document.getElementById('wallet-balance-display').textContent = 'Br ' + balance.toFixed(2);
+                document.getElementById('wallet-total-balance').textContent = 'Br ' + balance.toFixed(2);
+            } catch(e) {
+                console.error("Error loading wallet", e);
             }
         }
 
-        // --- Toggle Functions ---
+        // ==================== PROFILE TOGGLES ====================
         function toggleAudio() {
             if (!gameState.audioInitialized) { initializeAudio(); return; }
             gameState.audioEnabled = !gameState.audioEnabled;
-            const toggle = document.getElementById('audio-toggle');
-            if(gameState.audioEnabled) { toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size: 12px;"></i>'; } 
-            else { toggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size: 12px;"></i>'; }
+            const toggle = document.getElementById('profile-sound-toggle');
+            const gameToggle = document.getElementById('audio-toggle');
+            if (gameState.audioEnabled) {
+                toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
+                gameToggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:12px;"></i>';
+            } else {
+                toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
+                gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:12px;"></i>';
+            }
         }
         window.toggleAudio = toggleAudio;
 
         function toggleAuto() {
             gameState.autoMode = !gameState.autoMode;
-            const toggle = document.getElementById('auto-toggle');
-            const text = document.getElementById('auto-status-text');
-            if(gameState.autoMode) { toggle.style.background = 'var(--btn-green)'; text.textContent = 'ON'; } 
-            else { toggle.style.background = 'var(--orange-accent)'; text.textContent = 'OFF'; }
+            const toggle = document.getElementById('profile-auto-toggle');
+            const gameToggleText = document.getElementById('auto-status-text');
+            if (gameState.autoMode) {
+                toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
+                gameToggleText.textContent = 'ON';
+            } else {
+                toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
+                gameToggleText.textContent = 'OFF';
+            }
         }
         window.toggleAuto = toggleAuto;
-
 
         // ==================== YOUR ORIGINAL LOGIC (UNTOUCHED) ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
@@ -877,8 +895,6 @@
         }
 
         function initializeAudio() {
-            const audioPrompt = document.getElementById("audio-prompt");
-            if (audioPrompt) audioPrompt.style.display = "none";
             gameState.audioInitialized = true; gameState.audioEnabled = true;
             const toggle = document.getElementById('audio-toggle');
             if(toggle) toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size: 12px;"></i>';
@@ -996,7 +1012,7 @@
             if (!validateGamePhase("active", "claimBingo")) return showNotification("Can only claim bingo during active game", "error");
             if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
             const btn = document.getElementById("claim-bingo-btn");
-            if (btn) { btn.innerHTML = `<div class="loading-spinner"></div> Claiming BINGO...`; btn.disabled = true; btn.className = "action-btn"; }
+            if (btn) { btn.innerHTML = `<div class="loading-spinner"></div> Claiming BINGO...`; btn.disabled = true; }
             gameState.bingoClaimInProgress = true; gameState.phaseChangeRequested = true;
             const success = sendWebSocketMessage({
                 type: "player_bingo_claim", game_id: gameState.gameId, user_id: gameState.userId,
@@ -1033,6 +1049,42 @@
                 if (markedSet.has(grid[0][0]) && markedSet.has(grid[0][4]) && markedSet.has(grid[4][0]) && markedSet.has(grid[4][4])) return true;
                 return false;
             } catch (error) { console.error("Error checking bingo:", error); return false; }
+        }
+
+        function updateBingoButton() {
+            const btn = document.getElementById("claim-bingo-btn"); if (!btn) return;
+            if (gameState.gameComplete || gameState.winnerAnnounced) { btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; btn.disabled = true; return; }
+            if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
+            if (!gameState.hasCard) { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
+            const hasBingo = checkForBingo(); btn.disabled = !hasBingo || gameState.bingoClaimInProgress || gameState.hasClaimedBingo;
+            if (hasBingo && !gameState.bingoClaimInProgress && !gameState.hasClaimedBingo) {
+                btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
+                btn.className = "action-btn green"; 
+                btn.onclick = claimBingo;
+            } else {
+                btn.innerHTML = `<i class="fas fa-bell"></i> BINGO`;
+                btn.className = "action-btn orange"; 
+                btn.onclick = null; btn.disabled = true;
+            }
+        }
+
+        function handleServerNumberCalled(number, allCalled) {
+            gameState.calledNumbers = allCalled;
+            updateCalledNumbersDisplay(); updateCurrentCalledDisplay(number); updateBingoGrid();
+            if (gameState.audioEnabled && gameState.audioPreloaded && gameState.audioInitialized && !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) playNumberAudio(number);
+            if (checkForBingo() && !gameState.hasClaimedBingo) updateBingoButton();
+        }
+
+        function updateCurrentCalledDisplay(number) {
+            const display = document.getElementById("current-called-number");
+            if (display) {
+                if (number) { const letter = getBingoLetter(number); display.textContent = `${letter}-${number}`; }
+                else if (gameState.calledNumbers.length > 0) {
+                    const lastNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1];
+                    const letter = getBingoLetter(lastNumber);
+                    display.textContent = `${letter}-${lastNumber}`;
+                } else display.textContent = "--";
+            }
         }
 
         function handlePlayerCardClick(cell, number) {
@@ -1486,6 +1538,25 @@
             }
         }
 
+        function updateBingoGrid() {
+            const columnsContainer = document.getElementById("bingo-grid");
+            if (!columnsContainer) return;
+            columnsContainer.innerHTML = "";
+            const columnRanges = [{ letter: "B", min: 1, max: 15 }, { letter: "I", min: 16, max: 30 }, { letter: "N", min: 31, max: 45 }, { letter: "G", min: 46, max: 60 }, { letter: "O", min: 61, max: 75 }];
+            columnRanges.forEach((col) => {
+                const columnDiv = document.createElement("div"); columnDiv.className = "board-column";
+                for (let num = col.min; num <= col.max; num++) {
+                    const cell = document.createElement("div"); cell.className = "board-cell"; cell.textContent = num;
+                    if (gameState.calledNumbers.includes(num)) {
+                        cell.classList.add("called");
+                        cell.classList.add(`highlight-${col.letter.toLowerCase()}`);
+                    }
+                    columnDiv.appendChild(cell);
+                }
+                columnsContainer.appendChild(columnDiv);
+            });
+        }
+
         function showCardPreview() {
             const previewGrid = document.getElementById("card-preview-grid");
             if (!previewGrid || !Array.isArray(gameState.selectedCardNumbers)) return;
@@ -1499,17 +1570,179 @@
             }
         }
 
-        function loadCardsGrid() {
-            // Original load logic
+        function renderPlayerCard() {
+            const wrapper = document.getElementById("player-card-wrapper");
+            const grid = document.getElementById("player-card-grid");
+            const idDisplay = document.getElementById("player-card-id");
+            
+            if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
+                wrapper.style.display = 'none';
+                return;
+            }
+            wrapper.style.display = 'block';
+            idDisplay.textContent = gameState.selectedCardIndex || '0';
+            grid.innerHTML = '';
+            
+            gameState.selectedCardNumbers.forEach((num, index) => {
+                const cell = document.createElement("div"); cell.className = 'p-card-cell';
+                if(num === 0 || num === '0') { 
+                    cell.classList.add('free'); 
+                    cell.textContent = '★'; 
+                } else {
+                    cell.textContent = num;
+                    if(gameState.markedNumbers.has(num)) cell.classList.add('marked');
+                }
+                if(index === 12) cell.classList.add('star');
+                cell.onclick = () => handlePlayerCardClick(cell, num);
+                grid.appendChild(cell);
+            });
+            updateBingoButton();
+        }
+
+        function renderEmptyPlayerCard() {
+            const wrapper = document.getElementById("player-card-wrapper");
+            const grid = document.getElementById("player-card-grid");
+            if(!grid) return;
+            wrapper.style.display = 'block';
+            grid.innerHTML = "";
+            document.getElementById("player-card-id").textContent = "None";
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement("div"); cell.className = "p-card-cell empty";
+                if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
+                else { cell.textContent = "?"; }
+                grid.appendChild(cell);
+            }
+            const bingoBtn = document.getElementById("claim-bingo-btn");
+            if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
+        }
+
+        function updateCalledNumbersDisplay() {
+            const grid = document.getElementById("called-numbers-grid");
+            if (grid) {
+                grid.innerHTML = "";
+                const recentNumbers = gameState.calledNumbers.slice(-3);
+                recentNumbers.forEach(num => {
+                    const bubble = document.createElement('div');
+                    let letter = '';
+                    if(num <= 15) letter = 'B';
+                    else if(num <= 30) letter = 'I';
+                    else if(num <= 45) letter = 'N';
+                    else if(num <= 60) letter = 'G';
+                    else letter = 'O';
+                    bubble.className = `call-bubble ${letter.toLowerCase()}`;
+                    bubble.textContent = `${letter}${num}`;
+                    grid.appendChild(bubble);
+                });
+            }
+        }
+
+        function updateCardsGridInstant() {
+            const grid = document.getElementById("cards-grid"); if (!grid) return;
+            for (let i = 1; i <= 400; i++) {
+                const cardElement = gameState.cardsCache.cardElements[i]; if (!cardElement) continue;
+                cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing");
+                const isOwned = gameState.selectedCardIndex === i; const isSold = gameState.cardsSold.has(i);
+                if (isOwned) { cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(i, cardElement); } else if (isSold) { cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
+                if (gameState.uiSelectedCardIndex === i && !isOwned && !isSold) cardElement.classList.add("selected");
+            }
+        }
+
+        async function loadCardsGrid() {
+            if (gameState.isLoadingCards) return;
+            gameState.isLoadingCards = true;
+            try {
+                if (!gameState.gameId) return;
+                const grid = document.getElementById("cards-grid"); if (!grid) return;
+                grid.innerHTML = ""; gameState.cardsCache.cardElements = {};
+                let soldCards = [];
+                try {
+                    const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`);
+                    if (response.ok) { const data = await response.json(); if (data.success) { soldCards = data.sold_cards || []; gameState.cardsSold = new Set(soldCards); gameState.cardsCache.soldCards = new Set(soldCards); } }
+                } catch (error) { console.error("Error fetching sold cards:", error); }
+                gameState.cardsCache.ownedCardIndex = gameState.selectedCardIndex;
+                const totalCards = 400; const fragment = document.createDocumentFragment();
+                for (let i = 1; i <= totalCards; i++) {
+                    const cardElement = document.createElement("div"); cardElement.className = "card-item"; cardElement.innerHTML = i; cardElement.dataset.cardIndex = i;
+                    const isSold = gameState.cardsSold.has(i); const isOwned = gameState.selectedCardIndex === i;
+                    if (isOwned) { cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
+                    else if (isSold) { cardElement.classList.add("sold"); cardElement.onclick = null; }
+                    else { cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
+                    if (gameState.uiSelectedCardIndex === i && !isOwned && !isSold) cardElement.classList.add("selected");
+                    gameState.cardsCache.cardElements[i] = cardElement; fragment.appendChild(cardElement);
+                }
+                grid.appendChild(fragment); gameState.cardsCache.lastUpdate = Date.now(); gameState.cardsLoaded = true;
+            } catch (error) { console.error("Error loading cards grid:", error); } finally { gameState.isLoadingCards = false; }
         }
 
         async function handleCardSelection(cardIndex, element) {
-            // Original handle logic
+            if (!validateGamePhase("card_purchase", "handleCardSelection")) return showNotification("Card purchase only during purchase phase", "error");
+            if (gameState.isCardOperationInProgress) return;
+            if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); await fetchActiveGame(); return; }
+            if (!gameState.purchasePhaseActive) return showNotification("Card purchase is only available during card purchase phase", "error");
+            if (gameState.selectedCardIndex === cardIndex) { await toggleCardPurchase(cardIndex, element, "refund"); return; }
+            if (gameState.hasCard && gameState.selectedCardIndex !== cardIndex) {
+                gameState.isCardOperationInProgress = true;
+                try {
+                    const oldCardElement = gameState.cardsCache.cardElements[gameState.selectedCardIndex];
+                    if (oldCardElement) oldCardElement.classList.add("purchasing"); element.classList.add("purchasing");
+                    const refundResponse = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: gameState.userId, card_index: gameState.selectedCardIndex, action: "refund" }),
+                    });
+                    const refundData = await refundResponse.json();
+                    if (!refundData.success) throw new Error(refundData.message || "Failed to refund card");
+                    if (oldCardElement) instantCardUpdate(gameState.selectedCardIndex, "available");
+                    gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.uiSelectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear();
+                    gameState.walletBalance = refundData.new_balance || gameState.walletBalance;
+                    if (refundData.prize_pool !== undefined) gameState.prizePool = refundData.prize_pool; updateGameStats(); document.getElementById("selected-card-info").style.display = "none";
+                    if (gameState.walletBalance < CARD_PRICE) { showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error"); if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
+                    const buyResponse = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: gameState.userId, card_index: cardIndex, action: "buy" }),
+                    });
+                    const buyData = await buyResponse.json();
+                    if (!buyData.success) throw new Error(buyData.message || "Failed to buy card");
+                    instantCardUpdate(cardIndex, "owned", { numbers: buyData.card_numbers, prize_pool: buyData.prize_pool, total_players: buyData.total_players, real_players: buyData.real_players, fake_players: buyData.fake_players, wallet_balance: buyData.new_balance });
+                    if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing");
+                } catch (error) { console.error("Error during card replacement:", error); showNotification(error.message || "Failed to replace card", "error"); if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing"); } finally { gameState.isCardOperationInProgress = false; }
+                return;
+            }
+            if (!gameState.hasCard) {
+                if (gameState.cardsSold.has(cardIndex)) return showNotification("This card is already sold to another player", "error");
+                if (gameState.walletBalance < CARD_PRICE) return showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error");
+                if (gameState.uiSelectedCardIndex && gameState.uiSelectedCardIndex !== cardIndex) {
+                    const prevCard = gameState.cardsCache.cardElements[gameState.uiSelectedCardIndex];
+                    if (prevCard && !prevCard.classList.contains("owned") && !prevCard.classList.contains("sold")) prevCard.classList.remove("selected");
+                }
+                gameState.uiSelectedCardIndex = cardIndex; element.classList.add("selected");
+                await toggleCardPurchase(cardIndex, element, "buy"); return;
+            }
         }
+        window.handleCardSelection = handleCardSelection;
 
         async function toggleCardPurchase(cardIndex, element, action) {
-            // Original toggle logic
+            if (!validateGamePhase("card_purchase", "toggleCardPurchase")) { if (element) element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
+            gameState.isCardOperationInProgress = true;
+            if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); gameState.isCardOperationInProgress = false; await fetchActiveGame(); return; }
+            if (!gameState.purchasePhaseActive) { showNotification("Card purchase is only available during card purchase phase", "error"); gameState.isCardOperationInProgress = false; return; }
+            if (action === "buy" && gameState.hasCard) { showNotification("You already have a card. Click on another card to replace it.", "error"); gameState.isCardOperationInProgress = false; return; }
+            if (action === "buy") { if (gameState.walletBalance < CARD_PRICE) { showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error"); gameState.isCardOperationInProgress = false; element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; return; } }
+            if (action === "refund" && (!gameState.hasCard || gameState.selectedCardIndex !== cardIndex)) { showNotification("You don't own this card to refund", "error"); gameState.isCardOperationInProgress = false; return; }
+            try {
+                if (element) element.classList.add("purchasing");
+                const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: gameState.userId, card_index: cardIndex, action: action }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    if (action === "buy") { instantCardUpdate(cardIndex, "owned", { numbers: data.card_numbers, prize_pool: data.prize_pool, total_players: data.total_players, real_players: data.real_players, fake_players: data.fake_players, wallet_balance: data.new_balance }); } 
+                    else if (action === "refund") { instantCardUpdate(cardIndex, "available"); gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); document.getElementById("selected-card-info").style.display = "none"; renderEmptyPlayerCard(); if (data.new_balance !== undefined) gameState.walletBalance = data.new_balance; }
+                    gameState.prizePool = data.prize_pool || gameState.prizePool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; updateGameStats();
+                } else { showNotification(data.message || "Failed to process card", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; }
+            } catch (error) { console.error("Error toggling card:", error); showNotification("Failed to process card. Please try again.", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; } finally { gameState.isCardOperationInProgress = false; }
         }
+        window.toggleCardPurchase = toggleCardPurchase;
 
         function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
@@ -1566,7 +1799,13 @@
         }
 
         function resetCardsForNewRound() {
-            // Original reset logic
+            const grid = document.getElementById("cards-grid"); if (!grid) return;
+            if (gameState.staggeredAnimationInterval) { clearInterval(gameState.staggeredAnimationInterval); gameState.staggeredAnimationInterval = null; }
+            gameState.pendingFakeCardIndices = []; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
+            if (grid.children.length === 0) { loadCardsGrid(); return; }
+            for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
+            gameState.cardsSold.clear(); gameState.cardsCache.soldCards.clear(); gameState.cardsCache.ownedCardIndex = null; gameState.selectedCardIndex = null; gameState.hasCard = false; gameState.uiSelectedCardIndex = null;
+            document.getElementById("selected-card-info").style.display = "none";
         }
 
         async function initGame() {
