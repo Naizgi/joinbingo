@@ -323,12 +323,7 @@
         </div>
     </div>
 
-    <!-- ==================== APP HEADER ==================== -->
-    <header class="app-header">
-        <i class="fas fa-times"></i>
-        <span class="title">Afro Bingo</span>
-        <i class="fas fa-ellipsis-v"></i>
-    </header>
+
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
@@ -1797,7 +1792,7 @@
             console.log("Initializing haset Bingo (Server-Coordinated)...");
             updateConnectionStatus("Initializing...", "orange");
             gameState.userId = getUserId(); console.log("User ID:", gameState.userId);
-            if (!gameState.audioInitialized) showAudioPrompt();
+            // REMOVED: showAudioPrompt() call to eliminate popup
             await getUserBalance();
             if (gameState.walletBalance === undefined || gameState.walletBalance === null) { gameState.walletBalance = 0.0; updateGameStats(); }
             const gameData = await fetchActiveGame();
