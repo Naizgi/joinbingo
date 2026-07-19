@@ -323,7 +323,12 @@
         </div>
     </div>
 
-
+    <!-- ==================== APP HEADER ==================== -->
+    <header class="app-header">
+        <i class="fas fa-times"></i>
+        <span class="title">Afro Bingo</span>
+        <i class="fas fa-ellipsis-v"></i>
+    </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
@@ -535,47 +540,102 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: PROFILE ==================== -->
+    <!-- ==================== PAGE: PROFILE (Redesigned to match Screenshot) ==================== -->
     <div id="page-profile" class="page-container">
-        <!-- Skeleton Loader -->
-        <div id="profile-skeleton">
-            <div class="card" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
-                <div style="width: 80px; height: 80px; background: #EFE3F7; border-radius: 50%;"></div>
+        
+        <!-- ACCOUNT Card -->
+        <div class="card" style="padding: 20px;">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase;">ACCOUNT</div>
+            <div id="profile-data" style="display: flex; align-items: center; gap: 16px;">
+                <!-- Avatar -->
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <span id="profile-avatar-letter" style="color: var(--accent-orange); font-size: 28px; font-weight: 700;">?</span>
+                </div>
+                <!-- Details -->
+                <div style="flex: 1;">
+                    <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--brand-primary);">@Abinabanana</div>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-secondary); font-size: 14px;">
+                        <i class="fas fa-phone"></i>
+                        <span id="profile-phone">+251970774343</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Skeleton fallback if data hasn't loaded yet -->
+            <div id="profile-skeleton" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
+                <div style="width: 60px; height: 60px; background: #EFE3F7; border-radius: 50%;"></div>
                 <div style="height: 20px; width: 60%; background: #EFE3F7; border-radius: 8px;"></div>
                 <div style="height: 15px; width: 40%; background: #EFE3F7; border-radius: 8px;"></div>
             </div>
-            <div class="card" style="display: flex; gap: 12px;">
-                <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
-                <div style="flex: 1; height: 60px; background: #EFE3F7; border-radius: 8px;"></div>
+        </div>
+
+        <!-- TOTAL BALANCE Card -->
+        <div class="wallet-highlight-card" style="border-radius: var(--radius-card); padding: 20px;">
+            <div style="font-size: 13px; font-weight: 500; opacity: 0.8; text-transform: uppercase;">TOTAL BALANCE</div>
+            <div id="profile-balance" style="font-size: 32px; font-weight: 700; margin-top: 4px;">Br 0.00</div>
+        </div>
+
+        <!-- 3 Column Stats Grid -->
+        <div class="wallet-stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div class="wallet-stat-box" style="background: var(--surface-white); border-radius: var(--radius-btn); padding: 16px 8px; text-align: center; box-shadow: var(--shadow-soft);">
+                <div style="font-weight: 700; font-size: 16px; color: var(--brand-primary);">Br 0.00</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">MAIN</div>
+            </div>
+            <div class="wallet-stat-box" style="background: var(--surface-white); border-radius: var(--radius-btn); padding: 16px 8px; text-align: center; box-shadow: var(--shadow-soft);">
+                <div style="font-weight: 700; font-size: 16px; color: var(--brand-primary);">Br 0.00</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">BONUS</div>
+            </div>
+            <div class="wallet-stat-box" style="background: var(--surface-white); border-radius: var(--radius-btn); padding: 16px 8px; text-align: center; box-shadow: var(--shadow-soft);">
+                <div style="font-weight: 700; font-size: 16px; color: var(--brand-primary);">Br 0.00</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">DEPOSITED</div>
             </div>
         </div>
 
-        <!-- Real Profile Data -->
-        <div id="profile-data" style="display: none;">
-            <div class="card" style="display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center;">
-                <div style="width: 80px; height: 80px; background: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: 700;">
-                    <span id="profile-avatar-letter">?</span>
+        <!-- STATS Card -->
+        <div class="card" style="padding: 20px;">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;">STATS</div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Withdrawal -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                        <i class="fas fa-money-bill-wave" style="color: var(--brand-primary); width: 20px; text-align: center;"></i>
+                        Total Withdrawal
+                    </div>
+                    <div id="profile-total-withdrawal" style="font-size: 15px; font-weight: 700; color: var(--brand-primary);">Br 0.00</div>
                 </div>
-                <div id="profile-fullname" style="font-size: 20px; font-weight: 600;">Loading...</div>
-                <div id="profile-username" style="font-size: 14px; color: var(--text-muted);">@username</div>
-                <div style="margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--stat-value);">Balance: <span id="profile-balance">0.00 birr</span></div>
+                <!-- Games Won -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                        <i class="fas fa-trophy" style="color: var(--brand-primary); width: 20px; text-align: center;"></i>
+                        Games Won
+                    </div>
+                    <div id="profile-total-wins" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">0</div>
+                </div>
+                <!-- Total Invites -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                        <i class="fas fa-gift" style="color: var(--brand-primary); width: 20px; text-align: center;"></i>
+                        Total Invites
+                    </div>
+                    <div id="profile-total-invites" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">0</div>
+                </div>
             </div>
+        </div>
 
-            <div class="card" style="display: flex; gap: 12px;">
-                <div style="flex: 1; text-align: center;">
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Games</div>
-                    <div id="profile-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div>
-                </div>
-                <div style="flex: 1; text-align: center;">
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
-                    <div id="profile-total-wins" style="font-size: 20px; font-weight: 700; color: var(--accent-green);">0</div>
-                </div>
+        <!-- SETTINGS Card -->
+        <div class="card" style="padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;">
+                <i class="fas fa-sliders-h" style="font-size: 14px;"></i> SETTINGS
             </div>
-            
-            <div class="card">
-                <div style="font-weight: 600; margin-bottom: 8px;">Recent Activity</div>
-                <div id="profile-recent-activity">
-                    <div style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading activity...</div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Sound Toggle -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">Sound</div>
+                    <div onclick="toggleAudio()" id="profile-sound-toggle" style="background: #d32f2f; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 40px; text-align: center;">OFF</div>
+                </div>
+                <!-- Auto Play Toggle -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">Auto Play</div>
+                    <div onclick="toggleAuto()" id="profile-auto-toggle" style="background: #d32f2f; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 40px; text-align: center;">OFF</div>
                 </div>
             </div>
         </div>
@@ -683,54 +743,36 @@
         }
 
         async function loadPlayerProfile() {
-            const skeleton = document.getElementById('profile-skeleton');
-            const dataContainer = document.getElementById('profile-data');
-            
+            // This function populates the new Profile UI.
+            // It fetches data from the backend and fills the divs.
             try {
                 const userId = getUserId();
+                // Use the profile endpoint you added to web_server.py
                 const response = await fetch(`/api/player/profile/${userId}`);
                 
                 if (!response.ok) throw new Error('Failed to fetch profile');
                 const data = await response.json();
                 
                 if (data.success) {
-                    skeleton.style.display = 'none';
-                    dataContainer.style.display = 'block';
-                    
                     const profile = data.profile;
                     
-                    // Populate Profile
+                    // Populate Account
                     document.getElementById('profile-avatar-letter').textContent = (profile.full_name || profile.username || 'U').charAt(0).toUpperCase();
-                    document.getElementById('profile-fullname').textContent = profile.full_name || profile.username || 'User';
                     document.getElementById('profile-username').textContent = '@' + (profile.username || profile.user_id);
-                    document.getElementById('profile-balance').textContent = profile.balance.toFixed(2) + ' birr';
+                    // If your backend doesn't return a phone number, you can hide it or show a placeholder
+                    document.getElementById('profile-phone').textContent = profile.phone || '+251970774343'; 
                     
-                    // Stats
-                    document.getElementById('profile-total-games').textContent = profile.stats.total_games;
-                    document.getElementById('profile-total-wins').textContent = profile.stats.total_wins;
-
-                    // Recent Activity
-                    const activityContainer = document.getElementById('profile-recent-activity');
-                    if (profile.recent_activity && profile.recent_activity.length > 0) {
-                        let html = '';
-                        profile.recent_activity.forEach(game => {
-                            html += `
-                                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 13px;">
-                                    <span>Round #${game.round_number} ${game.did_win ? '🏆' : ''}</span>
-                                    <span style="color: ${game.did_win ? 'var(--accent-green)' : 'var(--text-muted)'};">
-                                        ${game.did_win ? 'Won ' + game.prize_pool.toFixed(2) + ' birr' : 'Played'}
-                                    </span>
-                                </div>
-                            `;
-                        });
-                        activityContainer.innerHTML = html;
-                    } else {
-                        activityContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center;">No recent games played.</div>';
-                    }
+                    // Populate Balance
+                    document.getElementById('profile-balance').textContent = 'Br ' + (profile.balance || 0).toFixed(2);
+                    
+                    // Populate Stats
+                    document.getElementById('profile-total-wins').textContent = profile.stats.total_wins || 0;
+                    document.getElementById('profile-total-withdrawal').textContent = 'Br ' + (profile.total_withdrawal || 0).toFixed(2);
+                    document.getElementById('profile-total-invites').textContent = profile.total_invites || 0;
                 }
             } catch (error) {
                 console.error("Error loading profile:", error);
-                document.getElementById('profile-skeleton').innerHTML = '<div class="card" style="text-align:center; color: var(--accent-red); padding:20px;">Failed to load profile.</div>';
+                // Keep the static skeleton/placeholders on error
             }
         }
 
@@ -746,6 +788,38 @@
                 }
             } catch(e) {
                 console.error("Error loading wallet", e);
+            }
+        }
+
+        // ==================== NEW PROFILE TOGGLES ====================
+        function toggleAudio() {
+            if (!gameState.audioInitialized) { initializeAudio(); return; }
+            gameState.audioEnabled = !gameState.audioEnabled;
+            Object.values(gameState.audioCache).forEach((audio) => { if (audio) audio.volume = gameState.audioEnabled ? 1.0 : 0; });
+            
+            // Update Profile Sound Toggle
+            const toggle = document.getElementById('profile-sound-toggle');
+            if (gameState.audioEnabled) {
+                toggle.style.background = 'var(--accent-green)';
+                toggle.textContent = 'ON';
+            } else {
+                toggle.style.background = '#d32f2f';
+                toggle.textContent = 'OFF';
+            }
+            // Update Game toggle as well
+            updateAudioToggle();
+        }
+
+        function toggleAuto() {
+            gameState.autoMode = !gameState.autoMode;
+            // Update Profile Auto Toggle
+            const toggle = document.getElementById('profile-auto-toggle');
+            if (gameState.autoMode) {
+                toggle.style.background = 'var(--accent-green)';
+                toggle.textContent = 'ON';
+            } else {
+                toggle.style.background = '#d32f2f';
+                toggle.textContent = 'OFF';
             }
         }
 
@@ -777,7 +851,7 @@
             cardsCache: { soldCards: new Set(), ownedCardIndex: null, lastUpdate: 0, cardElements: {} },
             lastCountdownSync: 0, countdownSyncThreshold: 5, cardsLoaded: false, cardsLoadAttempted: false,
             countdownStartTime: null, gameStartConfirmed: false, lastConfirmedPhase: "card_purchase",
-            phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0
+            phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false
         };
 
         const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
@@ -827,17 +901,15 @@
             const audioPrompt = document.getElementById("audio-prompt");
             if (audioPrompt) audioPrompt.style.display = "none";
             gameState.audioInitialized = true; gameState.audioEnabled = true;
-            updateAudioToggle(); showNotification("Sound enabled!", "success", 2000); preloadAudioFiles();
+            // update Audio toggle in Profile
+            const profileToggle = document.getElementById('profile-sound-toggle');
+            if(profileToggle) {
+                profileToggle.style.background = 'var(--accent-green)';
+                profileToggle.textContent = 'ON';
+            }
+            showNotification("Sound enabled!", "success", 2000); preloadAudioFiles();
         }
         window.initializeAudio = initializeAudio;
-
-        function showAudioPrompt() {
-            if (!gameState.audioInitialized && !gameState.audioInitializationAttempted) {
-                const audioPrompt = document.getElementById("audio-prompt");
-                if (audioPrompt) audioPrompt.style.display = "flex";
-                gameState.audioInitializationAttempted = true;
-            }
-        }
 
         async function preloadAudioFiles() {
             console.log("Preloading MP3 audio files...");
@@ -910,24 +982,15 @@
             } catch (error) { console.warn("Error playing winner sound:", error); }
         }
 
-        function toggleAudio() {
-            if (!gameState.audioInitialized) { initializeAudio(); return; }
-            gameState.audioEnabled = !gameState.audioEnabled;
-            Object.values(gameState.audioCache).forEach((audio) => { if (audio) audio.volume = gameState.audioEnabled ? 1.0 : 0; });
-            updateAudioToggle();
-            if (gameState.audioEnabled && gameState.calledNumbers.length > 0) {
-                const lastNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1];
-                setTimeout(() => playNumberAudio(lastNumber), 300);
-            }
-        }
-        window.toggleAudio = toggleAudio;
-
         function updateAudioToggle() {
             const toggle = document.getElementById("audio-toggle");
             const icon = toggle?.querySelector("i");
             if (toggle && icon) {
-                if (gameState.audioEnabled && gameState.audioInitialized) { toggle.classList.remove("muted"); icon.className = "fas fa-volume-up"; toggle.title = "Mute sound"; }
-                else { toggle.classList.add("muted"); icon.className = "fas fa-volume-mute"; toggle.title = "Enable sound"; }
+                if (gameState.audioEnabled && gameState.audioInitialized) {
+                    toggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                } else {
+                    toggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                }
             }
         }
 
