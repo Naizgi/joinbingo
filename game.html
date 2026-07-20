@@ -169,7 +169,6 @@
         .stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
         .stat-value { font-size: 20px; font-weight: 700; color: var(--text-primary); }
         .countdown-timer { font-size: 24px; font-weight: 700; color: var(--accent-orange) !important; }
-        .stat-value.green { color: var(--stat-value) !important; }
 
         /* =========================================================
            ACTIVE GAME UI (Exact Replica of Images)
@@ -258,8 +257,7 @@
             color: var(--text-white);
             padding: 4px 14px;
             border-radius: 20px;
-            font-weight: 700;
-            font-size: 18px;
+            font-weight: 700; font-size: 18px;
         }
 
         /* Recent Calls */
@@ -452,18 +450,18 @@
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
-        <!-- WAITING SCREEN (Card Purchase) -->
+        <!-- WAITING SCREEN (Card Purchase) - FIXED: Restored original IDs for JS -->
         <div id="waiting-screen" class="screen active">
             <div class="game-stats">
                 <div class="stat-item">
-                    <div class="stat-label">Timer</div>
+                    <div class="stat-label">Countdown</div>
                     <div class="countdown-timer" id="countdown-timer">30</div>
                     <div class="countdown-progress">
                         <div class="countdown-progress-bar" id="countdown-progress-bar"></div>
                     </div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Stake</div>
+                    <div class="stat-label">Card Price</div>
                     <div class="stat-value" id="card-price">10 birr</div>
                 </div>
                 <div class="stat-item">
