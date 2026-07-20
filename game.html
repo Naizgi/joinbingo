@@ -9,9 +9,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        /* =========================================================
-           EXACT UI DESIGN SYSTEM (From Your Images)
-           ========================================================= */
         :root {
             --bg-main: #EAD6F1;            /* Light pastel purple background */
             --surface-white: #FFFFFF;
@@ -398,28 +395,37 @@
         </div>
     </div>
 
-
+    <!-- ==================== APP HEADER ==================== -->
+    <header class="app-header">
+        <div class="close">Close</div>
+        <div class="title-container">
+            <div class="title">Afro Bingo</div>
+            <div class="subtitle">mini app</div>
+        </div>
+        <div class="menu-btn"><i class="fas fa-ellipsis-circle"></i></div>
+    </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
         <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
+            
+            <!-- Top Stats Row (CRASH FIX APPLIED HERE) -->
             <div class="game-stats">
                 <div class="stat-item">
                     <div class="stat-label">Countdown</div>
                     <div class="countdown-timer" id="countdown-timer">30</div>
-                    <div class="countdown-progress">
-                        <div class="countdown-progress-bar" id="countdown-progress-bar"></div>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Card Price</div>
-                    <div class="stat-value" id="card-price">10 birr</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Wallet</div>
-                    <div class="stat-value" id="wallet-balance">0 birr</div>
+                    <!-- FIXED: Added ID for JS -->
+                    <div class="stat-value" id="wallet-balance">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Stake</div>
+                    <!-- FIXED: Added ID for JS -->
+                    <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
 
@@ -1257,15 +1263,32 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
+        // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
         function updateGameStats() {
-            document.getElementById("card-price").textContent = `${CARD_PRICE.toFixed(2)} birr`;
-            document.getElementById("wallet-balance").textContent = `${gameState.walletBalance.toFixed(2)} birr`;
-            document.getElementById("game-prize-pool").textContent = `${gameState.prizePool.toFixed(2)} birr`;
-            if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
-            else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
-            document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
-            document.getElementById("called-count").textContent = gameState.calledNumbers.length;
-            document.getElementById("current-round-number").textContent = gameState.currentRound;
+            // Elements are strictly checked before assignment
+            const priceElem = document.getElementById("card-price");
+            if (priceElem) priceElem.textContent = CARD_PRICE.toFixed(2);
+
+            const walletElem = document.getElementById("wallet-balance");
+            if (walletElem) walletElem.textContent = gameState.walletBalance.toFixed(2);
+
+            const poolElem = document.getElementById("game-prize-pool");
+            if (poolElem) poolElem.textContent = gameState.prizePool.toFixed(2);
+
+            const playerCountElem = document.getElementById("game-player-count");
+            if (playerCountElem) {
+                if (gameState.totalPlayers > 0) playerCountElem.textContent = gameState.totalPlayers;
+                else playerCountElem.textContent = gameState.realPlayers + gameState.fakePlayers;
+            }
+
+            const calledStatElem = document.getElementById("called-numbers-stat");
+            if (calledStatElem) calledStatElem.textContent = gameState.calledNumbers.length;
+
+            const calledCountElem = document.getElementById("called-count");
+            if (calledCountElem) calledCountElem.textContent = gameState.calledNumbers.length;
+
+            const roundElem = document.getElementById("current-round-number");
+            if (roundElem) roundElem.textContent = gameState.currentRound;
         }
 
         function startServerCoordinatedCountdown() {
