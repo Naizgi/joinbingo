@@ -478,12 +478,12 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- KEPT EXACT ID: wallet-balance -->
+                    <!-- FIXED: Added ID wallet-balance -->
                     <div class="stat-value" id="wallet-balance">0</div>
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- KEPT EXACT ID: card-price -->
+                    <!-- FIXED: Added ID card-price -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -752,7 +752,7 @@
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
 
-    <!-- ==================== SCRIPTS (EXACT ORIGINAL LOGIC) ==================== -->
+    <!-- ==================== SCRIPTS (ORIGINAL + SAFETY FIX) ==================== -->
     <script>
         // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
@@ -1348,15 +1348,32 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
+        // ==================== FIXED UPDATE GAME STATS ====================
         function updateGameStats() {
-            document.getElementById("card-price").textContent = `${CARD_PRICE.toFixed(2)} birr`;
-            document.getElementById("wallet-balance").textContent = `${gameState.walletBalance.toFixed(2)} birr`;
-            document.getElementById("game-prize-pool").textContent = `${gameState.prizePool.toFixed(2)} birr`;
-            if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
-            else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
-            document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
-            document.getElementById("called-count").textContent = gameState.calledNumbers.length;
-            document.getElementById("current-round-number").textContent = gameState.currentRound;
+            // SAFETY CHECKS ADDED: These if statements prevent the crash if an element is missing
+            const priceElem = document.getElementById("card-price");
+            if (priceElem) priceElem.textContent = `${CARD_PRICE.toFixed(2)} birr`;
+
+            const walletElem = document.getElementById("wallet-balance");
+            if (walletElem) walletElem.textContent = `${gameState.walletBalance.toFixed(2)} birr`;
+
+            const poolElem = document.getElementById("game-prize-pool");
+            if (poolElem) poolElem.textContent = `${gameState.prizePool.toFixed(2)} birr`;
+
+            const playerCountElem = document.getElementById("game-player-count");
+            if (playerCountElem) {
+                if (gameState.totalPlayers > 0) playerCountElem.textContent = gameState.totalPlayers;
+                else playerCountElem.textContent = gameState.realPlayers + gameState.fakePlayers;
+            }
+
+            const calledStatElem = document.getElementById("called-numbers-stat");
+            if (calledStatElem) calledStatElem.textContent = gameState.calledNumbers.length;
+
+            const calledCountElem = document.getElementById("called-count");
+            if (calledCountElem) calledCountElem.textContent = gameState.calledNumbers.length;
+
+            const roundElem = document.getElementById("current-round-number");
+            if (roundElem) roundElem.textContent = gameState.currentRound;
         }
 
         function startServerCoordinatedCountdown() {
