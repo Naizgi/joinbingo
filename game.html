@@ -481,12 +481,12 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- FIXED: Added ID to match JS -->
+                    <!-- ID matched to JS -->
                     <div class="stat-value" id="wallet-balance">0</div>
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- FIXED: Added ID to match JS -->
+                    <!-- ID matched to JS -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -1355,10 +1355,13 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
+        // FIXED: updateGameStats function purely sets values, no string concatenation
         function updateGameStats() {
-            document.getElementById("card-price").textContent = `${CARD_PRICE.toFixed(2)} birr`;
-            document.getElementById("wallet-balance").textContent = `${gameState.walletBalance.toFixed(2)} birr`;
-            document.getElementById("game-prize-pool").textContent = `${gameState.prizePool.toFixed(2)} birr`;
+            // These IDs now correctly point to the 3 boxes in the purple UI
+            document.getElementById("card-price").textContent = CARD_PRICE.toFixed(2);
+            document.getElementById("wallet-balance").textContent = gameState.walletBalance.toFixed(2);
+            document.getElementById("game-prize-pool").textContent = gameState.prizePool.toFixed(2);
+            
             if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
             else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
             document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
