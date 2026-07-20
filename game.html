@@ -481,12 +481,12 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- ID matched to JS -->
+                    <!-- FIXED ID MATCH -->
                     <div class="stat-value" id="wallet-balance">0</div>
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- ID matched to JS -->
+                    <!-- FIXED ID MATCH -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -1355,18 +1355,18 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
-        // FIXED: updateGameStats function purely sets values, no string concatenation
+        // FIXED updateGameStats - sanitized to prevent crash
         function updateGameStats() {
-            // These IDs now correctly point to the 3 boxes in the purple UI
-            document.getElementById("card-price").textContent = CARD_PRICE.toFixed(2);
-            document.getElementById("wallet-balance").textContent = gameState.walletBalance.toFixed(2);
-            document.getElementById("game-prize-pool").textContent = gameState.prizePool.toFixed(2);
-            
-            if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
-            else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
-            document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
-            document.getElementById("called-count").textContent = gameState.calledNumbers.length;
-            document.getElementById("current-round-number").textContent = gameState.currentRound;
+            if(document.getElementById("card-price")) document.getElementById("card-price").textContent = CARD_PRICE.toFixed(2);
+            if(document.getElementById("wallet-balance")) document.getElementById("wallet-balance").textContent = gameState.walletBalance.toFixed(2);
+            if(document.getElementById("game-prize-pool")) document.getElementById("game-prize-pool").textContent = gameState.prizePool.toFixed(2);
+            if(document.getElementById("game-player-count")) {
+                if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
+                else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
+            }
+            if(document.getElementById("called-numbers-stat")) document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
+            if(document.getElementById("called-count")) document.getElementById("called-count").textContent = gameState.calledNumbers.length;
+            if(document.getElementById("current-round-number")) document.getElementById("current-round-number").textContent = gameState.currentRound;
         }
 
         function startServerCoordinatedCountdown() {
