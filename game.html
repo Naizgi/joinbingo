@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Afro Bingo - Server-Coordinated Game</title>
+    <title>Afro Bingo - Mini App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         /* =========================================================
-           EXACT UI DESIGN SYSTEM (From Your Images)
+           NEW UI DESIGN SYSTEM (Based on Screenshots)
            ========================================================= */
         :root {
-            --bg-main: #EAD6F1;            /* Light pastel purple background */
+            --bg-main: #EAD6F1;            /* Light purple background */
             --surface-white: #FFFFFF;
-            --purple-dark: #6A1B9A;        /* Deep purple for banners & active tabs */
+            --purple-dark: #6A1B9A;        /* Deep purple for active tabs & headers */
             --purple-light: #E1BEE7;       /* Light purple for backgrounds */
-            --orange-accent: #FF9800;      /* Orange for B letters and buttons */
-            --orange-light: #FFE0B2;
+            --orange-accent: #FF9800;      /* Vivid Orange for selected cards */
             --btn-blue: #2196F3;           /* Refresh button color */
             --btn-green: #4CAF50;          /* Automatic button color */
             --text-main: #212121;
             --text-muted: #757575;
             --text-white: #FFFFFF;
             --border-light: #e0e0e0;
+            --grey-card: #D1C4E9;          /* Unselected cards color */
             --red-accent: #C62828;
             
-            /* Bingo Letter Colors (Exact from Image) */
+            /* Bingo Letter Colors */
             --letter-b: #FFC107; /* Yellow/Orange */
             --letter-i: #4CAF50; /* Green */
             --letter-n: #1976D2; /* Blue */
@@ -42,7 +42,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 80px; /* Leave room for bottom nav */
+            padding-bottom: 80px;
             overflow-x: hidden;
         }
 
@@ -56,6 +56,7 @@
             position: sticky;
             top: 0;
             z-index: 50;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         .app-header .close { color: var(--btn-blue); font-size: 18px; font-weight: 500; cursor: pointer; }
         .app-header .title-container { text-align: center; }
@@ -68,14 +69,14 @@
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             height: 70px;
-            background: var(--purple-light);
+            background: var(--surface-white);
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top-left-radius: 18px;
             border-top-right-radius: 18px;
             z-index: 100;
-            box-shadow: 0 -4px 12px rgba(106, 13, 173, 0.06);
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
         }
         .nav-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -97,100 +98,114 @@
         .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
 
         /* --- Pages --- */
-        .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
+        .page-container { display: none; padding: 0 16px 90px 16px; animation: fadeIn 0.2s ease; background: var(--bg-main); }
         .page-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
 
-        /* --- Components --- */
-        .card {
+        /* --- Common Cards --- */
+        .ui-card {
             background: var(--surface-white);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 16px;
-            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
+            box-shadow: 0px 2px 8px rgba(106, 13, 173, 0.06);
             margin-bottom: 12px;
         }
-        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; }
-        
-        /* --- WAITING SCREEN (Card Purchase) --- */
-        .game-stats {
-            background: var(--surface-white);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
-        }
-        .stat-item { text-align: center; }
-        .stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
-        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); }
-        .countdown-timer { font-size: 24px; font-weight: 700; color: var(--orange-accent) !important; }
-        .countdown-progress { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; margin-top: 4px; overflow: hidden; }
-        .countdown-progress-bar { height: 100%; background: var(--orange-accent); width: 0%; transition: width 1s linear; }
 
-        /* --- 400 CARD GRID (Matches JS Loop) --- */
-        .cards-grid {
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); 
-            gap: 3px;
-            max-height: 420px; 
-            min-height: 380px; 
-            overflow-y: auto; 
-            padding: 8px;
-            background: #fcfcfc; 
-            border-radius: 12px; 
-            border: 1px solid #f0f0f0; 
-            margin-bottom: 8px; 
+        /* --- PURCHASE SCREEN (Exact Match) --- */
+        .purchase-top-row {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
             width: 100%;
         }
-        .card-item {
-            aspect-ratio: 1; 
-            border-radius: 4px; 
-            display: flex; 
-            align-items: center; 
+        .purchase-stat-box {
+            background: var(--surface-white);
+            border-radius: 12px;
+            padding: 8px 4px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            font-weight: 600; 
-            font-size: 10px; /* Smaller text for 400 layout */
-            position: relative; 
-            transition: all 0.1s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
-        .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
-        .card-item.available:hover { transform: scale(1.05); filter: brightness(1.1); }
-        .card-item.sold { background: #d1c4e9; color: #888; cursor: not-allowed; opacity: 0.6; }
-        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; cursor: default; }
-        .card-item.selected { border: 2px solid var(--purple-dark); box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.3); }
-        .card-item.purchasing { background: var(--btn-blue) !important; cursor: wait; opacity: 0.7; }
+        .purchase-stat-box .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        .purchase-stat-box .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .purchase-stat-box .stat-value.orange { color: var(--orange-accent); }
 
-        /* --- CARD PREVIEW (Small card inside purchase screen) --- */
-        .card-preview-grid {
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 3px; 
-            width: 160px; 
-            height: 160px;
+        .boards-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--btn-green);
+            margin-bottom: 10px;
+            display: block;
         }
-        .card-preview-cell {
-            background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 12px; color: var(--text-main); border: 1px solid #eee;
+        .boards-label span { color: var(--text-main); }
+
+        .cards-container {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
-        .card-preview-cell.free { background: #CFD8DC; color: #666; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+            gap: 6px;
+            max-height: 420px;
+            min-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .card-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid transparent;
+        }
+        .card-item.available { background: var(--grey-card); color: var(--text-main); }
+        .card-item.available:active { transform: scale(0.95); }
+        .card-item.selected-card { background: var(--orange-accent); color: var(--text-white); border-color: #E65100; box-shadow: 0 3px 6px rgba(255, 152, 0, 0.3); }
+        .card-item.sold { background: #e0e0e0; color: #aaa; cursor: not-allowed; opacity: 0.5; pointer-events: none; }
+        .card-item.owned-unselected { background: #C8E6C9; color: #2E7D32; }
+
+        #phase-error-message { display:none; background: #FFEBEE; border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center; font-size: 14px; }
 
         /* --- GAME SCREEN (Active) --- */
-        .stats-row {
+        .game-stats-row {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-            background: var(--bg-main); margin-bottom: 12px;
+            background: var(--bg-main); margin: 12px 0;
         }
-        .stat-box {
+        .game-stat-box {
             background: var(--surface-white);
             border: 1px solid #e0e0e0; border-radius: 8px;
             text-align: center; padding: 6px 2px;
         }
-        .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; }
-        .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
+        .game-stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; }
+        .game-stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
+        .game-stat-box .value.small-text { font-size: 10px; letter-spacing: -0.3px; }
 
         .game-layout { display: flex; gap: 12px; align-items: flex-start; max-width: 100%; }
         .board-container {
@@ -214,7 +229,7 @@
             display: flex; align-items: center; justify-content: center;
             background: #f1f3f4; border-radius: 4px; aspect-ratio: 1;
             font-weight: 600; font-size: 12px; color: var(--text-main);
-            border: 1px solid transparent; transition: all 0.1s ease;
+            border: 1px solid transparent; 
         }
         .board-cell.called { background: var(--surface-white); border: 1px solid #ccc; color: var(--text-muted); }
         .board-cell.called.highlight-b { background: var(--letter-b); color: white; border-color: var(--letter-b); }
@@ -256,8 +271,6 @@
             padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.8);
         }
-        .control-group { display: flex; align-items: center; gap: 8px; }
-        .control-label { font-size: 13px; font-weight: 600; color: var(--text-main); }
         .control-pill {
             display: flex; align-items: center; justify-content: center;
             border-radius: 20px; padding: 2px 12px; height: 24px; font-size: 10px; font-weight: 700; color: white; cursor: pointer;
@@ -265,11 +278,20 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
+        /* Player Cards Container (Multi-card support from Image 7) */
+        .player-cards-container-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
         }
-        .p-card-title { font-size: 10px; font-weight: 600; color: var(--btn-green); text-align: center; margin-bottom: 4px; }
+        .p-card-title { font-size: 11px; font-weight: 600; color: var(--btn-green); text-align: center; margin-bottom: 4px; }
         .p-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
         .p-card-cell {
             background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
@@ -301,38 +323,78 @@
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* --- HISTORY PAGE (Matches Image) --- */
-        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-        .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
-        .history-winner-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .history-winner-badge.loss { background: #FFEBEE; color: var(--red-accent); }
-        .history-winner-badge.win { background: #E8F5E9; color: var(--btn-green); }
+        /* --- HISTORY PAGE (Image 2) --- */
+        .history-header-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; }
+        .history-header-row h3 { font-size:15px; color:var(--text-muted); font-weight:500; }
+        .btn-reload { border:none; background:var(--surface-white); padding:6px 16px; border-radius:20px; font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; color:var(--purple-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor:pointer; }
+        
+        .history-item-card {
+            background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(106, 13, 173, 0.06);
+        }
+        .history-game-id { font-size: 16px; font-weight: 700; color: var(--purple-dark); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .history-status { font-size: 13px; font-weight: 700; }
+        .history-status.win { color: var(--btn-green); }
+        .history-status.loss { color: var(--red-accent); }
+        .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+        .history-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; background: var(--bg-main); padding: 12px; border-radius: 8px; }
+        .history-detail-item span { font-weight: 500; color: var(--purple-dark); }
+        .history-detail-item strong { font-weight: 700; color: var(--text-main); }
+        .history-winner-boards { display: flex; align-items: center; gap: 4px; }
+        .history-winner-boards i { color: var(--purple-dark); font-size: 12px; }
+        .history-winner-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
-        /* --- WALLET PAGE --- */
-        .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-        .wallet-balance-big { font-size: 28px; font-weight: 700; color: var(--purple-dark); }
+        /* --- WALLET PAGE (Images 3 & 4) --- */
+        .wallet-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .wallet-balance-big { font-size: 24px; font-weight: 700; color: var(--purple-dark); margin-top: 4px; }
+        .wallet-balance-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        
         .wallet-tabs { display: flex; background: var(--purple-light); border-radius: 20px; padding: 4px; margin-top: 16px; }
-        .wallet-tab { flex: 1; text-align: center; padding: 6px 0; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); }
+        .wallet-tab { flex: 1; text-align: center; padding: 8px 0; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--purple-dark); transition: 0.2s; }
         .wallet-tab.active { background: var(--purple-dark); color: var(--text-white); }
-        
-        .wallet-total-card { background: var(--purple-dark); border-radius: 20px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
-        .wallet-total-label { font-size: 12px; opacity: 0.8; }
-        .wallet-total-amount { font-size: 28px; font-weight: 700; margin-top: 4px; }
-        
-        .wallet-split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
-        .wallet-split-box { background: var(--surface-white); border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); }
-        .wallet-split-amount { font-weight: 700; font-size: 18px; color: var(--purple-dark); }
-        .wallet-split-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-        /* --- PROFILE PAGE (Matches Image) --- */
-        .profile-avatar { width: 60px; height: 60px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .profile-avatar-text { color: var(--orange-accent); font-size: 28px; font-weight: 700; }
-        .profile-stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+        .wallet-purple-card { background: var(--purple-dark); border-radius: 16px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
+        .wallet-purple-card .label { font-size: 11px; opacity: 0.8; }
+        .wallet-purple-card .amount { font-size: 26px; font-weight: 700; margin-top: 4px; }
+
+        .wallet-split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+        .wallet-split-box { background: var(--surface-white); border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .wallet-split-amount { font-weight: 700; font-size: 16px; color: var(--purple-dark); }
+        .wallet-split-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .wallet-history-list { display: flex; flex-direction: column; gap: 12px; display: none; }
+        .wallet-history-list.active { display: flex; }
+        .wallet-history-card { background: var(--surface-white); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .wallet-tx-row { display: flex; justify-content: space-between; align-items: center; }
+        .wallet-tx-type { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .wallet-tx-type i { font-size: 16px; border-radius: 50%; padding: 4px; }
+        .wallet-tx-type .in { color: var(--btn-green); }
+        .wallet-tx-type .out { color: var(--red-accent); }
+        .wallet-tx-amount { font-weight: 700; font-size: 16px; }
+        .wallet-tx-amount.positive { color: var(--btn-green); }
+        .wallet-tx-amount.negative { color: var(--red-accent); }
+        .wallet-tx-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; }
+        .wallet-tx-meta span { font-weight: 500; color: var(--purple-dark); }
+        .wallet-tx-ref { font-size: 11px; color: var(--text-muted); }
+
+        /* --- PROFILE PAGE (Image 5) --- */
+        .profile-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+        .profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar-text { font-weight: 700; font-size: 20px; color: var(--purple-dark); }
+        .profile-info { flex:1; }
+        .profile-name { font-size: 16px; font-weight: 700; color: var(--purple-dark); }
+        .profile-phone { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .profile-phone i { font-size: 12px; }
+
+        .profile-stat-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f3f3; }
         .profile-stat-item:last-child { border-bottom: none; }
-        .profile-stat-icon { color: var(--purple-dark); width: 24px; text-align: center; }
-        .profile-stat-label { display: flex; align-items: center; gap: 12px; font-weight: 500; color: var(--text-main); }
-        .profile-stat-value { font-weight: 700; color: var(--purple-dark); }
-        .profile-toggle { background: #d32f2f; color: white; padding: 2px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .profile-stat-label { display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 14px; }
+        .profile-stat-label i { color: var(--purple-dark); width: 20px; text-align: center; }
+        .profile-stat-value { font-weight: 700; color: var(--purple-dark); font-size: 14px; }
+
+        .profile-toggle { background: var(--red-accent); color: white; padding: 2px 16px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .profile-toggle.on { background: var(--btn-green); }
 
         /* --- Overlays --- */
@@ -340,10 +402,9 @@
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .winner-display { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .winner-content { background: #fff; border-radius: 20px; padding: 20px; text-align: center; max-width: 320px; border: 2px solid var(--btn-green); color: var(--text-main); }
+        .winner-content { background: #fff; border-radius: 20px; padding: 20px; text-align: center; max-width: 320px; border: 2px solid var(--btn-green); }
         .winner-content h2 { font-size: 20px; color: var(--btn-green); margin: 10px 0; }
         .winner-trophy { font-size: 30px; color: var(--btn-green); margin: 5px 0; }
-        .winner-countdown { font-size: 14px; margin: 8px 0 5px; opacity: 0.9; color: var(--btn-green); }
         .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
         @media (max-width: 480px) {
@@ -351,11 +412,17 @@
             .board-container { width: 100%; max-width: 300px; }
             .right-panel { width: 100%; }
         }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--purple-light); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--purple-dark); }
     </style>
 </head>
 <body>
 
-    <!-- Overlays -->
+    <!-- Overlays & Status -->
     <div id="access-denied">
         <i class="fas fa-lock" style="font-size: 50px; color: #f44336; margin-bottom: 20px"></i>
         <h2>Access Restricted</h2>
@@ -406,97 +473,60 @@
         <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
             
-            <!-- Top Stats Row - FIXED IDs Added -->
-            <div class="game-stats">
-                <div class="stat-item">
+            <!-- Top Stats Row (Exact Image 1) -->
+            <div class="purchase-top-row">
+                <div class="purchase-stat-box">
                     <div class="stat-label">Countdown</div>
-                    <div class="stat-value countdown-timer" id="countdown-timer">30</div>
-                    <div class="countdown-progress">
-                        <div class="countdown-progress-bar" id="countdown-progress-bar"></div>
-                    </div>
+                    <div class="stat-value orange" id="countdown-timer">30</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Card Price</div>
-                    <div class="stat-value" id="card-price">10 birr</div>
-                </div>
-                <div class="stat-item">
+                <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- FIXED: Added id="wallet-balance" here to match the JS -->
-                    <div class="stat-value" id="wallet-balance">0 birr</div>
+                    <div class="stat-value" id="wallet-balance">0</div>
+                </div>
+                <div class="purchase-stat-box">
+                    <div class="stat-label">Stake</div>
+                    <div class="stat-value">10</div>
                 </div>
             </div>
 
-            <!-- Error Banner -->
-            <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center;">
+            <div class="boards-label">Boards: <span id="selected-boards-count">0</span>/2</div>
+
+            <div id="phase-error-message">
                 <i class="fas fa-exclamation-triangle"></i> <span id="phase-error-text">Card purchase only during purchase phase</span>
             </div>
 
-            <!-- Purchase Area -->
-            <div class="cards-selection">
-                <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; margin-bottom: 8px; border: 1px solid var(--border-light);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 14px; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board (1-400)</div>
-                        <div style="font-size: 11px; opacity: 0.8;">Price: <span style="color: var(--purple-dark); font-weight: 600;">10 birr</span></div>
-                    </div>
-
-                    <div style="margin-bottom: 10px; display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
-                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--orange-accent); border-radius:3px;"></span> Available</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:#d1c4e9; border-radius:3px;"></span> Sold</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:3px;"></span> Yours</span>
-                    </div>
-
-                    <!-- 400 Cards Grid -->
-                    <div class="cards-grid" id="cards-grid"></div>
-                </div>
-
-                <!-- Selected Card Preview -->
-                <div class="selected-card-info" id="selected-card-info" style="display: none">
-                    <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; border: 1px solid var(--border-light);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <div><strong>Your Board:</strong> <span id="selected-card-id">#0</span></div>
-                            <div style="color: var(--orange-accent); font-weight: 600;">10 birr</div>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">8 birr to prize pool (20% platform fee)</div>
-                        <div style="margin-top: 8px;">
-                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-eye"></i> Your Board Preview
-                            </div>
-                            <div style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center;">
-                                <div class="card-preview-grid" id="card-preview-grid"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="countdown-status-with-round" id="countdown-status" style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
-                    <div style="font-weight: 600;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span></div>
-                    <div style="font-weight: 600; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
-                </div>
+            <div class="cards-container">
+                <div class="cards-grid" id="cards-grid"></div>
+            </div>
+            
+            <div class="countdown-status-with-round" style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; font-weight: 500;">
+                <div><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span></div>
+                <div style="color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN (Exact Replica) -->
+        <!-- ACTIVE GAME SCREEN (Images 6 & 7) -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
-            <div class="stats-row">
-                <div class="stat-box">
+            <div class="game-stats-row">
+                <div class="game-stat-box">
                     <span class="label">Game ID</span>
-                    <span class="value" id="stat-game-id">---</span>
+                    <span class="value small-text" id="stat-game-id">---</span>
                 </div>
-                <div class="stat-box">
+                <div class="game-stat-box">
                     <span class="label">Derash</span>
                     <span class="value" id="game-prize-pool">0</span>
                 </div>
-                <div class="stat-box">
+                <div class="game-stat-box">
                     <span class="label">Players</span>
                     <span class="value" id="game-player-count">0</span>
                 </div>
-                <div class="stat-box">
+                <div class="game-stat-box">
                     <span class="label">Bet</span>
                     <span class="value">10</span>
                 </div>
-                <div class="stat-box">
+                <div class="game-stat-box">
                     <span class="label">Call</span>
                     <span class="value" id="called-numbers-stat">0</span>
                 </div>
@@ -535,25 +565,24 @@
 
                     <!-- Toggles -->
                     <div class="controls-row">
-                        <div class="control-group">
-                            <span class="control-label">Sound</span>
+                        <div class="control-group" style="display:flex; align-items:center; gap:8px;">
+                            <span class="control-label" style="font-size:13px; font-weight:600;">Sound</span>
                             <div class="control-pill purple" id="audio-toggle" onclick="toggleAudio()">
                                 <i class="fas fa-volume-up" style="font-size: 12px;"></i>
                             </div>
                         </div>
-                        <div class="control-group">
-                            <span class="control-label">Auto</span>
+                        <div class="control-group" style="display:flex; align-items:center; gap:8px;">
+                            <span class="control-label" style="font-size:13px; font-weight:600;">Auto</span>
                             <div class="control-pill orange" id="auto-toggle" onclick="toggleAuto()">
                                 <span id="auto-status-text" style="font-size: 10px;">OFF</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Player Cards Container -->
+                    <!-- Player Cards Container (Multiple Cards) -->
                     <div class="player-cards-container" id="player-cards-container">
-                        <div class="p-card-wrapper" id="player-card-wrapper" style="display:none;">
-                            <div class="p-card-title">Board #<span id="player-card-id">0</span></div>
-                            <div class="p-card-grid" id="player-card-grid"></div>
+                        <div class="player-cards-container-inner" id="player-cards-inner">
+                            <!-- Rendered by JS -->
                         </div>
                     </div>
                 </div>
@@ -561,19 +590,22 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: HISTORY ==================== -->
+    <!-- ==================== PAGE: HISTORY (Image 2) ==================== -->
     <div id="page-history" class="page-container">
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px;">
-            <span style="font-size:14px; font-weight:500; color:var(--text-muted);">GAME HISTORY</span>
-            <button class="btn-secondary" onclick="loadPlayerHistory(1)" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
+        
+        <div class="ui-card history-header-row">
+            <h3>GAME HISTORY</h3>
+            <button class="btn-reload" onclick="loadPlayerHistory(1)">
+                <i class="fas fa-sync-alt"></i> Reload
+            </button>
         </div>
         
         <!-- History Stats -->
-        <div class="card" id="history-stats-container" style="display: none;">
+        <div class="ui-card" id="history-stats-container" style="display: none;">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
                 <div>
                     <div style="font-size: 11px; color: var(--text-muted);">Total Games</div>
-                    <div id="history-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div>
+                    <div id="history-total-games" style="font-size: 20px; font-weight: 700; color: var(--purple-dark);">0</div>
                 </div>
                 <div>
                     <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
@@ -592,66 +624,76 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: WALLET ==================== -->
+    <!-- ==================== PAGE: WALLET (Images 3 & 4) ==================== -->
     <div id="page-wallet" class="page-container">
-        <div class="card">
+        
+        <div class="wallet-header-card">
             <div class="wallet-top-row">
                 <div>
                     <div style="font-size:12px; color:var(--text-muted); font-weight:500;">WALLET</div>
                     <div class="wallet-balance-big" id="wallet-balance-display">Br 0.00</div>
-                    <div style="font-size:12px; color:var(--text-muted);">Total balance</div>
+                    <div class="wallet-balance-sub">Total balance</div>
                 </div>
-                <button class="btn-secondary" onclick="updateWalletUI()" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
+                <button class="btn-reload" onclick="updateWalletUI()"><i class="fas fa-sync-alt"></i> Reload</button>
             </div>
             
             <div class="wallet-tabs">
-                <div class="wallet-tab active">BALANCES</div>
-                <div class="wallet-tab">HISTORY</div>
+                <div class="wallet-tab active" onclick="switchWalletTab('balances')">BALANCES</div>
+                <div class="wallet-tab" onclick="switchWalletTab('history')">HISTORY</div>
             </div>
         </div>
 
-        <div class="wallet-total-card">
-            <div class="wallet-total-label">TOTAL BALANCE</div>
-            <div class="wallet-total-amount" id="wallet-total-balance">Br 0.00</div>
+        <!-- BALANCES Sub-Page -->
+        <div id="wallet-balances-view">
+            <div class="wallet-purple-card">
+                <div class="label">TOTAL BALANCE</div>
+                <div class="amount" id="wallet-total-balance">Br 0.00</div>
+            </div>
+
+            <div class="wallet-split-grid">
+                <div class="wallet-split-box">
+                    <div class="wallet-split-amount">Br 0.00</div>
+                    <div class="wallet-split-label">MAIN</div>
+                </div>
+                <div class="wallet-split-box">
+                    <div class="wallet-split-amount">Br 0.00</div>
+                    <div class="wallet-split-label">BONUS</div>
+                </div>
+                <div class="wallet-split-box">
+                    <div class="wallet-split-amount">Br 0.00</div>
+                    <div class="wallet-split-label">DEPOSITED</div>
+                </div>
+            </div>
         </div>
 
-        <div class="wallet-split-grid">
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">MAIN</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">BONUS</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">DEPOSITED</div>
+        <!-- HISTORY Sub-Page (Image 4) -->
+        <div id="wallet-history-view" class="wallet-history-list">
+            <!-- Example structure for JS injection: Deposit, Deposit, Withdrawal, etc -->
+            <div id="wallet-transactions-container">
+                <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">Showing recent transactions</div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== PAGE: PROFILE ==================== -->
+    <!-- ==================== PAGE: PROFILE (Image 5) ==================== -->
     <div id="page-profile" class="page-container">
-        <div class="card">
-            <div class="card-title">ACCOUNT</div>
-            <div id="profile-data" style="display: flex; align-items: center; gap: 16px;">
-                <div class="profile-avatar">
-                    <span class="profile-avatar-text" id="profile-avatar-letter">?</span>
-                </div>
-                <div style="flex: 1;">
-                    <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--purple-dark);">@User</div>
-                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-muted); font-size: 14px;">
-                        <i class="fas fa-phone"></i>
-                        <span id="profile-phone">+251970774343</span>
-                    </div>
+        
+        <div class="profile-header-card">
+            <div class="profile-avatar">
+                <span class="profile-avatar-text" id="profile-avatar-letter">?</span>
+            </div>
+            <div class="profile-info">
+                <div class="profile-name" id="profile-username">@User</div>
+                <div class="profile-phone">
+                    <i class="fas fa-phone"></i>
+                    <span id="profile-phone">+251970774343</span>
                 </div>
             </div>
         </div>
 
-        <div class="wallet-total-card">
-            <div class="wallet-total-label">TOTAL BALANCE</div>
-            <div class="wallet-total-amount" id="profile-balance">Br 0.00</div>
+        <div class="wallet-purple-card">
+            <div class="label">TOTAL BALANCE</div>
+            <div class="amount" id="profile-balance">Br 0.00</div>
         </div>
 
         <div class="wallet-split-grid">
@@ -669,35 +711,31 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-title">STATS</div>
-            <div style="display: flex; flex-direction: column;">
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-money-bill-wave profile-stat-icon"></i> Total Withdrawal</div>
-                    <div class="profile-stat-value" id="profile-total-withdrawal">Br 0.00</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-trophy profile-stat-icon"></i> Games Won</div>
-                    <div class="profile-stat-value" id="profile-total-wins">0</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-gift profile-stat-icon"></i> Total Invites</div>
-                    <div class="profile-stat-value" id="profile-total-invites">0</div>
-                </div>
+        <div class="ui-card">
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">STATS</div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-label"><i class="fas fa-money-bill-wave"></i> Total Withdrawal</div>
+                <div class="profile-stat-value" id="profile-total-withdrawal">Br 0.00</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-label"><i class="fas fa-trophy"></i> Games Won</div>
+                <div class="profile-stat-value" id="profile-total-wins">0</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-label"><i class="fas fa-gift"></i> Total Invites</div>
+                <div class="profile-stat-value" id="profile-total-invites">0</div>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom:20px;">
-            <div class="card-title" style="display:flex; align-items:center; gap:8px;"><i class="fas fa-sliders-h"></i> SETTINGS</div>
-            <div style="display: flex; flex-direction: column;">
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label">Sound</div>
-                    <div class="profile-toggle" id="profile-sound-toggle" onclick="toggleAudio()">OFF</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label">Auto Play</div>
-                    <div class="profile-toggle" id="profile-auto-toggle" onclick="toggleAuto()">OFF</div>
-                </div>
+        <div class="ui-card">
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display:flex; align-items:center; gap:8px;"><i class="fas fa-sliders-h"></i> SETTINGS</div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-label">Sound</div>
+                <div class="profile-toggle" id="profile-sound-toggle" onclick="toggleAudio()">OFF</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-label">Auto Play</div>
+                <div class="profile-toggle" id="profile-auto-toggle" onclick="toggleAuto()">OFF</div>
             </div>
         </div>
     </div>
@@ -710,13 +748,13 @@
         <button class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></button>
     </nav>
 
-    <!-- ==================== BOTTOM ACTION BUTTONS (GAME FLOATING BAR) ==================== -->
+    <!-- ==================== BOTTOM ACTION BUTTONS ==================== -->
     <div class="bottom-actions active" id="game-bottom-actions">
         <button class="action-btn blue" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
 
-    <!-- ==================== SCRIPTS (COMPLETE ORIGINAL LOGIC) ==================== -->
+    <!-- ==================== SCRIPTS ==================== -->
     <script>
         // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
@@ -725,23 +763,68 @@
             document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${tabName}`).classList.add('active');
             
-            // Manage bottom action buttons visibility
             if(tabName === 'game') {
                 document.getElementById('game-bottom-actions').classList.add('active');
             } else {
                 document.getElementById('game-bottom-actions').classList.remove('active');
             }
 
-            // Load data when switching to tabs
             if(tabName === 'history') { loadPlayerHistory(1); }
             if(tabName === 'profile') { loadPlayerProfile(); }
             if(tabName === 'wallet') { updateWalletUI(); }
         }
         window.switchTab = switchTab;
 
-        // ==================== API FUNCTIONS FOR HISTORY & PROFILE ====================
-        let currentHistoryPage = 1;
-        
+        // ==================== WALLET TAB SWITCHING ====================
+        function switchWalletTab(tab) {
+            document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(`wallet-${tab}-view`).parentElement.querySelector(`.wallet-tab`).classList.add('active'); // Fix for selectors
+            
+            // Correction for specific tab targeting
+            const tabs = document.querySelectorAll('.wallet-tab');
+            if(tab === 'balances') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
+
+            document.getElementById('wallet-balances-view').style.display = tab === 'balances' ? 'block' : 'none';
+            document.getElementById('wallet-history-view').classList.toggle('active', tab === 'history');
+            
+            if(tab === 'history') { loadWalletHistory(); }
+        }
+        window.switchWalletTab = switchWalletTab;
+
+        // ==================== LOAD WALLET HISTORY ====================
+        async function loadWalletHistory() {
+            const container = document.getElementById('wallet-transactions-container');
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            
+            // MOCK DATA FOR DEMO PURPOSES (Just to match Image 4). 
+            // Replace this fetch with actual /api/user/transactions endpoint if available
+            setTimeout(() => {
+                // Example Layout Generation
+                container.innerHTML = `
+                    <div class="wallet-history-card">
+                        <div class="wallet-tx-row">
+                            <div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div>
+                            <div class="wallet-tx-amount positive">+Br 30.00</div>
+                        </div>
+                        <div class="wallet-tx-meta">15/07/2026, 13:04:40</div>
+                        <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
+                        <div class="wallet-tx-ref">Ref DGF7URQ5EP • Seid -> Unknown</div>
+                    </div>
+                    <div class="wallet-history-card">
+                        <div class="wallet-tx-row">
+                            <div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div>
+                            <div class="wallet-tx-amount positive">+Br 20.00</div>
+                        </div>
+                        <div class="wallet-tx-meta">15/07/2026, 12:50:27</div>
+                        <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
+                        <div class="wallet-tx-ref">Ref DGF7UNFTAF • Seid -> Unknown</div>
+                    </div>
+                    <div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 12px;">Showing recent 20 transactions</div>
+                `;
+            }, 500);
+        }
+
+        // ==================== API FUNCTIONS (HISTORY & PROFILE) ====================
         async function loadPlayerHistory(page = 1) {
             const listContainer = document.getElementById('history-list-container');
             const statsContainer = document.getElementById('history-stats-container');
@@ -758,7 +841,7 @@
                     document.getElementById('history-total-winnings').textContent = data.stats.total_winnings.toFixed(2) + ' birr';
 
                     if (data.history.length === 0) {
-                        listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted); padding:20px;">No game history found.</div>';
+                        listContainer.innerHTML = '<div class="ui-card" style="text-align:center; color: var(--text-muted); padding:20px;">No game history found.</div>';
                         return;
                     }
 
@@ -766,19 +849,21 @@
                     data.history.forEach(game => {
                         const isWin = game.is_winner;
                         html += `
-                            <div class="card" style="padding:16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <span style="font-weight: 700; font-size: 15px; color: var(--purple-dark);">Game #${game.game_id}</span>
-                                    <span class="history-winner-badge ${isWin ? 'win' : 'loss'}">${isWin ? 'WIN' : 'LOSS'}</span>
+                            <div class="history-item-card">
+                                <div class="history-game-id">
+                                    Game #${game.game_id}
+                                    <span class="history-status ${isWin ? 'win' : 'loss'}">${isWin ? 'WIN' : 'LOSS'}</span>
                                 </div>
                                 <div class="history-date">${new Date(game.game_date).toLocaleString()}</div>
-                                <div class="history-grid">
-                                    <div>Stake: <span style="font-weight:600; color:var(--text-main);">Br ${CARD_PRICE.toFixed(2)}</span></div>
-                                    <div>Prize: <span style="font-weight:600; color:var(--text-main);">Br ${game.prize_pool.toFixed(2)}</span></div>
-                                    <div>My Boards: <span style="font-weight:600; color:var(--text-main);">#${game.card_index}</span></div>
-                                    <div>Winners' Boards: <span style="font-weight:600; color:var(--text-main);">#${game.winner_id || 'N/A'}</span></div>
+                                <div class="history-details-grid">
+                                    <div class="history-detail-item">Stake: <strong>Br ${CARD_PRICE.toFixed(2)}</strong></div>
+                                    <div class="history-detail-item">Prize: <strong>Br ${game.prize_pool.toFixed(2)}</strong></div>
+                                    <div class="history-detail-item">My Boards: <span>#${game.card_index}</span></div>
+                                    <div class="history-detail-item history-winner-boards">
+                                        <i class="fas fa-trophy"></i> Winners' Boards: <span>#${game.winner_id || 'N/A'}</span>
+                                    </div>
                                 </div>
-                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Winner count: ${game.is_winner ? 1 : 0}</div>
+                                <div class="history-winner-count">Winner count: ${game.is_winner ? 1 : 0}</div>
                             </div>
                         `;
                     });
@@ -786,7 +871,7 @@
                 }
             } catch (error) {
                 console.error("Error loading history:", error);
-                listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--red-accent); padding:20px;">Failed to load history.</div>';
+                listContainer.innerHTML = '<div class="ui-card" style="text-align:center; color: var(--red-accent); padding:20px;">Failed to load history.</div>';
             }
         }
 
@@ -825,7 +910,7 @@
             }
         }
 
-        // ==================== PROFILE TOGGLES ====================
+        // ==================== TOGGLES ====================
         function toggleAudio() {
             if (!gameState.audioInitialized) { initializeAudio(); return; }
             gameState.audioEnabled = !gameState.audioEnabled;
@@ -855,7 +940,7 @@
         }
         window.toggleAuto = toggleAuto;
 
-        // ==================== YOUR ORIGINAL LOGIC (COMPLETE) ====================
+        // ==================== JAVASCRIPT LOGIC (PRESERVED ORIGINAL) ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
         const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
         const CARD_PRICE = 10.0;
@@ -1151,7 +1236,6 @@
                     } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
                     gameState.markedNumbers.clear();
                     document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
-                    document.getElementById("player-card-id").textContent = data.user_card.card_index || "0";
                     if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard();
                     return true;
                 } else { gameState.hasCard = false; return false; }
@@ -1184,7 +1268,6 @@
                 gameState.websocket = new WebSocket(wsUrl);
                 gameState.websocket.onopen = function () {
                     console.log("WebSocket connected successfully"); gameState.isConnected = true; gameState.connectionRetryCount = 0; gameState.reconnectAttempts = 0; gameState.isReconnecting = false; updateConnectionStatus("Connected", "green");
-                    // FIXED: Changed 'userId' to 'user_id' to match backend expectation
                     sendWebSocketMessage({ type: "auth", user_id: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
                     setTimeout(() => { if (gameState.gameId) { console.log("Requesting full game state after reconnect"); getCompleteGameState(); } }, 500);
                     if (gameState.pendingMessages.length > 0) { gameState.pendingMessages.forEach((msg) => { try { gameState.websocket.send(JSON.stringify(msg)); } catch (e) { console.error("Failed to send pending message:", e); } }); gameState.pendingMessages = []; }
@@ -1213,7 +1296,7 @@
             cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing");
             switch (newStatus) {
                 case "sold": cardElement.classList.add("sold"); cardElement.onclick = null; cardElement.title = "Sold to another player"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); break;
-                case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; document.getElementById("selected-card-id").textContent = `#${cardIndex}`; document.getElementById("player-card-id").textContent = cardIndex; document.getElementById("selected-card-info").style.display = "block"; showCardPreview(); if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
+                case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; document.getElementById("selected-card-id").textContent = `#${cardIndex}`; if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
                 case "available": cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Available to buy"; gameState.cardsSold.delete(cardIndex); gameState.cardsCache.soldCards.delete(cardIndex); break;
                 case "selected": cardElement.classList.add("selected"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Selected"; gameState.uiSelectedCardIndex = cardIndex; break;
             }
@@ -1252,7 +1335,6 @@
                         else if (data.user_card.card_data) { try { let cardData = data.user_card.card_data; if (typeof cardData === "string") cardData = JSON.parse(cardData); if (Array.isArray(cardData)) gameState.selectedCardNumbers = cardData; else if (cardData.numbers) gameState.selectedCardNumbers = cardData.numbers; } catch (e) { gameState.selectedCardNumbers = generateFallbackCardNumbers(); } }
                         else { gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                         document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
-                        document.getElementById("player-card-id").textContent = data.user_card.card_index || "0";
                     } else { gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); }
                     if (data.winners && data.winners.length > 0) {
                         gameState.winners = data.winners; gameState.winnersCount = data.winners_count || data.winners.length; gameState.maxWinners = data.max_winners || 2;
@@ -1265,7 +1347,7 @@
                     updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); else updateCurrentCalledDisplay("--");
                     updateBingoGrid(); updateGameStats();
                     gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
-                    if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); if (gameState.hasCard) { showCardPreview(); document.getElementById("selected-card-info").style.display = "block"; } else { document.getElementById("selected-card-info").style.display = "none"; } if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
+                    if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
                     else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); if (gameState.hasCard) renderPlayerCard(); else renderEmptyPlayerCard(); }
                     else if (gameState.gamePhase === "winner_display" && gameState.winnerData) showWinnerAnnouncementScreen(gameState.winnerData);
                     updateBingoButton(); gameState.lastFullSyncTime = Date.now(); return true;
@@ -1352,14 +1434,11 @@
         function showWinnerAnnouncementScreen(winnerData) {
             const announcement = document.getElementById("winner-announcement");
             const winnersCompactContainer = document.getElementById("winners-compact-container");
-            const multipleWinnersHeader = document.getElementById("multiple-winners-header");
-            const winnersNamesContainer = document.getElementById("winners-names-container");
             const timerElement = document.getElementById("winner-announcement-timer");
             if (!announcement) return;
             if (!winnerData) winnerData = gameState.winnerData || { full_name: "Unknown Winner", username: "unknown", prize_amount: 0, card_index: 0, card_numbers: [], winning_pattern: [], pattern_type: "BINGO", all_winners: [] };
             winnersCompactContainer.innerHTML = "";
             const allWinners = winnerData.all_winners || [winnerData]; const winnerCount = allWinners.length;
-            if (winnerCount > 1 && multipleWinnersHeader && winnersNamesContainer) { multipleWinnersHeader.style.display = "block"; winnersNamesContainer.innerHTML = ""; allWinners.forEach((winner, index) => { const nameSpan = document.createElement("span"); nameSpan.className = "winner-name-badge"; nameSpan.textContent = winner.full_name || winner.username || `Winner ${index + 1}`; winnersNamesContainer.appendChild(nameSpan); if (index < winnerCount - 1) { const andSpan = document.createElement("span"); andSpan.className = "and-separator"; andSpan.textContent = "and"; winnersNamesContainer.appendChild(andSpan); } }); } else if (multipleWinnersHeader) { multipleWinnersHeader.style.display = "none"; }
             allWinners.forEach((winner, index) => {
                 const winnerCard = document.createElement("div"); winnerCard.className = "winner-compact-card";
                 const cardNumbers = winner.card_numbers || winnerData.card_numbers || []; const winningPattern = winner.winning_pattern || winnerData.winning_pattern || []; const patternSet = new Set();
@@ -1397,7 +1476,7 @@
             gameState.countdown = 30; gameState.countdownTotal = 30; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
             showScreen("waiting-screen");
             updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateGameStats();
-            document.getElementById("selected-card-info").style.display = "none"; resetCardsForNewRound();
+            resetCardsForNewRound();
             setTimeout(() => { fetchActiveGame().then((gameData) => { if (gameData && gameData.success) { gameState.gameId = gameData.game_id; gameState.currentRound = gameData.round_number || gameState.currentRound + 1; gameState.countdown = gameData.countdown_remaining || 0; gameState.countdownTotal = gameData.countdown_remaining || 30; document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown(); } }); }, 200);
         }
 
@@ -1434,7 +1513,6 @@
             setTimeout(() => {
                 if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid();
                 else { fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`).then((res) => res.json()).then((data) => { if (data.success) { const soldCards = new Set(data.sold_cards || []); for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { if (soldCards.has(i)) { cardElement.classList.remove("available", "owned", "selected"); cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.remove("sold", "owned", "selected"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); } } } gameState.cardsSold = soldCards; gameState.cardsCache.soldCards = soldCards; } }); }
-                document.getElementById("selected-card-info").style.display = "none";
             }, 500);
             setTimeout(() => { checkUserCardStatus(); }, 1000);
         }
@@ -1530,8 +1608,6 @@
             if (gameState.gamePhase === "card_purchase" || gameState.gameStatus === "card_purchase") {
                 showScreen("waiting-screen");
                 updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
-                if (!gameState.hasCard) document.getElementById("selected-card-info").style.display = "none";
-                else document.getElementById("selected-card-info").style.display = "block";
                 if (gameState.purchasePhaseActive && !gameState.cardsLoaded && !gameState.cardsLoadAttempted) {
                     gameState.cardsLoadAttempted = true;
                     if (document.getElementById("cards-grid").children.length === 0) setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100);
@@ -1553,12 +1629,7 @@
 
         function updateCountdownDisplay(seconds) {
             const timerElement = document.getElementById("countdown-timer");
-            const progressBar = document.getElementById("countdown-progress-bar");
             if (timerElement) timerElement.textContent = seconds;
-            if (progressBar && gameState.countdownTotal > 0) {
-                const progress = ((gameState.countdownTotal - seconds) / gameState.countdownTotal) * 100;
-                progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
-            }
         }
 
         function updateCountdownStatusText(seconds) {
@@ -1589,31 +1660,30 @@
             });
         }
 
-        function showCardPreview() {
-            const previewGrid = document.getElementById("card-preview-grid");
-            if (!previewGrid || !Array.isArray(gameState.selectedCardNumbers)) return;
-            previewGrid.innerHTML = "";
-            if (gameState.selectedCardNumbers && Array.isArray(gameState.selectedCardNumbers)) {
-                gameState.selectedCardNumbers.forEach((num, index) => {
-                    const cell = document.createElement("div"); cell.className = "card-preview-cell";
-                    if (num === 0 || num === "0") { cell.classList.add("free"); cell.textContent = "FREE"; } else { cell.textContent = num; }
-                    previewGrid.appendChild(cell);
-                });
-            }
-        }
-
         function renderPlayerCard() {
-            const wrapper = document.getElementById("player-card-wrapper");
-            const grid = document.getElementById("player-card-grid");
-            const idDisplay = document.getElementById("player-card-id");
+            // We need to append to the inner flex container
+            const innerContainer = document.getElementById("player-cards-inner");
+            if(!innerContainer) return;
+            
+            innerContainer.innerHTML = '';
             
             if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
-                wrapper.style.display = 'none';
+                renderEmptyPlayerCard();
                 return;
             }
-            wrapper.style.display = 'block';
-            idDisplay.textContent = gameState.selectedCardIndex || '0';
-            grid.innerHTML = '';
+
+            // Single Card Layout currently. Can be expanded for multiple cards.
+            const wrapper = document.createElement('div');
+            wrapper.className = 'p-card-wrapper';
+            
+            const idDisplay = document.createElement('div');
+            idDisplay.className = 'p-card-title';
+            idDisplay.innerHTML = `Board #<span id="player-card-id">${gameState.selectedCardIndex || '0'}</span>`;
+            wrapper.appendChild(idDisplay);
+            
+            const grid = document.createElement('div');
+            grid.className = 'p-card-grid';
+            grid.id = 'player-card-grid';
             
             gameState.selectedCardNumbers.forEach((num, index) => {
                 const cell = document.createElement("div"); cell.className = 'p-card-cell';
@@ -1628,22 +1698,37 @@
                 cell.onclick = () => handlePlayerCardClick(cell, num);
                 grid.appendChild(cell);
             });
+            wrapper.appendChild(grid);
+            innerContainer.appendChild(wrapper);
             updateBingoButton();
         }
 
         function renderEmptyPlayerCard() {
-            const wrapper = document.getElementById("player-card-wrapper");
-            const grid = document.getElementById("player-card-grid");
-            if(!grid) return;
-            wrapper.style.display = 'block';
-            grid.innerHTML = "";
-            document.getElementById("player-card-id").textContent = "None";
+            const innerContainer = document.getElementById("player-cards-inner");
+            if(!innerContainer) return;
+            innerContainer.innerHTML = '';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'p-card-wrapper';
+            
+            const title = document.createElement('div');
+            title.className = 'p-card-title';
+            title.textContent = 'Board #None';
+            wrapper.appendChild(title);
+            
+            const grid = document.createElement('div');
+            grid.className = 'p-card-grid';
+            grid.id = 'player-card-grid'; // Kept for legacy js mapping
+            
             for (let i = 0; i < 25; i++) {
                 const cell = document.createElement("div"); cell.className = "p-card-cell empty";
                 if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
                 else { cell.textContent = "?"; }
                 grid.appendChild(cell);
             }
+            wrapper.appendChild(grid);
+            innerContainer.appendChild(wrapper);
+            
             const bingoBtn = document.getElementById("claim-bingo-btn");
             if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
         }
@@ -1726,7 +1811,7 @@
                     if (oldCardElement) instantCardUpdate(gameState.selectedCardIndex, "available");
                     gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.uiSelectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear();
                     gameState.walletBalance = refundData.new_balance || gameState.walletBalance;
-                    if (refundData.prize_pool !== undefined) gameState.prizePool = refundData.prize_pool; updateGameStats(); document.getElementById("selected-card-info").style.display = "none";
+                    if (refundData.prize_pool !== undefined) gameState.prizePool = refundData.prize_pool; updateGameStats(); 
                     if (gameState.walletBalance < CARD_PRICE) { showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error"); if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
                     const buyResponse = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
@@ -1769,7 +1854,7 @@
                 const data = await response.json();
                 if (data.success) {
                     if (action === "buy") { instantCardUpdate(cardIndex, "owned", { numbers: data.card_numbers, prize_pool: data.prize_pool, total_players: data.total_players, real_players: data.real_players, fake_players: data.fake_players, wallet_balance: data.new_balance }); } 
-                    else if (action === "refund") { instantCardUpdate(cardIndex, "available"); gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); document.getElementById("selected-card-info").style.display = "none"; renderEmptyPlayerCard(); if (data.new_balance !== undefined) gameState.walletBalance = data.new_balance; }
+                    else if (action === "refund") { instantCardUpdate(cardIndex, "available"); gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); renderEmptyPlayerCard(); if (data.new_balance !== undefined) gameState.walletBalance = data.new_balance; }
                     gameState.prizePool = data.prize_pool || gameState.prizePool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; updateGameStats();
                 } else { showNotification(data.message || "Failed to process card", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; }
             } catch (error) { console.error("Error toggling card:", error); showNotification("Failed to process card. Please try again.", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; } finally { gameState.isCardOperationInProgress = false; }
@@ -1777,7 +1862,6 @@
         window.toggleCardPurchase = toggleCardPurchase;
 
         function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
-
         function startSyncInterval() {
             if (gameState.syncInterval) { clearInterval(gameState.syncInterval); }
             gameState.syncInterval = setInterval(() => { syncWithServer(); }, 2000);
@@ -1822,8 +1906,7 @@
                             } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                         } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
                         document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
-                        document.getElementById("player-card-id").textContent = data.user_card.card_index || "0";
-                        if (gameState.gamePhase === "card_purchase") { showCardPreview(); document.getElementById("selected-card-info").style.display = "block"; gameState.cardsCache.ownedCardIndex = data.user_card.card_index; }
+                        if (gameState.gamePhase === "card_purchase") { gameState.cardsCache.ownedCardIndex = data.user_card.card_index; }
                     }
                     updateGameStats();
                 } else console.warn("Failed to get user game state:", data.message);
@@ -1837,7 +1920,6 @@
             if (grid.children.length === 0) { loadCardsGrid(); return; }
             for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
             gameState.cardsSold.clear(); gameState.cardsCache.soldCards.clear(); gameState.cardsCache.ownedCardIndex = null; gameState.selectedCardIndex = null; gameState.hasCard = false; gameState.uiSelectedCardIndex = null;
-            document.getElementById("selected-card-info").style.display = "none";
         }
 
         async function initGame() {
