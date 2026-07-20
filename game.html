@@ -10,92 +10,85 @@
 
     <style>
         /* =========================================================
-           AFRO BINGO UI - DESIGN SYSTEM
-           (Based on the provided images, Light Lavender / White / Purple)
+           EXACT UI DESIGN SYSTEM (From Your Images)
            ========================================================= */
         :root {
-            --brand-primary: #6A0DAD;       /* Deep Purple */
-            --brand-secondary: #B88CCF;     /* Secondary Purple */
-            --brand-light: #E9D8F4;         /* Light Purple */
-            --brand-bg: #CDA7D9;            /* Very Light Lavender (Background) */
+            --bg-main: #EAD6F1;            /* Light pastel purple background */
             --surface-white: #FFFFFF;
-            --shadow-soft: 0px 3px 10px rgba(106, 13, 173, 0.08);
-            --radius-card: 20px;
-            --radius-btn: 16px;
-            --radius-tile: 8px;
-            --accent-orange: #F68B1F;       /* Bingo numbers */
-            --accent-green: #3BB54A;        /* Success / Win */
-            --accent-red: #C62828;          /* Loss */
-            --text-primary: #2B2B2B;
-            --text-secondary: #6B6B6B;
-            --text-muted: #A7A7A7;
+            --purple-dark: #6A1B9A;        /* Deep purple for banners & active tabs */
+            --purple-light: #E1BEE7;       /* Light purple for backgrounds */
+            --orange-accent: #FF9800;      /* Orange for B letters and buttons */
+            --orange-light: #FFE0B2;
+            --btn-blue: #2196F3;           /* Refresh button color */
+            --btn-green: #4CAF50;          /* Automatic button color */
+            --text-main: #212121;
+            --text-muted: #757575;
             --text-white: #FFFFFF;
-            --stat-value: #2ECC71;          /* Kept Green for stats */
+            --border-light: #e0e0e0;
+            --red-accent: #C62828;
+            
+            /* Bingo Letter Colors (Exact from Image) */
+            --letter-b: #FFC107; /* Yellow/Orange */
+            --letter-i: #4CAF50; /* Green */
+            --letter-n: #1976D2; /* Blue */
+            --letter-g: #F44336; /* Red */
+            --letter-o: #9C27B0; /* Purple */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--brand-bg);
-            color: var(--text-primary);
+            background-color: var(--bg-main);
+            color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 80px;
+            padding-bottom: 80px; /* Leave room for bottom nav */
             overflow-x: hidden;
         }
 
-        /* --- Header --- */
+        /* --- Telegram Mini App Header --- */
         .app-header {
-            height: 64px;
             background: var(--surface-white);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 16px;
+            padding: 12px 16px;
             position: sticky;
             top: 0;
             z-index: 50;
-            border-bottom: 1px solid #f0f0f0;
-            box-shadow: 0 2px 8px rgba(106, 13, 173, 0.04);
         }
-        .app-header .title { font-size: 26px; font-weight: 700; color: var(--brand-primary); }
-        .app-header i { font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+        .app-header .close { color: var(--btn-blue); font-size: 18px; font-weight: 500; cursor: pointer; }
+        .app-header .title-container { text-align: center; }
+        .app-header .title { font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .app-header .subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+        .app-header .menu-btn { color: var(--btn-blue); font-size: 22px; cursor: pointer; }
 
-        /* --- Bottom Navigation --- */
+        /* --- Bottom Navigation Bar --- */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             height: 70px;
-            background: var(--brand-light);
+            background: var(--purple-light);
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top-left-radius: 18px;
             border-top-right-radius: 18px;
             z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
             box-shadow: 0 -4px 12px rgba(106, 13, 173, 0.06);
         }
         .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 100%;
-            text-decoration: none;
-            color: var(--brand-primary);
-            transition: all 0.2s ease;
-            cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 60px; height: 100%; cursor: pointer;
+            color: var(--text-muted); transition: all 0.2s ease;
+            background: transparent; border: none;
         }
-        .nav-btn i { font-size: 22px; margin-bottom: 4px; }
-        .nav-btn span { font-size: 12px; font-weight: 500; }
+        .nav-btn i { font-size: 20px; margin-bottom: 4px; }
+        .nav-btn span { font-size: 10px; font-weight: 500; }
         .nav-btn.active {
-            background: var(--brand-primary);
+            background: var(--purple-dark);
             color: var(--text-white);
-            border-radius: 18px;
+            border-radius: 16px;
             height: 50px;
             width: 70px;
             margin-top: -10px;
@@ -107,57 +100,23 @@
         .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
         .page-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Original Screens */
         .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
 
         /* --- Components --- */
         .card {
             background: var(--surface-white);
-            border-radius: var(--radius-card);
+            border-radius: 20px;
             padding: 16px;
-            box-shadow: var(--shadow-soft);
+            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
             margin-bottom: 12px;
         }
-        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
-
-        .btn-secondary {
-            background: var(--surface-white);
-            color: var(--brand-primary);
-            border: 1px solid var(--brand-primary);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: var(--brand-primary);
-            color: var(--text-white);
-            border: none;
-            border-radius: var(--radius-btn);
-            height: 44px;
-            padding: 0 24px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.12s ease;
-        }
-        .btn-primary:active { transform: scale(0.97); }
-        .btn-primary:disabled { opacity: 0.5; transform: none; }
-
-        /* =========================================================
-           GAME STATS STRIP (Waiting / Purchase Phase)
-           ========================================================= */
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; }
+        
+        /* --- WAITING SCREEN (Card Purchase) --- */
         .game-stats {
             background: var(--surface-white);
-            border-radius: var(--radius-btn);
+            border-radius: 12px;
             padding: 12px;
             margin-bottom: 12px;
             display: grid;
@@ -167,60 +126,51 @@
         }
         .stat-item { text-align: center; }
         .stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
-        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-primary); }
-        .countdown-timer { font-size: 24px; font-weight: 700; color: var(--accent-orange) !important; }
+        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .countdown-timer { font-size: 24px; font-weight: 700; color: var(--orange-accent) !important; }
+        .stat-value.green { color: var(--stat-value) !important; }
 
-        /* =========================================================
-           ACTIVE GAME UI (Exact Replica of Images)
-           ========================================================= */
-        
-        /* 1. Top Stats Row (Game ID, Derash, Players, Bet, Call) */
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
+            max-height: 420px; min-height: 420px; overflow-y: auto; padding: 8px;
+            background: #fcfcfc; border-radius: 12px; border: 1px solid #f0f0f0; margin-bottom: 8px; width: 100%;
+        }
+        .card-item {
+            aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 14px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
+        }
+        .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
+        .card-item.sold { background: #d1c4e9; color: #888; cursor: not-allowed; }
+        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
+
+        /* --- GAME SCREEN (Active) --- */
         .stats-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            padding: 10px 12px;
-            background: var(--brand-bg);
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+            background: var(--bg-main); margin-bottom: 12px;
         }
         .stat-box {
             background: var(--surface-white);
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            padding: 6px 2px;
+            border: 1px solid #e0e0e0; border-radius: 8px;
+            text-align: center; padding: 6px 2px;
         }
         .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; }
         .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
 
-        /* 2. Game Layout (Left: Board, Right: Controls/Cards) */
-        .game-layout {
-            display: flex;
-            gap: 12px;
-            padding: 0 12px 80px 12px;
-            align-items: flex-start;
-            max-width: 100%;
-        }
-
-        /* --- LEFT: BINGO BOARD --- */
+        .game-layout { display: flex; gap: 12px; align-items: flex-start; max-width: 100%; }
         .board-container {
-            background: var(--surface-white);
-            border-radius: 12px;
-            padding: 8px;
-            width: 160px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: var(--surface-white); border-radius: 12px; padding: 8px;
+            width: 160px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .board-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
         .board-header-cell {
-            flex: 1; text-align: center; border-radius: 6px; padding: 6px 0;
+            flex: 1; text-align: center; border-radius: 4px; padding: 6px 0;
             font-weight: 700; font-size: 14px; color: var(--text-white);
         }
-        /* Exact colors from the image */
-        .board-header-cell.b { background: #FFC107; }
-        .board-header-cell.i { background: #4CAF50; }
-        .board-header-cell.n { background: #1976D2; }
-        .board-header-cell.g { background: #F44336; }
-        .board-header-cell.o { background: #9C27B0; }
+        .board-header-cell.b { background: var(--letter-b); }
+        .board-header-cell.i { background: var(--letter-i); }
+        .board-header-cell.n { background: var(--letter-n); }
+        .board-header-cell.g { background: var(--letter-g); }
+        .board-header-cell.o { background: var(--letter-o); }
         
         .board-columns { display: flex; gap: 2px; }
         .board-column { display: flex; flex-direction: column; gap: 2px; flex: 1; }
@@ -231,64 +181,43 @@
             border: 1px solid transparent; transition: all 0.1s ease;
         }
         .board-cell.called { background: var(--surface-white); border: 1px solid #ccc; color: var(--text-muted); }
-        .board-cell.called.highlight-b { background: #FFC107; color: white; border-color: #FFC107; }
-        .board-cell.called.highlight-i { background: #4CAF50; color: white; border-color: #4CAF50; }
-        .board-cell.called.highlight-n { background: #1976D2; color: white; border-color: #1976D2; }
-        .board-cell.called.highlight-g { background: #F44336; color: white; border-color: #F44336; }
-        .board-cell.called.highlight-o { background: #9C27B0; color: white; border-color: #9C27B0; }
+        .board-cell.called.highlight-b { background: var(--letter-b); color: white; border-color: var(--letter-b); }
+        .board-cell.called.highlight-i { background: var(--letter-i); color: white; border-color: var(--letter-i); }
+        .board-cell.called.highlight-n { background: var(--letter-n); color: white; border-color: var(--letter-n); }
+        .board-cell.called.highlight-g { background: var(--letter-g); color: white; border-color: var(--letter-g); }
+        .board-cell.called.highlight-o { background: var(--letter-o); color: white; border-color: var(--letter-o); }
 
-        /* --- RIGHT: CONTROLS & CARDS --- */
         .right-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-
-        /* Current Call Banner */
+        
         .current-call-card {
-            background: var(--brand-primary);
-            border-radius: 20px;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--text-white);
-            box-shadow: 0 4px 12px rgba(106, 27, 154, 0.25);
+            background: var(--purple-dark);
+            border-radius: 20px; padding: 8px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--text-white); box-shadow: 0 4px 12px rgba(106, 27, 154, 0.25);
         }
         .current-call-label { font-weight: 700; font-size: 16px; }
         .current-call-badge {
-            background: var(--accent-orange);
-            color: var(--text-white);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-weight: 700; font-size: 18px;
+            background: var(--orange-accent); color: var(--text-white);
+            padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 18px;
         }
 
-        /* Recent Calls */
         .recent-calls-box {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            border: 1px solid rgba(255,255,255,0.8);
-            min-height: 44px;
+            background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px;
+            display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid rgba(255,255,255,0.8); min-height: 44px;
         }
         .call-bubble {
             border-radius: 20px; padding: 2px 12px; font-weight: 700; font-size: 13px;
             display: inline-flex; align-items: center; height: 26px; color: white;
         }
-        .call-bubble.b { background: #FFC107; }
-        .call-bubble.i { background: #4CAF50; }
-        .call-bubble.n { background: #1976D2; }
-        .call-bubble.g { background: #F44336; }
-        .call-bubble.o { background: #9C27B0; }
+        .call-bubble.b { background: var(--letter-b); }
+        .call-bubble.i { background: var(--letter-i); }
+        .call-bubble.n { background: var(--letter-n); }
+        .call-bubble.g { background: var(--letter-g); }
+        .call-bubble.o { background: var(--letter-o); }
 
-        /* Controls Row */
         .controls-row {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 12px;
-            padding: 6px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: rgba(255, 255, 255, 0.6); border-radius: 12px;
+            padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.8);
         }
         .control-group { display: flex; align-items: center; gap: 8px; }
@@ -297,44 +226,32 @@
             display: flex; align-items: center; justify-content: center;
             border-radius: 20px; padding: 2px 12px; height: 24px; font-size: 10px; font-weight: 700; color: white; cursor: pointer;
         }
-        .control-pill.purple { background: var(--brand-primary); }
-        .control-pill.orange { background: var(--accent-orange); }
+        .control-pill.purple { background: var(--purple-dark); }
+        .control-pill.orange { background: var(--orange-accent); }
 
-        /* Player Cards (Exact Grid Replica) */
-        .player-cards-container { display: flex; flex-direction: column; gap: 8px; }
         .p-card-wrapper {
-            background: var(--surface-white);
-            border-radius: 12px;
-            padding: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-light);
+            background: var(--surface-white); border-radius: 12px; padding: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
         }
-        .p-card-title { font-size: 10px; font-weight: 600; color: var(--accent-green); text-align: center; margin-bottom: 4px; }
-        .p-card-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
-        }
+        .p-card-title { font-size: 10px; font-weight: 600; color: var(--btn-green); text-align: center; margin-bottom: 4px; }
+        .p-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
         .p-card-cell {
             background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
             display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 11px; color: var(--text-main);
-            border: 1px solid #e0e0e0; cursor: pointer;
+            border: 1px solid var(--border-light); cursor: pointer;
         }
-        .p-card-cell.marked { background: var(--brand-primary) !important; color: white !important; border-color: var(--brand-primary) !important; }
+        .p-card-cell.marked { background: var(--purple-dark) !important; color: white !important; border-color: var(--purple-dark) !important; }
         .p-card-cell.free { background: #CFD8DC; border-color: #90A4AE; font-size: 9px; }
         .p-card-cell.star { position: relative; }
-        .p-card-cell.star::after { content: '★'; position: absolute; top: -4px; right: -4px; color: var(--brand-primary); font-size: 10px; }
+        .p-card-cell.star::after { content: '★'; position: absolute; top: -4px; right: -4px; color: var(--purple-dark); font-size: 10px; }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-        /* --- Bottom Action Buttons (Refresh / BINGO) --- */
+        /* --- Bottom Action Buttons --- */
         .bottom-actions {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background: var(--surface-white);
-            padding: 10px 16px;
-            display: none;
-            gap: 10px;
-            border-top: 1px solid #e0e0e0;
-            z-index: 99;
+            position: fixed; bottom: 70px; left: 0; width: 100%;
+            background: var(--surface-white); padding: 10px 16px;
+            display: none; gap: 10px; border-top: 1px solid var(--border-light); z-index: 99;
         }
         .bottom-actions.active { display: flex; }
         .action-btn {
@@ -342,59 +259,56 @@
             font-weight: 700; font-size: 16px; color: white;
             display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
         }
-        .action-btn.blue { background: #2196F3; }
-        .action-btn.orange { background: var(--accent-orange); }
-        .action-btn.green { background: #4CAF50; }
+        .action-btn.blue { background: var(--btn-blue); }
+        .action-btn.orange { background: var(--orange-accent); }
+        .action-btn.green { background: var(--btn-green); }
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* =========================================================
-           HISTORY, WALLET, PROFILE (Matched to Images)
-           ========================================================= */
-        
-        /* History Card */
+        /* --- HISTORY PAGE (Matches Image) --- */
         .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
         .history-winner-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .history-winner-badge.loss { background: #FFEBEE; color: var(--accent-red); }
-        .history-winner-badge.win { background: #E8F5E9; color: var(--accent-green); }
+        .history-winner-badge.loss { background: #FFEBEE; color: var(--red-accent); }
+        .history-winner-badge.win { background: #E8F5E9; color: var(--btn-green); }
 
-        /* Wallet & Profile Shared Styles */
+        /* --- WALLET PAGE --- */
         .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-        .wallet-balance-big { font-size: 28px; font-weight: 700; color: var(--brand-primary); }
-        .wallet-tabs { display: flex; background: var(--brand-light); border-radius: 20px; padding: 4px; margin-top: 16px; }
+        .wallet-balance-big { font-size: 28px; font-weight: 700; color: var(--purple-dark); }
+        .wallet-tabs { display: flex; background: var(--purple-light); border-radius: 20px; padding: 4px; margin-top: 16px; }
         .wallet-tab { flex: 1; text-align: center; padding: 6px 0; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); }
-        .wallet-tab.active { background: var(--brand-primary); color: var(--text-white); }
+        .wallet-tab.active { background: var(--purple-dark); color: var(--text-white); }
         
-        .wallet-total-card { background: var(--brand-primary); border-radius: 20px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
+        .wallet-total-card { background: var(--purple-dark); border-radius: 20px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
         .wallet-total-label { font-size: 12px; opacity: 0.8; }
         .wallet-total-amount { font-size: 28px; font-weight: 700; margin-top: 4px; }
         
         .wallet-split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
         .wallet-split-box { background: var(--surface-white); border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); }
-        .wallet-split-amount { font-weight: 700; font-size: 18px; color: var(--brand-primary); }
+        .wallet-split-amount { font-weight: 700; font-size: 18px; color: var(--purple-dark); }
         .wallet-split-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-        /* Profile Page */
+        /* --- PROFILE PAGE (Matches Image) --- */
         .profile-avatar { width: 60px; height: 60px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .profile-avatar-text { color: var(--accent-orange); font-size: 28px; font-weight: 700; }
+        .profile-avatar-text { color: var(--orange-accent); font-size: 28px; font-weight: 700; }
         .profile-stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
         .profile-stat-item:last-child { border-bottom: none; }
-        .profile-stat-icon { color: var(--brand-primary); width: 24px; text-align: center; }
+        .profile-stat-icon { color: var(--purple-dark); width: 24px; text-align: center; }
         .profile-stat-label { display: flex; align-items: center; gap: 12px; font-weight: 500; color: var(--text-main); }
-        .profile-stat-value { font-weight: 700; color: var(--brand-primary); }
+        .profile-stat-value { font-weight: 700; color: var(--purple-dark); }
         .profile-toggle { background: #d32f2f; color: white; padding: 2px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .profile-toggle.on { background: var(--accent-green); }
+        .profile-toggle.on { background: var(--btn-green); }
 
-        /* Overlays */
+        /* --- Overlays --- */
         #access-denied { display: none; position: fixed; inset: 0; background: #1a1a2e; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .winner-display { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .winner-content { background: #fff; border-radius: 20px; padding: 20px; text-align: center; max-width: 320px; border: 2px solid var(--accent-green); color: var(--text-main); }
-        .winner-content h2 { font-size: 20px; color: var(--accent-green); margin: 10px 0; }
-        .winner-trophy { font-size: 30px; color: var(--accent-green); margin: 5px 0; }
-        .winner-countdown { font-size: 14px; margin: 8px 0 5px; opacity: 0.9; color: var(--accent-green); }
+        .winner-content { background: #fff; border-radius: 20px; padding: 20px; text-align: center; max-width: 320px; border: 2px solid var(--btn-green); color: var(--text-main); }
+        .winner-content h2 { font-size: 20px; color: var(--btn-green); margin: 10px 0; }
+        .winner-trophy { font-size: 30px; color: var(--btn-green); margin: 5px 0; }
+        .winner-countdown { font-size: 14px; margin: 8px 0 5px; opacity: 0.9; color: var(--btn-green); }
+        .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
         @media (max-width: 480px) {
             .game-layout { flex-direction: column; align-items: center; }
@@ -442,15 +356,18 @@
 
     <!-- ==================== APP HEADER ==================== -->
     <header class="app-header">
-        <i class="fas fa-times"></i>
-        <span class="title">Afro Bingo</span>
-        <i class="fas fa-ellipsis-v"></i>
+        <div class="close">Close</div>
+        <div class="title-container">
+            <div class="title">Afro Bingo</div>
+            <div class="subtitle">mini app</div>
+        </div>
+        <div class="menu-btn"><i class="fas fa-ellipsis-circle"></i></div>
     </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
-        <!-- WAITING SCREEN (Card Purchase) - FIXED: Restored original IDs for JS -->
+        <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
             <div class="game-stats">
                 <div class="stat-item">
@@ -470,39 +387,38 @@
                 </div>
             </div>
 
-            <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--accent-red); border:1px solid var(--accent-red); text-align:center;">
+            <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center;">
                 <i class="fas fa-exclamation-triangle"></i> <span id="phase-error-text">Card purchase only during purchase phase</span>
             </div>
 
             <div class="cards-selection">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <div style="font-size: 14px; font-weight: 600; color: var(--brand-primary);"><i class="fas fa-shopping-cart"></i> Select Board</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Price: <span style="color: var(--brand-primary); font-weight:600;">10 birr</span></div>
+                <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; margin-bottom: 8px; border: 1px solid var(--border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="font-size: 14px; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board</div>
+                        <div style="font-size: 11px; opacity: 0.8;">Price: <span style="color: var(--purple-dark); font-weight: 600;">10 birr</span></div>
                     </div>
 
                     <div style="margin-bottom: 10px; display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
-                        <span><span style="display:inline-block; width:10px; height:10px; background:#A0522D; border-radius:50%;"></span> Available</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:#ddd; border-radius:50%;"></span> Sold</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--accent-green); border-radius:50%;"></span> Yours</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--orange-accent); border-radius:50%;"></span> Available</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:#d1c4e9; border-radius:50%;"></span> Sold</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:50%;"></span> Yours</span>
                     </div>
 
                     <div class="cards-grid" id="cards-grid"></div>
                 </div>
 
                 <div class="selected-card-info" id="selected-card-info" style="display: none">
-                    <div class="card">
-                        <div class="card-info-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <div><strong>Your Card:</strong> <span id="selected-card-id">#0</span></div>
-                            <div class="card-price" style="color: var(--accent-orange); font-weight: 600;">10 birr</div>
+                    <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; border: 1px solid var(--border-light);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div><strong>Your Board:</strong> <span id="selected-card-id">#0</span></div>
+                            <div style="color: var(--orange-accent); font-weight: 600;">10 birr</div>
                         </div>
-                        <div class="card-cut" style="font-size: 11px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
-
-                        <div class="card-preview-section" style="margin-top: 15px;">
-                            <div class="card-preview-title" style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-eye"></i> Your Card Preview
+                        <div style="font-size: 11px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
+                        <div style="margin-top: 15px;">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-eye"></i> Your Board Preview
                             </div>
-                            <div class="card-preview-container" style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center; align-items: center;">
+                            <div style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center;">
                                 <div class="card-preview-grid" id="card-preview-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 180px; height: 180px;"></div>
                             </div>
                         </div>
@@ -511,7 +427,7 @@
 
                 <div class="countdown-status-with-round" id="countdown-status" style="display: none">
                     <div class="countdown-round-info" style="font-weight: 600;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span> - Card Purchase Phase</div>
-                    <div style="font-size: 16px; font-weight: 700; color: var(--brand-primary);" id="countdown-status-text">30 seconds remaining</div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
                 </div>
             </div>
         </div>
@@ -618,11 +534,11 @@
                 </div>
                 <div>
                     <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
-                    <div id="history-total-wins" style="font-size: 20px; font-weight: 700; color: var(--accent-green);">0</div>
+                    <div id="history-total-wins" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0</div>
                 </div>
                 <div>
                     <div style="font-size: 11px; color: var(--text-muted);">Total Winnings</div>
-                    <div id="history-total-winnings" style="font-size: 20px; font-weight: 700; color: var(--stat-value);">0 birr</div>
+                    <div id="history-total-winnings" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0 birr</div>
                 </div>
             </div>
         </div>
@@ -630,13 +546,6 @@
         <!-- History List -->
         <div id="history-list-container">
             <div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>
-        </div>
-        
-        <!-- Pagination -->
-        <div id="history-pagination" style="display: none; display: flex; justify-content: center; gap: 10px; margin-top: 12px;">
-            <button class="btn-secondary" id="history-prev-btn" onclick="loadPlayerHistory(currentHistoryPage - 1)"><i class="fas fa-chevron-left"></i> Prev</button>
-            <span style="display: flex; align-items: center; font-size: 14px; color: var(--text-secondary);">Page <span id="history-current-page">1</span> of <span id="history-total-pages">1</span></span>
-            <button class="btn-secondary" id="history-next-btn" onclick="loadPlayerHistory(currentHistoryPage + 1)">Next <i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 
@@ -658,13 +567,11 @@
             </div>
         </div>
 
-        <!-- Total Balance Purple Card -->
         <div class="wallet-total-card">
             <div class="wallet-total-label">TOTAL BALANCE</div>
             <div class="wallet-total-amount" id="wallet-total-balance">Br 0.00</div>
         </div>
 
-        <!-- Split Grid -->
         <div class="wallet-split-grid">
             <div class="wallet-split-box">
                 <div class="wallet-split-amount">Br 0.00</div>
@@ -679,14 +586,6 @@
                 <div class="wallet-split-label">DEPOSITED</div>
             </div>
         </div>
-        
-        <!-- Transaction History (Wallet View) -->
-        <div class="card" id="wallet-history-container" style="display:none;">
-            <div style="font-weight:600; margin-bottom:12px;">Recent Transactions</div>
-            <div id="wallet-transaction-list">
-                <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size:12px;">No transactions found</div>
-            </div>
-        </div>
     </div>
 
     <!-- ==================== PAGE: PROFILE ==================== -->
@@ -698,7 +597,7 @@
                     <span class="profile-avatar-text" id="profile-avatar-letter">?</span>
                 </div>
                 <div style="flex: 1;">
-                    <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--brand-primary);">@User</div>
+                    <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--purple-dark);">@User</div>
                     <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-muted); font-size: 14px;">
                         <i class="fas fa-phone"></i>
                         <span id="profile-phone">+251970774343</span>
@@ -762,10 +661,10 @@
 
     <!-- ==================== BOTTOM NAVIGATION ==================== -->
     <nav class="bottom-nav">
-        <div class="nav-btn active" onclick="switchTab('game')"><i class="fas fa-gamepad"></i><span>Game</span></div>
-        <div class="nav-btn" onclick="switchTab('history')"><i class="fas fa-clock"></i><span>History</span></div>
-        <div class="nav-btn" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
-        <div class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+        <button class="nav-btn active" onclick="switchTab('game')"><i class="fas fa-gamepad"></i><span>Game</span></button>
+        <button class="nav-btn" onclick="switchTab('history')"><i class="fas fa-clock"></i><span>History</span></button>
+        <button class="nav-btn" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></button>
+        <button class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></button>
     </nav>
 
     <!-- ==================== BOTTOM ACTION BUTTONS (GAME FLOATING BAR) ==================== -->
@@ -774,7 +673,7 @@
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
 
-    <!-- ==================== SCRIPTS ==================== -->
+    <!-- ==================== SCRIPTS (COMPLETE ORIGINAL LOGIC) ==================== -->
     <script>
         // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
@@ -797,7 +696,7 @@
         }
         window.switchTab = switchTab;
 
-        // ==================== NEW API FUNCTIONS ====================
+        // ==================== API FUNCTIONS FOR HISTORY & PROFILE ====================
         let currentHistoryPage = 1;
         
         async function loadPlayerHistory(page = 1) {
@@ -826,7 +725,7 @@
                         html += `
                             <div class="card" style="padding:16px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <span style="font-weight: 700; font-size: 15px; color: var(--brand-primary);">Game #${game.game_id}</span>
+                                    <span style="font-weight: 700; font-size: 15px; color: var(--purple-dark);">Game #${game.game_id}</span>
                                     <span class="history-winner-badge ${isWin ? 'win' : 'loss'}">${isWin ? 'WIN' : 'LOSS'}</span>
                                 </div>
                                 <div class="history-date">${new Date(game.game_date).toLocaleString()}</div>
@@ -844,7 +743,7 @@
                 }
             } catch (error) {
                 console.error("Error loading history:", error);
-                listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--accent-red); padding:20px;">Failed to load history.</div>';
+                listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--red-accent); padding:20px;">Failed to load history.</div>';
             }
         }
 
@@ -913,7 +812,7 @@
         }
         window.toggleAuto = toggleAuto;
 
-        // ==================== YOUR ORIGINAL LOGIC (UNTOUCHED) ====================
+        // ==================== YOUR ORIGINAL LOGIC (COMPLETE) ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
         const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
         const CARD_PRICE = 10.0;
