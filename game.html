@@ -30,6 +30,11 @@
             --letter-n: #1976D2; /* Blue */
             --letter-g: #F44336; /* Red */
             --letter-o: #9C27B0; /* Purple */
+            
+            /* Flutter Card Colors */
+            --card-header-bg: #6A1B9A;
+            --card-progress-bg: #E0E0E0;
+            --win-badge-bg: #4CAF50;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -190,7 +195,7 @@
 
         #phase-error-message { display:none; background: #FFEBEE; border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center; font-size: 14px; }
 
-        /* --- GAME SCREEN (Active - Images 6 & 7) --- */
+        /* --- GAME SCREEN (Active - Identical to Flutter) --- */
         .game-stats-row {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
             background: var(--bg-main); margin: 12px 0;
@@ -263,6 +268,7 @@
         .call-bubble.g { background: var(--letter-g); }
         .call-bubble.o { background: var(--letter-o); }
 
+        /* --- Flutter-Style Controls & Cards --- */
         .controls-row {
             background: rgba(255, 255, 255, 0.6); border-radius: 12px;
             padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
@@ -275,32 +281,137 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
-        /* Player Cards Container (Image 7) */
-        .player-cards-container-inner {
+        /* Player Cards Container (Flutter Multi-Card) */
+        .player-cards-container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 300px;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .player-cards-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-white);
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 6px;
+        }
+        .player-cards-header .title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .player-cards-header .reset-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-white);
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .player-cards-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 380px;
             overflow-y: auto;
-            padding-right: 4px;
         }
+
         .p-card-wrapper {
-            background: var(--surface-white); border-radius: 12px; padding: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
+            background: var(--surface-white); 
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); 
+            border: none;
+            overflow: hidden;
         }
-        .p-card-title { font-size: 11px; font-weight: 600; color: var(--btn-green); text-align: center; margin-bottom: 4px; }
-        .p-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+        
+        .p-card-header {
+            background: var(--purple-dark);
+            color: var(--text-white);
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .p-card-header .win-badge {
+            background: var(--btn-green);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+        }
+        
+        .p-card-letters {
+            display: flex;
+            gap: 2px;
+            padding: 6px 6px 0 6px;
+        }
+        .p-card-letter-box {
+            flex: 1;
+            text-align: center;
+            border-radius: 4px;
+            padding: 4px 0;
+            font-weight: 700;
+            font-size: 10px;
+            color: white;
+        }
+
+        .p-card-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
+            padding: 6px;
+        }
         .p-card-cell {
-            background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 11px; color: var(--text-main);
-            border: 1px solid var(--border-light); cursor: pointer;
+            aspect-ratio: 1;
+            background: #f5f5f5;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-main);
+            cursor: pointer;
         }
-        .p-card-cell.marked { background: var(--purple-dark) !important; color: white !important; border-color: var(--purple-dark) !important; }
-        .p-card-cell.free { background: #CFD8DC; border-color: #90A4AE; font-size: 9px; }
+        .p-card-cell.marked { 
+            background: var(--btn-green) !important; 
+            color: white !important; 
+            border-color: #388E3C !important;
+            text-decoration: line-through;
+        }
+        .p-card-cell.free { background: #FFF9C4; border-color: #FDD835; }
         .p-card-cell.star { position: relative; }
-        .p-card-cell.star::after { content: '★'; position: absolute; top: -4px; right: -4px; color: var(--purple-dark); font-size: 10px; }
-        .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
+
+        .p-card-footer {
+            background: #f5f5f5;
+            padding: 4px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 9px;
+            font-weight: 500;
+            border-top: 1px solid #e0e0e0;
+        }
+        .p-card-footer progress {
+            flex: 1;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--card-progress-bg);
+            color: var(--purple-dark);
+        }
+        .p-card-footer progress::-webkit-progress-bar { background: var(--card-progress-bg); border-radius: 2px; }
+        .p-card-footer progress::-webkit-progress-value { background: var(--purple-dark); border-radius: 2px; }
 
         /* --- Bottom Action Buttons --- */
         .bottom-actions {
@@ -502,7 +613,7 @@
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN (Images 6 & 7) -->
+        <!-- ACTIVE GAME SCREEN (Matched to Flutter Layout) -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
@@ -546,7 +657,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT: Controls & Cards -->
+                <!-- RIGHT: Controls & Flutter-Style Cards -->
                 <div class="right-panel">
                     
                     <!-- Current Call Banner -->
@@ -576,9 +687,15 @@
                         </div>
                     </div>
 
-                    <!-- Player Cards Container (Image 7) -->
+                    <!-- Player Cards Container (Multi-Card Stack) -->
                     <div class="player-cards-container" id="player-cards-container">
-                        <div class="player-cards-container-inner" id="player-cards-inner">
+                        <div class="player-cards-header">
+                            <div class="title">
+                                <i class="fas fa-layer-group"></i> Cards (<span id="player-card-count">0</span>)
+                            </div>
+                            <button class="reset-btn" onclick="window.resetGame()"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="player-cards-inner" id="player-cards-inner">
                             <!-- Rendered by JS -->
                         </div>
                     </div>
@@ -1667,25 +1784,54 @@
             });
         }
 
+        // ==================== Flutter-Style Multi-Card Renderer ====================
         function renderPlayerCard() {
             const innerContainer = document.getElementById("player-cards-inner");
+            const countDisplay = document.getElementById("player-card-count");
+            
             if(!innerContainer) return;
             innerContainer.innerHTML = '';
+            
+            // Update header count
+            if(countDisplay) countDisplay.textContent = gameState.hasCard ? '1' : '0';
+
             if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
                 renderEmptyPlayerCard();
                 return;
             }
+
+            // Create the Card Wrapper
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            const idDisplay = document.createElement('div');
-            idDisplay.className = 'p-card-title';
-            idDisplay.innerHTML = `Board #<span id="player-card-id">${gameState.selectedCardIndex || '0'}</span>`;
-            wrapper.appendChild(idDisplay);
+            
+            // 1. Header: Board Name + Win Badge
+            const header = document.createElement('div');
+            header.className = 'p-card-header';
+            header.innerHTML = `
+                <span>Board #${gameState.selectedCardIndex || '0'}</span>
+            `;
+            wrapper.appendChild(header);
+
+            // 2. Bingo Letter Row
+            const letters = document.createElement('div');
+            letters.className = 'p-card-letters';
+            const letterColors = ['var(--letter-b)', 'var(--letter-i)', 'var(--letter-n)', 'var(--letter-g)', 'var(--letter-o)'];
+            'BINGO'.split('').forEach((l, i) => {
+                const box = document.createElement('div');
+                box.className = 'p-card-letter-box';
+                box.style.background = letterColors[i];
+                box.textContent = l;
+                letters.appendChild(box);
+            });
+            wrapper.appendChild(letters);
+
+            // 3. 5x5 Grid
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
-            grid.id = 'player-card-grid';
+            
             gameState.selectedCardNumbers.forEach((num, index) => {
-                const cell = document.createElement("div"); cell.className = 'p-card-cell';
+                const cell = document.createElement("div"); 
+                cell.className = 'p-card-cell';
                 if(num === 0 || num === '0') { 
                     cell.classList.add('free'); 
                     cell.textContent = '★'; 
@@ -1698,23 +1844,41 @@
                 grid.appendChild(cell);
             });
             wrapper.appendChild(grid);
+
+            // 4. Flutter-Style Progress Footer
+            const footer = document.createElement('div');
+            footer.className = 'p-card-footer';
+            const markedCount = gameState.markedNumbers.size;
+            const totalCells = 25; // including free space
+            const progressVal = markedCount / totalCells;
+            
+            footer.innerHTML = `
+                <span>${markedCount}/${totalCells}</span>
+                <progress value="${progressVal}" max="1"></progress>
+            `;
+            wrapper.appendChild(footer);
+
             innerContainer.appendChild(wrapper);
             updateBingoButton();
         }
 
         function renderEmptyPlayerCard() {
             const innerContainer = document.getElementById("player-cards-inner");
+            const countDisplay = document.getElementById("player-card-count");
             if(!innerContainer) return;
             innerContainer.innerHTML = '';
+            if(countDisplay) countDisplay.textContent = '0';
+            
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            const title = document.createElement('div');
-            title.className = 'p-card-title';
-            title.textContent = 'Board #None';
-            wrapper.appendChild(title);
+            
+            const header = document.createElement('div');
+            header.className = 'p-card-header';
+            header.innerHTML = `<span>No Card Selected</span>`;
+            wrapper.appendChild(header);
+
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
-            grid.id = 'player-card-grid';
             for (let i = 0; i < 25; i++) {
                 const cell = document.createElement("div"); cell.className = "p-card-cell empty";
                 if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
@@ -1722,7 +1886,14 @@
                 grid.appendChild(cell);
             }
             wrapper.appendChild(grid);
+            
+            const footer = document.createElement('div');
+            footer.className = 'p-card-footer';
+            footer.innerHTML = `<span>0/25</span><progress value="0" max="1"></progress>`;
+            wrapper.appendChild(footer);
+
             innerContainer.appendChild(wrapper);
+            
             const bingoBtn = document.getElementById("claim-bingo-btn");
             if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
         }
