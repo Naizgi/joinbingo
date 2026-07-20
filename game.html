@@ -122,26 +122,62 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            box-shadow: var(--shadow-soft);
+            box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08);
         }
         .stat-item { text-align: center; }
         .stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
         .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); }
         .countdown-timer { font-size: 24px; font-weight: 700; color: var(--orange-accent) !important; }
-        .stat-value.green { color: var(--stat-value) !important; }
+        .countdown-progress { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .countdown-progress-bar { height: 100%; background: var(--orange-accent); width: 0%; transition: width 1s linear; }
 
+        /* --- 400 CARD GRID (Matches JS Loop) --- */
         .cards-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
-            max-height: 420px; min-height: 420px; overflow-y: auto; padding: 8px;
-            background: #fcfcfc; border-radius: 12px; border: 1px solid #f0f0f0; margin-bottom: 8px; width: 100%;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); 
+            gap: 3px;
+            max-height: 420px; 
+            min-height: 380px; 
+            overflow-y: auto; 
+            padding: 8px;
+            background: #fcfcfc; 
+            border-radius: 12px; 
+            border: 1px solid #f0f0f0; 
+            margin-bottom: 8px; 
+            width: 100%;
         }
         .card-item {
-            aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
+            aspect-ratio: 1; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-weight: 600; 
+            font-size: 10px; /* Smaller text for 400 layout */
+            position: relative; 
+            transition: all 0.1s ease;
         }
         .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
-        .card-item.sold { background: #d1c4e9; color: #888; cursor: not-allowed; }
-        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
+        .card-item.available:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .card-item.sold { background: #d1c4e9; color: #888; cursor: not-allowed; opacity: 0.6; }
+        .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; cursor: default; }
+        .card-item.selected { border: 2px solid var(--purple-dark); box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.3); }
+        .card-item.purchasing { background: var(--btn-blue) !important; cursor: wait; opacity: 0.7; }
+
+        /* --- CARD PREVIEW (Small card inside purchase screen) --- */
+        .card-preview-grid {
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 3px; 
+            width: 160px; 
+            height: 160px;
+        }
+        .card-preview-cell {
+            background: #f5f5f5; border-radius: 4px; aspect-ratio: 1;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 12px; color: var(--text-main); border: 1px solid #eee;
+        }
+        .card-preview-cell.free { background: #CFD8DC; color: #666; }
 
         /* --- GAME SCREEN (Active) --- */
         .stats-row {
@@ -369,10 +405,12 @@
         
         <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
+            
+            <!-- Top Stats Row - FIXED IDs Added -->
             <div class="game-stats">
                 <div class="stat-item">
                     <div class="stat-label">Countdown</div>
-                    <div class="countdown-timer" id="countdown-timer">30</div>
+                    <div class="stat-value countdown-timer" id="countdown-timer">30</div>
                     <div class="countdown-progress">
                         <div class="countdown-progress-bar" id="countdown-progress-bar"></div>
                     </div>
@@ -383,51 +421,56 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Wallet</div>
+                    <!-- FIXED: Added id="wallet-balance" here to match the JS -->
                     <div class="stat-value" id="wallet-balance">0 birr</div>
                 </div>
             </div>
 
+            <!-- Error Banner -->
             <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center;">
                 <i class="fas fa-exclamation-triangle"></i> <span id="phase-error-text">Card purchase only during purchase phase</span>
             </div>
 
+            <!-- Purchase Area -->
             <div class="cards-selection">
                 <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; margin-bottom: 8px; border: 1px solid var(--border-light);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 14px; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board</div>
+                        <div style="font-size: 14px; color: var(--purple-dark);"><i class="fas fa-shopping-cart"></i> Select Board (1-400)</div>
                         <div style="font-size: 11px; opacity: 0.8;">Price: <span style="color: var(--purple-dark); font-weight: 600;">10 birr</span></div>
                     </div>
 
                     <div style="margin-bottom: 10px; display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
-                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--orange-accent); border-radius:50%;"></span> Available</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:#d1c4e9; border-radius:50%;"></span> Sold</span>
-                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:50%;"></span> Yours</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--orange-accent); border-radius:3px;"></span> Available</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:#d1c4e9; border-radius:3px;"></span> Sold</span>
+                        <span><span style="display:inline-block; width:10px; height:10px; background:var(--btn-green); border-radius:3px;"></span> Yours</span>
                     </div>
 
+                    <!-- 400 Cards Grid -->
                     <div class="cards-grid" id="cards-grid"></div>
                 </div>
 
+                <!-- Selected Card Preview -->
                 <div class="selected-card-info" id="selected-card-info" style="display: none">
                     <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; border: 1px solid var(--border-light);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <div><strong>Your Board:</strong> <span id="selected-card-id">#0</span></div>
                             <div style="color: var(--orange-accent); font-weight: 600;">10 birr</div>
                         </div>
-                        <div style="font-size: 11px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
-                        <div style="margin-top: 15px;">
-                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">8 birr to prize pool (20% platform fee)</div>
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
                                 <i class="fas fa-eye"></i> Your Board Preview
                             </div>
                             <div style="background: #f9f9f9; border-radius: 12px; padding: 10px; display: flex; justify-content: center;">
-                                <div class="card-preview-grid" id="card-preview-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 180px; height: 180px;"></div>
+                                <div class="card-preview-grid" id="card-preview-grid"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="countdown-status-with-round" id="countdown-status" style="display: none">
-                    <div class="countdown-round-info" style="font-weight: 600;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span> - Card Purchase Phase</div>
-                    <div style="font-size: 16px; font-weight: 700; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
+                <div class="countdown-status-with-round" id="countdown-status" style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px;">
+                    <div style="font-weight: 600;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span></div>
+                    <div style="font-weight: 600; color: var(--purple-dark);" id="countdown-status-text">30 seconds remaining</div>
                 </div>
             </div>
         </div>
@@ -1141,7 +1184,8 @@
                 gameState.websocket = new WebSocket(wsUrl);
                 gameState.websocket.onopen = function () {
                     console.log("WebSocket connected successfully"); gameState.isConnected = true; gameState.connectionRetryCount = 0; gameState.reconnectAttempts = 0; gameState.isReconnecting = false; updateConnectionStatus("Connected", "green");
-                    sendWebSocketMessage({ type: "auth", userId: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
+                    // FIXED: Changed 'userId' to 'user_id' to match backend expectation
+                    sendWebSocketMessage({ type: "auth", user_id: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
                     setTimeout(() => { if (gameState.gameId) { console.log("Requesting full game state after reconnect"); getCompleteGameState(); } }, 500);
                     if (gameState.pendingMessages.length > 0) { gameState.pendingMessages.forEach((msg) => { try { gameState.websocket.send(JSON.stringify(msg)); } catch (e) { console.error("Failed to send pending message:", e); } }); gameState.pendingMessages = []; }
                     if (gameState.pingInterval) clearInterval(gameState.pingInterval);
