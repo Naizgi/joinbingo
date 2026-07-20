@@ -485,7 +485,6 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- FIXED: Added missing ID for JS Logic -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -779,9 +778,6 @@
         // ==================== WALLET TAB SWITCHING ====================
         function switchWalletTab(tab) {
             document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(`wallet-${tab}-view`).parentElement.querySelector(`.wallet-tab`).classList.add('active'); // Fix for selectors
-            
-            // Correction for specific tab targeting
             const tabs = document.querySelectorAll('.wallet-tab');
             if(tab === 'balances') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
 
