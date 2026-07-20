@@ -9,9 +9,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        /* =========================================================
-           NEW UI DESIGN SYSTEM (Based on Screenshots)
-           ========================================================= */
         :root {
             --bg-main: #EAD6F1;            /* Light purple background */
             --surface-white: #FFFFFF;
@@ -26,7 +23,7 @@
             --border-light: #e0e0e0;
             --grey-card: #D1C4E9;          /* Unselected cards color */
             --red-accent: #C62828;
-            
+
             /* Bingo Letter Colors */
             --letter-b: #FFC107; /* Yellow/Orange */
             --letter-i: #4CAF50; /* Green */
@@ -278,7 +275,7 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
-        /* Player Cards Container (Multi-card support from Image 7) */
+        /* Player Cards Container */
         .player-cards-container-inner {
             display: flex;
             flex-direction: column;
@@ -323,7 +320,7 @@
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* --- HISTORY PAGE (Image 2) --- */
+        /* --- HISTORY PAGE --- */
         .history-header-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; }
         .history-header-row h3 { font-size:15px; color:var(--text-muted); font-weight:500; }
         .btn-reload { border:none; background:var(--surface-white); padding:6px 16px; border-radius:20px; font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; color:var(--purple-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor:pointer; }
@@ -344,7 +341,7 @@
         .history-winner-boards i { color: var(--purple-dark); font-size: 12px; }
         .history-winner-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
-        /* --- WALLET PAGE (Images 3 & 4) --- */
+        /* --- WALLET PAGE --- */
         .wallet-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
         .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
         .wallet-balance-big { font-size: 24px; font-weight: 700; color: var(--purple-dark); margin-top: 4px; }
@@ -378,7 +375,7 @@
         .wallet-tx-meta span { font-weight: 500; color: var(--purple-dark); }
         .wallet-tx-ref { font-size: 11px; color: var(--text-muted); }
 
-        /* --- PROFILE PAGE (Image 5) --- */
+        /* --- PROFILE PAGE --- */
         .profile-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
         .profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -473,7 +470,7 @@
         <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
             
-            <!-- Top Stats Row (Exact Image 1) -->
+            <!-- Top Stats Row -->
             <div class="purchase-top-row">
                 <div class="purchase-stat-box">
                     <div class="stat-label">Countdown</div>
@@ -481,12 +478,12 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- FIXED ID MATCH -->
+                    <!-- KEPT EXACT ID: wallet-balance -->
                     <div class="stat-value" id="wallet-balance">0</div>
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- FIXED ID MATCH -->
+                    <!-- KEPT EXACT ID: card-price -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -507,7 +504,7 @@
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN (Images 6 & 7) -->
+        <!-- ACTIVE GAME SCREEN -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
@@ -592,7 +589,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: HISTORY (Image 2) ==================== -->
+    <!-- ==================== PAGE: HISTORY ==================== -->
     <div id="page-history" class="page-container">
         
         <div class="ui-card history-header-row">
@@ -626,7 +623,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: WALLET (Images 3 & 4) ==================== -->
+    <!-- ==================== PAGE: WALLET ==================== -->
     <div id="page-wallet" class="page-container">
         
         <div class="wallet-header-card">
@@ -668,16 +665,15 @@
             </div>
         </div>
 
-        <!-- HISTORY Sub-Page (Image 4) -->
+        <!-- HISTORY Sub-Page -->
         <div id="wallet-history-view" class="wallet-history-list">
-            <!-- Example structure for JS injection: Deposit, Deposit, Withdrawal, etc -->
             <div id="wallet-transactions-container">
                 <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">Showing recent transactions</div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== PAGE: PROFILE (Image 5) ==================== -->
+    <!-- ==================== PAGE: PROFILE ==================== -->
     <div id="page-profile" class="page-container">
         
         <div class="profile-header-card">
@@ -756,7 +752,7 @@
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
 
-    <!-- ==================== SCRIPTS ==================== -->
+    <!-- ==================== SCRIPTS (EXACT ORIGINAL LOGIC) ==================== -->
     <script>
         // ==================== TAB SWITCHING ====================
         function switchTab(tabName) {
@@ -795,10 +791,7 @@
             const container = document.getElementById('wallet-transactions-container');
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
             
-            // MOCK DATA FOR DEMO PURPOSES (Just to match Image 4). 
-            // Replace this fetch with actual /api/user/transactions endpoint if available
             setTimeout(() => {
-                // Example Layout Generation
                 container.innerHTML = `
                     <div class="wallet-history-card">
                         <div class="wallet-tx-row">
@@ -939,7 +932,7 @@
         }
         window.toggleAuto = toggleAuto;
 
-        // ==================== JAVASCRIPT LOGIC (PRESERVED ORIGINAL) ====================
+        // ==================== ORIGINAL CORE LOGIC ====================
         const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
         const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
         const CARD_PRICE = 10.0;
@@ -1355,18 +1348,15 @@
         }
         window.getCompleteGameState = getCompleteGameState;
 
-        // FIXED updateGameStats - sanitized to prevent crash
         function updateGameStats() {
-            if(document.getElementById("card-price")) document.getElementById("card-price").textContent = CARD_PRICE.toFixed(2);
-            if(document.getElementById("wallet-balance")) document.getElementById("wallet-balance").textContent = gameState.walletBalance.toFixed(2);
-            if(document.getElementById("game-prize-pool")) document.getElementById("game-prize-pool").textContent = gameState.prizePool.toFixed(2);
-            if(document.getElementById("game-player-count")) {
-                if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
-                else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
-            }
-            if(document.getElementById("called-numbers-stat")) document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
-            if(document.getElementById("called-count")) document.getElementById("called-count").textContent = gameState.calledNumbers.length;
-            if(document.getElementById("current-round-number")) document.getElementById("current-round-number").textContent = gameState.currentRound;
+            document.getElementById("card-price").textContent = `${CARD_PRICE.toFixed(2)} birr`;
+            document.getElementById("wallet-balance").textContent = `${gameState.walletBalance.toFixed(2)} birr`;
+            document.getElementById("game-prize-pool").textContent = `${gameState.prizePool.toFixed(2)} birr`;
+            if (gameState.totalPlayers > 0) document.getElementById("game-player-count").textContent = gameState.totalPlayers;
+            else document.getElementById("game-player-count").textContent = gameState.realPlayers + gameState.fakePlayers;
+            document.getElementById("called-numbers-stat").textContent = gameState.calledNumbers.length;
+            document.getElementById("called-count").textContent = gameState.calledNumbers.length;
+            document.getElementById("current-round-number").textContent = gameState.currentRound;
         }
 
         function startServerCoordinatedCountdown() {
@@ -1663,30 +1653,22 @@
         }
 
         function renderPlayerCard() {
-            // We need to append to the inner flex container
             const innerContainer = document.getElementById("player-cards-inner");
             if(!innerContainer) return;
-            
             innerContainer.innerHTML = '';
-            
             if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
                 renderEmptyPlayerCard();
                 return;
             }
-
-            // Single Card Layout currently. Can be expanded for multiple cards.
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            
             const idDisplay = document.createElement('div');
             idDisplay.className = 'p-card-title';
             idDisplay.innerHTML = `Board #<span id="player-card-id">${gameState.selectedCardIndex || '0'}</span>`;
             wrapper.appendChild(idDisplay);
-            
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
             grid.id = 'player-card-grid';
-            
             gameState.selectedCardNumbers.forEach((num, index) => {
                 const cell = document.createElement("div"); cell.className = 'p-card-cell';
                 if(num === 0 || num === '0') { 
@@ -1709,19 +1691,15 @@
             const innerContainer = document.getElementById("player-cards-inner");
             if(!innerContainer) return;
             innerContainer.innerHTML = '';
-            
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            
             const title = document.createElement('div');
             title.className = 'p-card-title';
             title.textContent = 'Board #None';
             wrapper.appendChild(title);
-            
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
-            grid.id = 'player-card-grid'; // Kept for legacy js mapping
-            
+            grid.id = 'player-card-grid';
             for (let i = 0; i < 25; i++) {
                 const cell = document.createElement("div"); cell.className = "p-card-cell empty";
                 if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
@@ -1730,7 +1708,6 @@
             }
             wrapper.appendChild(grid);
             innerContainer.appendChild(wrapper);
-            
             const bingoBtn = document.getElementById("claim-bingo-btn");
             if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
         }
