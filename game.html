@@ -110,7 +110,7 @@
             margin-bottom: 12px;
         }
 
-        /* --- PURCHASE SCREEN (Exact Match) --- */
+        /* --- PURCHASE SCREEN (Image 1) --- */
         .purchase-top-row {
             display: flex;
             gap: 8px;
@@ -190,7 +190,7 @@
 
         #phase-error-message { display:none; background: #FFEBEE; border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center; font-size: 14px; }
 
-        /* --- GAME SCREEN (Active) --- */
+        /* --- GAME SCREEN (Active - Images 6 & 7) --- */
         .game-stats-row {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
             background: var(--bg-main); margin: 12px 0;
@@ -275,7 +275,7 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
-        /* Player Cards Container */
+        /* Player Cards Container (Image 7) */
         .player-cards-container-inner {
             display: flex;
             flex-direction: column;
@@ -320,7 +320,7 @@
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* --- HISTORY PAGE --- */
+        /* --- HISTORY PAGE (Image 2) --- */
         .history-header-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; }
         .history-header-row h3 { font-size:15px; color:var(--text-muted); font-weight:500; }
         .btn-reload { border:none; background:var(--surface-white); padding:6px 16px; border-radius:20px; font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; color:var(--purple-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor:pointer; }
@@ -341,7 +341,7 @@
         .history-winner-boards i { color: var(--purple-dark); font-size: 12px; }
         .history-winner-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
-        /* --- WALLET PAGE --- */
+        /* --- WALLET PAGE (Images 3 & 4) --- */
         .wallet-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
         .wallet-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
         .wallet-balance-big { font-size: 24px; font-weight: 700; color: var(--purple-dark); margin-top: 4px; }
@@ -375,7 +375,7 @@
         .wallet-tx-meta span { font-weight: 500; color: var(--purple-dark); }
         .wallet-tx-ref { font-size: 11px; color: var(--text-muted); }
 
-        /* --- PROFILE PAGE --- */
+        /* --- PROFILE PAGE (Image 5) --- */
         .profile-header-card { background: var(--surface-white); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
         .profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -467,7 +467,7 @@
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
-        <!-- WAITING SCREEN (Card Purchase) -->
+        <!-- WAITING SCREEN (Image 1) -->
         <div id="waiting-screen" class="screen active">
             
             <!-- Top Stats Row -->
@@ -478,12 +478,10 @@
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Wallet</div>
-                    <!-- FIXED: Added ID wallet-balance -->
                     <div class="stat-value" id="wallet-balance">0</div>
                 </div>
                 <div class="purchase-stat-box">
                     <div class="stat-label">Stake</div>
-                    <!-- FIXED: Added ID card-price -->
                     <div class="stat-value" id="card-price">10</div>
                 </div>
             </div>
@@ -504,7 +502,7 @@
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN -->
+        <!-- ACTIVE GAME SCREEN (Images 6 & 7) -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
@@ -578,7 +576,7 @@
                         </div>
                     </div>
 
-                    <!-- Player Cards Container (Multiple Cards) -->
+                    <!-- Player Cards Container (Image 7) -->
                     <div class="player-cards-container" id="player-cards-container">
                         <div class="player-cards-container-inner" id="player-cards-inner">
                             <!-- Rendered by JS -->
@@ -589,7 +587,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: HISTORY ==================== -->
+    <!-- ==================== PAGE: HISTORY (Image 2) ==================== -->
     <div id="page-history" class="page-container">
         
         <div class="ui-card history-header-row">
@@ -623,7 +621,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: WALLET ==================== -->
+    <!-- ==================== PAGE: WALLET (Images 3 & 4) ==================== -->
     <div id="page-wallet" class="page-container">
         
         <div class="wallet-header-card">
@@ -673,7 +671,7 @@
         </div>
     </div>
 
-    <!-- ==================== PAGE: PROFILE ==================== -->
+    <!-- ==================== PAGE: PROFILE (Image 5) ==================== -->
     <div id="page-profile" class="page-container">
         
         <div class="profile-header-card">
@@ -1352,13 +1350,13 @@
         function updateGameStats() {
             // SAFETY CHECKS ADDED: These if statements prevent the crash if an element is missing
             const priceElem = document.getElementById("card-price");
-            if (priceElem) priceElem.textContent = `${CARD_PRICE.toFixed(2)} birr`;
+            if (priceElem) priceElem.textContent = `${CARD_PRICE.toFixed(2)}`;
 
             const walletElem = document.getElementById("wallet-balance");
-            if (walletElem) walletElem.textContent = `${gameState.walletBalance.toFixed(2)} birr`;
+            if (walletElem) walletElem.textContent = `${gameState.walletBalance.toFixed(2)}`;
 
             const poolElem = document.getElementById("game-prize-pool");
-            if (poolElem) poolElem.textContent = `${gameState.prizePool.toFixed(2)} birr`;
+            if (poolElem) poolElem.textContent = `${gameState.prizePool.toFixed(2)}`;
 
             const playerCountElem = document.getElementById("game-player-count");
             if (playerCountElem) {
