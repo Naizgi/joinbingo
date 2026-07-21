@@ -197,6 +197,8 @@
         .board-cell.called.highlight-n { background: var(--letter-n); border-color: var(--letter-n); color: white; }
         .board-cell.called.highlight-g { background: var(--letter-g); border-color: var(--letter-g); color: white; }
         .board-cell.called.highlight-o { background: var(--letter-o); border-color: var(--letter-o); color: white; }
+        /* The most-recently called number is always highlighted GREEN, overriding the column color */
+        .board-cell.called.current-call { background: var(--btn-green) !important; border-color: var(--btn-green) !important; color: white; }
 
         /* RIGHT: CARDS & CONTROLS */
         .right-panel { 
@@ -248,9 +250,11 @@
         .control-pill {
             display: flex; align-items: center; justify-content: center;
             border-radius: 20px; padding: 2px 12px; height: 24px; font-size: 10px; font-weight: 700; color: white; cursor: pointer;
+            transition: background-color 0.15s ease;
         }
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
+        .control-pill.green { background: var(--btn-green); }
 
         /* PLAYER CARDS (STACKED) */
         .player-cards-container-inner {
@@ -263,7 +267,7 @@
         }
         .p-card-title { 
             font-size: 11px; font-weight: 700; 
-            color: var(--btn-green); text-align: center; margin-bottom: 4px; 
+            color: var(--orange-accent); text-align: center; margin-bottom: 4px; 
         }
         .p-card-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
         .p-card-header-cell {
@@ -297,6 +301,20 @@
             color: var(--orange-accent); font-size: 10px; 
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
+
+        /* --- No-card waiting message (shown in place of a card during an active round) --- */
+        .no-card-waiting {
+            background: var(--surface-white);
+            border-radius: 12px;
+            padding: 40px 16px;
+            text-align: center;
+            color: var(--purple-dark);
+            font-weight: 700;
+            font-size: 15px;
+            line-height: 1.7;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-light);
+        }
 
         /* --- Bottom Action Buttons (Game Screen Only) --- */
         .bottom-actions {
@@ -398,15 +416,6 @@
         </div>
     </div>
 
-    <!-- ==================== APP HEADER ==================== -->
-    <header class="app-header">
-        <div class="close">Close</div>
-        <div class="title-container">
-            <div class="title">Afro Bingo</div>
-            <div class="subtitle">mini app</div>
-        </div>
-        <div class="menu-btn"><i class="fas fa-ellipsis-circle"></i></div>
-    </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
@@ -873,13 +882,16 @@
         function toggleAuto() {
             gameState.autoMode = !gameState.autoMode;
             const toggle = document.getElementById('profile-auto-toggle');
+            const gameToggle = document.getElementById('auto-toggle');
             const gameToggleText = document.getElementById('auto-status-text');
             if (gameState.autoMode) {
                 toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
                 gameToggleText.textContent = 'ON';
+                gameToggle.classList.remove('orange'); gameToggle.classList.add('green');
             } else {
                 toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
                 gameToggleText.textContent = 'OFF';
+                gameToggle.classList.remove('green'); gameToggle.classList.add('orange');
             }
         }
         window.toggleAuto = toggleAuto;
@@ -1616,6 +1628,12 @@
                 { letter: "O", min: 61, max: 75 }
             ];
 
+            // The most recently called number gets a distinct GREEN highlight,
+            // overriding its usual column color (matches reference design).
+            const latestCalledNumber = gameState.calledNumbers.length > 0
+                ? gameState.calledNumbers[gameState.calledNumbers.length - 1]
+                : null;
+
             columnRanges.forEach((col) => {
                 const columnDiv = document.createElement("div");
                 columnDiv.className = "board-column";
@@ -1627,7 +1645,11 @@
 
                     if (gameState.calledNumbers.includes(num)) {
                         cell.classList.add("called");
-                        cell.classList.add(`highlight-${col.letter.toLowerCase()}`);
+                        if (num === latestCalledNumber) {
+                            cell.classList.add("current-call");
+                        } else {
+                            cell.classList.add(`highlight-${col.letter.toLowerCase()}`);
+                        }
                     }
 
                     columnDiv.appendChild(cell);
@@ -1711,27 +1733,14 @@
             const innerContainer = document.getElementById("player-cards-inner");
             if(!innerContainer) return;
             innerContainer.innerHTML = '';
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'p-card-wrapper';
-            
-            const title = document.createElement('div');
-            title.className = 'p-card-title';
-            title.textContent = 'No Card Selected';
-            wrapper.appendChild(title);
 
-            const grid = document.createElement('div');
-            grid.className = 'p-card-grid';
-            grid.id = 'player-card-grid';
-            for (let i = 0; i < 25; i++) {
-                const cell = document.createElement("div"); cell.className = "p-card-cell empty";
-                if (i === 12) { cell.textContent = "★"; cell.classList.add('free'); } 
-                else { cell.textContent = "?"; }
-                grid.appendChild(cell);
-            }
-            wrapper.appendChild(grid);
-            innerContainer.appendChild(wrapper);
-            
+            // When the player has no card during an active round, show a
+            // centered waiting message instead of an empty card grid.
+            const waitingBox = document.createElement('div');
+            waitingBox.className = 'no-card-waiting';
+            waitingBox.innerHTML = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
+            innerContainer.appendChild(waitingBox);
+
             const bingoBtn = document.getElementById("claim-bingo-btn");
             if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
         }
