@@ -143,20 +143,19 @@
 
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
         
-        /* GAME TOP STATS ROW */
+           /* GAME TOP STATS ROW */
         .stats-row {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
-            background: transparent; margin-bottom: 12px;
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
+            background: transparent; margin-bottom: 8px;
         }
         .stat-box {
             background: var(--surface-white);
-            border: 1px solid rgba(0,0,0,0.05); border-radius: 10px;
-            text-align: center; padding: 4px 2px;
+            border: 1px solid rgba(0,0,0,0.05); border-radius: 8px;
+            text-align: center; padding: 2px 2px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; font-weight: 500; }
-        .stat-box .value { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
-
+        .stat-box .label { font-size: 8px; color: var(--text-muted); display: block; line-height: 1.2; font-weight: 600; }
+        .stat-box .value { font-size: 10px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
         /* SIDE-BY-SIDE 50/50 LAYOUT - Strict alignment fix */
         .game-layout { 
             display: flex; 
@@ -171,10 +170,10 @@
         /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
             background: transparent; 
-            border-radius: 1px; padding: 0;
-            border: 1px;
-            border-color: white;
-            width: 32%; /* Reduced from 50% to shrink the board */
+            border-radius: 8px; padding: 6px;
+            border: 2px solid #FFFFFF; /* Solid White Border */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            width: 32%; 
             height: inherit;
             flex-shrink: 0; 
             flex-grow: 0;
@@ -626,6 +625,10 @@
             
             <!-- 1. Top Stats Row -->
             <div class="stats-row">
+               <div class="stat-box">
+                    <span class="label">ID</span>
+                    <span class="value" id="stat-game-id" style="font-size: 8px;">---</span>
+                </div>
                 <div class="stat-box">
                     <span class="label">Derash</span>
                     <span class="value" id="game-prize-pool">0</span>
@@ -1457,7 +1460,15 @@
         window.getCompleteGameState = getCompleteGameState;
 
         // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
+                // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
         function updateGameStats() {
+            const idElem = document.getElementById("stat-game-id");
+            if (idElem && gameState.gameId) {
+                // Shorten the ID for display if needed
+                const shortId = gameState.gameId.length > 12 ? gameState.gameId.substring(0, 12) + '...' : gameState.gameId;
+                idElem.textContent = shortId;
+            }
+
             const priceElem = document.getElementById("card-price");
             if (priceElem) priceElem.textContent = CARD_PRICE.toFixed(2);
 
