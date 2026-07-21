@@ -28,8 +28,8 @@
             --red-accent: #C62828;
             
             /* Bingo Letter Colors (Exact from Image) */
-            --letter-b: #FFC107; /* Yellow/Orange */
-            --letter-i: #4CAF50; /* Green */
+            --letter-b: #FF9800; /* Dark Orange */
+            --letter-i: #F44336; /* Red */
             --letter-n: #1976D2; /* Blue */
             --letter-g: #F44336; /* Red */
             --letter-o: #9C27B0; /* Purple */
@@ -42,7 +42,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 80px; /* Leave room for bottom nav */
+            padding-bottom: 80px;
             overflow-x: hidden;
         }
 
@@ -106,7 +106,7 @@
         /* --- Components --- */
         .card { background: var(--surface-white); border-radius: 20px; padding: 16px; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); margin-bottom: 12px; }
 
-        /* --- WAITING SCREEN (Card Purchase) - EXACT MATCH TO IMAGE --- */
+        /* --- WAITING SCREEN (Card Purchase) --- */
         .game-stats {
             background: var(--surface-white);
             border-radius: 12px;
@@ -124,14 +124,7 @@
         .stat-value { font-size: 22px; font-weight: 700; color: var(--text-main); }
         .stat-value.orange { color: var(--orange-accent) !important; }
 
-        .cards-header-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: #4CAF50;
-            margin-bottom: 6px;
-            padding-left: 4px;
-        }
-
+        .cards-header-text { font-size: 15px; font-weight: 600; color: #4CAF50; margin-bottom: 6px; padding-left: 4px; }
         .cards-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 3px;
             max-height: 400px; min-height: 400px; overflow-y: auto; padding: 6px;
@@ -145,94 +138,98 @@
         .card-item.sold { background: var(--grey-card); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
 
-        /* --- GAME SCREEN (EXACT MATCH) --- */
+        /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
+        
+        /* GAME TOP STATS ROW */
         .stats-row {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-            background: var(--bg-main); margin-bottom: 12px;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
+            background: transparent; margin-bottom: 12px;
         }
         .stat-box {
             background: var(--surface-white);
-            border: 1px solid #e0e0e0; border-radius: 8px;
-            text-align: center; padding: 6px 2px;
+            border: 1px solid rgba(0,0,0,0.05); border-radius: 10px;
+            text-align: center; padding: 4px 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; }
-        .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
+        .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; font-weight: 500; }
+        .stat-box .value { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
 
-        /* SIDE-BY-SIDE LAYOUT */
+        /* SIDE-BY-SIDE 50/50 LAYOUT */
         .game-layout { 
             display: flex; 
             flex-direction: row; 
-            gap: 16px; 
+            gap: 14px; 
             align-items: flex-start; 
             justify-content: center;
             width: 100%;
         }
 
-        /* LEFT: MASTER BINGO BOARD */
+        /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
-            background: var(--surface-white); border-radius: 12px; padding: 8px;
-            width: 160px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: transparent; 
+            border-radius: 8px; padding: 0;
+            width: 50%; flex-shrink: 0; 
         }
-        .board-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
+        .board-header-row { display: flex; gap: 3px; margin-bottom: 4px; }
         .board-header-cell {
-            flex: 1; text-align: center; border-radius: 4px; padding: 6px 0;
-            font-weight: 700; font-size: 14px; color: var(--text-white);
-            border: 1px solid #ddd;
+            flex: 1; text-align: center; border-radius: 6px; padding: 8px 0;
+            font-weight: 800; font-size: 15px; color: var(--text-white);
+            border: 1px solid rgba(0,0,0,0.05);
         }
-        /* EXACT COLORS FROM IMAGE */
         .board-header-cell.b { background: var(--letter-b); }
         .board-header-cell.i { background: var(--letter-i); }
         .board-header-cell.n { background: var(--letter-n); }
         .board-header-cell.g { background: var(--letter-g); }
         .board-header-cell.o { background: var(--letter-o); }
         
-        .board-columns { display: flex; gap: 2px; }
-        .board-column { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .board-columns { display: flex; gap: 3px; }
+        .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: #f1f3f4; border-radius: 4px; aspect-ratio: 1;
-            font-weight: 600; font-size: 12px; color: var(--text-main);
-            border: 1px solid transparent; transition: all 0.1s ease;
+            background: rgba(255, 255, 255, 0.5); border-radius: 6px; aspect-ratio: 1;
+            font-weight: 700; font-size: 12px; color: #555;
+            border: 1px solid rgba(0,0,0,0.04); transition: all 0.2s ease;
         }
-        /* EXACT HIGHLIGHT COLORS FROM IMAGE */
-        .board-cell.called { background: var(--surface-white); border: 1px solid #ccc; color: var(--text-muted); }
-        .board-cell.called.highlight-b { background: var(--letter-b); color: white; border-color: var(--letter-b); }
-        .board-cell.called.highlight-i { background: var(--letter-i); color: white; border-color: var(--letter-i); }
-        .board-cell.called.highlight-n { background: var(--letter-n); color: white; border-color: var(--letter-n); }
-        .board-cell.called.highlight-g { background: var(--letter-g); color: white; border-color: var(--letter-g); }
-        .board-cell.called.highlight-o { background: var(--letter-o); color: white; border-color: var(--letter-o); }
+        /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
+        .board-cell.called { background: var(--surface-white); border: 1px solid rgba(0,0,0,0.1); color: white; }
+        .board-cell.called.highlight-b { background: var(--letter-b); border-color: var(--letter-b); color: white; }
+        .board-cell.called.highlight-i { background: var(--letter-i); border-color: var(--letter-i); color: white; }
+        .board-cell.called.highlight-n { background: var(--letter-n); border-color: var(--letter-n); color: white; }
+        .board-cell.called.highlight-g { background: var(--letter-g); border-color: var(--letter-g); color: white; }
+        .board-cell.called.highlight-o { background: var(--letter-o); border-color: var(--letter-o); color: white; }
 
         /* RIGHT: CARDS & CONTROLS */
         .right-panel { 
-            flex: 1; 
+            flex: 1; width: 50%; 
             display: flex; 
             flex-direction: column; 
             gap: 10px; 
             min-width: 0; 
-            max-width: 100%;
         }
         
         /* CURRENT CALL BANNER */
         .current-call-card {
             background: var(--purple-dark);
-            border-radius: 20px; padding: 8px 16px;
+            border-radius: 30px; padding: 10px 16px;
             display: flex; justify-content: space-between; align-items: center;
-            color: var(--text-white); box-shadow: 0 4px 12px rgba(106, 27, 154, 0.25);
+            color: var(--text-white); box-shadow: 0 2px 8px rgba(106, 27, 154, 0.2);
         }
         .current-call-label { font-weight: 700; font-size: 16px; }
         .current-call-badge {
             background: var(--orange-accent); color: var(--text-white);
-            padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 18px;
+            padding: 4px 16px; border-radius: 30px; font-weight: 800; font-size: 18px;
         }
 
-        /* RECENT CALLS PILLS */
+        /* RECENT CALLS PILLS (BUBBLE CONTAINER) */
         .recent-calls-box {
-            background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px;
-            display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid rgba(255,255,255,0.8); min-height: 44px;
+            background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 12px 8px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; 
+            border: 1px solid rgba(255,255,255,0.8); min-height: 60px;
         }
         .call-bubble {
-            border-radius: 20px; padding: 2px 12px; font-weight: 700; font-size: 13px;
-            display: inline-flex; align-items: center; height: 26px; color: white;
+            border-radius: 30px; padding: 2px 10px; font-weight: 800; font-size: 13px;
+            display: inline-flex; align-items: center; height: 28px; color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .call-bubble.b { background: var(--letter-b); }
         .call-bubble.i { background: var(--letter-i); }
@@ -242,12 +239,12 @@
 
         /* TOGGLES */
         .controls-row {
-            background: rgba(255, 255, 255, 0.6); border-radius: 12px;
+            background: rgba(255, 255, 255, 0.5); border-radius: 12px;
             padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.8);
         }
         .control-group { display: flex; align-items: center; gap: 8px; }
-        .control-label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .control-label { font-size: 12px; font-weight: 700; color: var(--text-main); }
         .control-pill {
             display: flex; align-items: center; justify-content: center;
             border-radius: 20px; padding: 2px 12px; height: 24px; font-size: 10px; font-weight: 700; color: white; cursor: pointer;
@@ -255,30 +252,24 @@
         .control-pill.purple { background: var(--purple-dark); }
         .control-pill.orange { background: var(--orange-accent); }
 
-        /* PLAYER CARDS (MULTIPLE STACKED CARDS) */
+        /* PLAYER CARDS (STACKED) */
         .player-cards-container-inner {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 380px;
-            overflow-y: auto;
-            padding-right: 4px;
+            display: flex; flex-direction: column; gap: 12px;
+            max-height: 350px; overflow-y: auto; padding-right: 4px;
         }
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
         }
         .p-card-title { 
-            font-size: 11px; font-weight: 600; 
+            font-size: 11px; font-weight: 700; 
             color: var(--btn-green); text-align: center; margin-bottom: 4px; 
         }
-        /* Card B-I-N-G-O Header */
         .p-card-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
         .p-card-header-cell {
             flex: 1; text-align: center; border-radius: 4px; padding: 4px 0;
             font-weight: 700; font-size: 12px; color: var(--text-white);
         }
-        /* EXACT COLORS FOR CARD HEADERS */
         .p-card-header-cell.b { background: var(--letter-b); }
         .p-card-header-cell.i { background: var(--letter-i); }
         .p-card-header-cell.n { background: var(--letter-n); }
@@ -296,8 +287,7 @@
             border: 1px solid var(--border-light); cursor: pointer;
         }
         .p-card-cell.marked { 
-            background: var(--btn-green) !important; 
-            color: white !important; 
+            background: var(--btn-green) !important; color: white !important; 
             border-color: #2e7d32 !important; 
         }
         .p-card-cell.free { background: #CFD8DC; border-color: #90A4AE; font-size: 9px; }
@@ -308,17 +298,18 @@
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-        /* --- Bottom Action Buttons (Hidden on Waiting Page) --- */
+        /* --- Bottom Action Buttons (Game Screen Only) --- */
         .bottom-actions {
             position: fixed; bottom: 70px; left: 0; width: 100%;
-            background: var(--surface-white); padding: 10px 16px;
-            display: none; gap: 10px; border-top: 1px solid var(--border-light); z-index: 99;
+            background: transparent; padding: 10px 16px;
+            display: none; gap: 10px; z-index: 99;
         }
         .bottom-actions.active { display: flex; }
         .action-btn {
-            flex: 1; border: none; border-radius: 8px; height: 48px;
+            flex: 1; border: none; border-radius: 12px; height: 50px;
             font-weight: 700; font-size: 16px; color: white;
             display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .action-btn.blue { background: var(--btn-blue); }
         .action-btn.orange { background: var(--orange-accent); }
@@ -337,7 +328,7 @@
         .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
         @media (max-width: 520px) {
-            .game-layout { flex-direction: column; align-items: center; }
+            .game-layout { flex-direction: column; }
             .board-container { width: 100%; max-width: 100%; }
             .right-panel { width: 100%; }
         }
@@ -420,10 +411,9 @@
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
         
-        <!-- WAITING SCREEN (Card Purchase) - EXACT MATCH TO IMAGE -->
+        <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
             
-            <!-- Top Stats Row -->
             <div class="game-stats">
                 <div class="stat-item">
                     <div class="stat-value orange" id="countdown-timer">30</div>
@@ -444,9 +434,7 @@
 
             <div class="cards-selection">
                 <div style="background: transparent; border-radius: 10px; padding: 0; margin-bottom: 8px;">
-                    
                     <div class="cards-header-text">Boards: <span id="boards-count-text">0/2</span></div>
-
                     <div class="cards-grid" id="cards-grid"></div>
                 </div>
 
@@ -475,7 +463,7 @@
             </div>
         </div>
 
-        <!-- ACTIVE GAME SCREEN (EXACT REPLICA) -->
+        <!-- ==================== ACTIVE GAME SCREEN (NEW SPLIT LAYOUT) ==================== -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
@@ -502,10 +490,10 @@
                 </div>
             </div>
 
-            <!-- 2. Main SIDE-BY-SIDE Layout -->
+            <!-- 2. Main SIDE-BY-SIDE 50/50 Layout -->
             <div class="game-layout">
                 
-                <!-- LEFT: Master Bingo Board -->
+                <!-- LEFT: Master Bingo Board (Transparent Grid) -->
                 <div class="board-container" id="master-board">
                     <div class="board-header-row">
                         <div class="board-header-cell b">B</div>
@@ -705,7 +693,7 @@
         <button class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>PROFILE</span></button>
     </nav>
 
-    <!-- ==================== BOTTOM ACTION BUTTONS ==================== -->
+    <!-- ==================== BOTTOM ACTION BUTTONS (GAME ONLY) ==================== -->
     <div class="bottom-actions" id="game-bottom-actions">
         <button class="action-btn blue" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
@@ -721,7 +709,7 @@
             document.getElementById(`page-${tabName}`).classList.add('active');
             
             if(tabName === 'game') {
-                // The bottom actions should only trigger for active screen inside game page
+                // Only show action buttons during active game phase
                 if(gameState.gamePhase === "active" || gameState.gameStatus === "active") {
                     document.getElementById('game-bottom-actions').classList.add('active');
                 } else {
@@ -1314,7 +1302,6 @@
 
         // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
         function updateGameStats() {
-            // Elements are strictly checked before assignment
             const priceElem = document.getElementById("card-price");
             if (priceElem) priceElem.textContent = CARD_PRICE.toFixed(2);
 
