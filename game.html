@@ -332,18 +332,23 @@
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-        /* --- No-card waiting message (shown in place of a card during an active round) --- */
+             /* --- No-card waiting message (shown in place of a card during an active round) --- */
         .no-card-waiting {
-            background: var(--surface-white);
+            background: rgba(255, 255, 255, 0.2); /* Transparent like the grid */
             border-radius: 12px;
-            padding: 40px 16px;
+            padding: 60px 20px; /* Increased padding for more height and width */
             text-align: center;
             color: var(--purple-dark);
-            font-weight: 700;
-            font-size: 15px;
-            line-height: 1.7;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-light);
+            font-weight: 800;
+            font-size: 18px; /* Slightly larger text */
+            line-height: 1.8;
+            backdrop-filter: blur(2px); /* Optional subtle blur for glass effect */
+            border: 2px solid #FFFFFF; /* Solid white border like the grids */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Match other grid shadows */
+            min-height: 150px; /* Ensures it has enough height even if text is short */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* --- Bottom Action Buttons (Game Screen Only) --- */
