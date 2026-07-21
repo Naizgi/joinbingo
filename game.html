@@ -72,7 +72,7 @@
             position: fixed;
             bottom: 0; left: 0; width: 100%;
             height: 70px;
-            background: var(--bg-main);
+            background: var(--surface-white);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -158,21 +158,24 @@
         .stat-box .label { font-size: 9px; color: var(--text-muted); display: block; line-height: 1.2; font-weight: 500; }
         .stat-box .value { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
 
-        /* SIDE-BY-SIDE 50/50 LAYOUT */
+        /* SIDE-BY-SIDE 50/50 LAYOUT - Strict alignment fix */
         .game-layout { 
             display: flex; 
             flex-direction: row; 
             gap: 14px; 
-            align-items: flex-start; 
-            justify-content: center;
+            align-items: stretch; /* Forces both columns to equal height & prevents drop-down */
+            justify-content: space-between;
             width: 100%;
+            flex-wrap: nowrap; /* Forces side-by-side on all devices */
         }
 
         /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
             background: transparent; 
             border-radius: 8px; padding: 0;
-            width: 50%; flex-shrink: 0; 
+            width: 50%; 
+            flex-shrink: 0; 
+            flex-grow: 0;
         }
         .board-header-row { display: flex; gap: 3px; margin-bottom: 4px; }
         .board-header-cell {
@@ -435,10 +438,16 @@
         }
         .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
-        @media (max-width: 520px) {
-            .game-layout { flex-direction: column; }
-            .board-container { width: 50%; max-width: 100%; }
-            .right-panel { width: 50%; }
+        /* --- STRICT SIDE-BY-SIDE FOR ALL MOBILE DEVICES (Removed column breakpoint) --- */
+        @media (max-width: 600px) {
+            .game-layout { 
+                flex-direction: row !important; 
+                gap: 10px; 
+                align-items: stretch;
+            }
+            .board-container { width: 50%; flex-shrink: 0; }
+            .right-panel { width: 50%; flex-shrink: 0; }
+            .board-cell { font-size: 10px; }
         }
         
         /* --- OTHER PAGES (HISTORY, WALLET, PROFILE) --- */
