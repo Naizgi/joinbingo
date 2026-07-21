@@ -76,8 +76,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
+        
             z-index: 100;
             box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
         }
@@ -114,7 +113,7 @@
         .game-stats {
             background: var(--surface-white);
             border-radius: 12px;
-            padding: 4px 6px;
+            padding: 3px 6px;
             margin-bottom: 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -172,16 +171,17 @@
         /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
             background: transparent; 
-            border-radius: 8px; padding: 0;
+            border-radius: 1px; padding: 0;
+            border: 1px;
             border-color: white;
             width: 50%; 
             height: inherit;
             flex-shrink: 0; 
             flex-grow: 0;
         }
-        .board-header-row { display: flex; gap: 3px; margin-bottom: 4px; }
+        .board-header-row { display: flex; gap: 1px; margin-bottom: 4px; }
         .board-header-cell {
-            flex: 1; text-align: center; border-radius: 6px; padding: 3px 0;
+            flex: 1; text-align: center; border-radius: 3px; padding: 3px 0;
             font-weight: 800; font-size: 15px; color: var(--text-white);
             border: 1px solid rgba(0,0,0,0.05);
         }
@@ -195,7 +195,7 @@
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: var(--grey-card); border-radius: 6px; aspect-ratio: 1;
+            background: var(--grey-card); border-radius: 3px; aspect-ratio: 1;
             font-weight: 700; font-size: 12px; color: #555;
             border: 1px solid rgb(255, 253, 253); transition: all 0.2s ease;
         }
