@@ -195,8 +195,8 @@
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: var(--grey-card); border-radius: 3px; aspect-ratio: 1;
-            font-weight: 700; font-size: 12px; color: #555;
+            background: var(--grey-card); border-radius: 2px; aspect-ratio: 1;
+            font-weight: 700; font-size: 9px; color: #555;
             border: 1px solid rgb(255, 253, 253); transition: all 0.2s ease;
         }
         /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
@@ -349,59 +349,60 @@
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
-        /* --- EXACT WINNER DISPLAY (FROM YOUR IMAGE) --- */
+       /* --- FIXED WINNER DISPLAY (MATCHING SCREENSHOT) --- */
         .winner-display { 
-            position: fixed; inset: 0; background: transparent; display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
         }
         .winner-content { 
-            width: 100%; max-width: 340px; 
-            display: flex; flex-direction: column; gap: 16px; 
+            width: 100%; max-width: 280px; /* REDUCED WIDTH TO MATCH POPUP */
+            display: flex; flex-direction: column; gap: 10px; 
             background: transparent; border: none; box-shadow: none;
         }
         /* Top Orange Box */
         .winner-orange-box {
             background: #FF9800;
-            border-radius: 16px;
-            padding: 20px 10px;
+            border-radius: 12px;
+            padding: 16px 10px;
             text-align: center;
             color: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .winner-orange-box h1 {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             letter-spacing: 1px;
         }
         .winner-orange-box p {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
             margin: 0;
         }
         .winner-orange-box .winner-name-badge {
             display: inline-block;
             background: #4CAF50;
             color: white;
-            padding: 2px 12px;
+            padding: 2px 10px;
             border-radius: 6px;
-            margin-right: 6px;
+            margin-right: 4px;
             font-weight: 700;
         }
 
-        /* Winner's Card Container */
+        /* Winner's Card Container (Light Purple Background) */
         .winner-card-wrapper {
-            background: rgba(255, 255, 255, 0.9);
+            background: #EAD6F1; /* CHANGED TO LIGHT PURPLE */
+            border: 2px solid rgba(255, 255, 255, 0.5);
             border-radius: 16px;
-            padding: 16px 16px 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 12px 12px 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         /* Winner's B-I-N-G-O Header */
         .winner-card-header {
-            display: flex; gap: 3px; margin-bottom: 8px;
+            display: flex; gap: 3px; margin-bottom: 6px;
         }
         .winner-card-header-cell {
-            flex: 1; text-align: center; border-radius: 6px; padding: 6px 0;
-            font-weight: 800; font-size: 15px; color: white;
+            flex: 1; text-align: center; border-radius: 4px; padding: 4px 0;
+            font-weight: 800; font-size: 13px; color: white;
         }
         .winner-card-header-cell.b { background: var(--letter-b); }
         .winner-card-header-cell.i { background: var(--letter-i); }
@@ -409,31 +410,37 @@
         .winner-card-header-cell.g { background: var(--letter-g); }
         .winner-card-header-cell.o { background: var(--letter-o); }
 
-        /* Winner 5x5 Grid */
+        /* Winner 5x5 Grid (Smaller Cells) */
         .winner-card-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%;
         }
         .winner-card-cell {
-            aspect-ratio: 1; background: #f5f5f5; border-radius: 6px; 
+            aspect-ratio: 1; background: #ffffff; border-radius: 4px; 
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 14px; color: #333;
-            border: 1px solid #e0e0e0;
+            font-weight: 700; font-size: 12px; color: #333;
+            border: 1px solid #E0E0E0;
         }
         /* Exact colors from winner image */
         .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; } /* Yellow */
-        .winner-card-cell.free { background: #4CAF50 !important; border-color: #388E3C !important; color: white; } /* Green */
+        .winner-card-cell.free { background: #C8E6C9 !important; border-color: #81C784 !important; color: white; font-weight: 800; } /* Light Green & Star clean */
+        .winner-card-cell.free::after { content: '*' !important; } /* Replaces the Star with an * */
+
+        /* Winner Board Number Text */
+        .winner-board-text {
+            text-align: center; margin-top: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px;
+        }
 
         /* Bottom Countdown Bar (Orange Pill) */
         .winner-countdown-bar {
             background: #FF9800;
             border-radius: 12px;
-            padding: 20px 10px;
+            padding: 12px 10px;
             text-align: center;
             color: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .winner-countdown-bar h2 {
-            font-size: 36px;
+            font-size: 26px;
             font-weight: 800;
             margin: 0;
             letter-spacing: 1px;
@@ -529,8 +536,8 @@
                 <div class="winner-card-grid" id="winner-card-grid">
                     <!-- Rendered by JS -->
                 </div>
-                <div style="text-align: center; margin-top: 12px; font-weight: 700; color: #388E3C; font-size: 15px;">
-                    Board Number <span id="winner-board-number">0</span>
+                <div class="winner-board-text">
+                    Board number <span id="winner-board-number">0</span>
                 </div>
             </div>
 
