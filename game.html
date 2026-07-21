@@ -232,14 +232,20 @@
         }
 
         /* RECENT CALLS PILLS (BUBBLE CONTAINER) */
+               /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
         .recent-calls-box {
-            background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 12px 8px;
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; 
-            border: 1px solid rgba(255,255,255,0.8); min-height: 15px;
+            background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 6px 8px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; 
+            border: 1px solid rgba(255,255,255,0.8); min-height: 36px; /* Reduced height */
         }
         .call-bubble {
-            border-radius: 10px; padding: 2px 10px; font-weight: 800; font-size: 13px;
-            display: inline-flex; align-items: center; height: 28px; color: white;
+            border-radius: 50%; /* Make it a perfect circle */
+            padding: 0; 
+            width: 28px; /* Fixed width for circle */
+            height: 28px; /* Fixed height for circle */
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 11px; /* Smaller text to fit circle */
+            color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .call-bubble.b { background: var(--letter-b); }
