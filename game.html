@@ -25,7 +25,7 @@
             --text-white: #FFFFFF;
             --border-light: #e0e0e0;
             --grey-card: #D1C4E9;          /* Unselected cards color */
-            --red-accent: #ea4c4c;
+            --red-accent: #f2702f;
             
             /* Bingo Letter Colors (Exact from Image) */
             --letter-b: #FF9800; /* Dark Orange */
@@ -139,7 +139,7 @@
             font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
         .card-item.available { background: var(--grey-card); color: white; cursor: pointer; }
-        .card-item.sold { background: var(--letter-g); color: #888; cursor: not-allowed; }
+        .card-item.sold { background: var(--red-accent); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
 
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
@@ -175,6 +175,7 @@
             border-radius: 8px; padding: 0;
             border-color: white;
             width: 50%; 
+            height: inherit;
             flex-shrink: 0; 
             flex-grow: 0;
         }
@@ -200,11 +201,11 @@
         }
         /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
         .board-cell.called { background: var(--surface-white); border: 1px solid rgba(0,0,0,0.1); color: white; }
-        .board-cell.called.highlight-b { background: var(--letter-g); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-i { background: var(--letter-g); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-n { background: var(--letter-g); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-g { background: var(--letter-g); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-o { background: var(--letter-g); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-b { background: var(--red-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-i { background: var(--red-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-n { background: var(--red-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-g { background: var(--red-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-o { background: var(--red-accent); border-color: var(--border-light); color: white; }
         /* The most-recently called number is always highlighted GREEN, overriding the column color */
         .board-cell.called.current-call { background: var(--btn-green) !important; border-color: var(--btn-green) !important; color: white; }
 
