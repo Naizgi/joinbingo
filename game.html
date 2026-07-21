@@ -139,7 +139,7 @@
             font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
         .card-item.available { background: var(--grey-card); color: white; cursor: pointer; }
-        .card-item.sold { background: var(--orange-accent); color: #888; cursor: not-allowed; }
+        .card-item.sold { background: var(--letter-g); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
 
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
@@ -199,11 +199,11 @@
         }
         /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
         .board-cell.called { background: var(--surface-white); border: 1px solid rgba(0,0,0,0.1); color: white; }
-        .board-cell.called.highlight-b { background: var(--orange-accent); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-i { background: var(--orange-accent); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-n { background: var(--orange-accent); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-g { background: var(--orange-accent); border-color: var(--border-light); color: white; }
-        .board-cell.called.highlight-o { background: var(--orange-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-b { background: var(--letter-g); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-i { background: var(--letter-g); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-n { background: var(--letter-g); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-g { background: var(--letter-g); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-o { background: var(--letter-g); border-color: var(--border-light); color: white; }
         /* The most-recently called number is always highlighted GREEN, overriding the column color */
         .board-cell.called.current-call { background: var(--btn-green) !important; border-color: var(--btn-green) !important; color: white; }
 
@@ -326,7 +326,7 @@
         /* --- Bottom Action Buttons (Game Screen Only) --- */
         .bottom-actions {
             position: fixed; bottom: 70px; left: 0; width: 100%;
-            background: transparent; padding: 10px 16px;
+            background: transparent; padding: 4px 16px;
             display: none; gap: 10px; z-index: 99;
         }
         .bottom-actions.active { display: flex; }
