@@ -33,6 +33,10 @@
             --letter-n: #1976D2; /* Blue */
             --letter-g: #F44336; /* Red */
             --letter-o: #9C27B0; /* Purple */
+            
+            /* Winner Card Colors */
+            --winner-highlight: #FFEB3B;   /* Yellow */
+            --winner-free: #4CAF50;        /* Green */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -186,7 +190,7 @@
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: transparent;border: 1px dashed #ddd; border-radius: 6px; aspect-ratio: 1;
+            background: transparent; border-radius: 6px; aspect-ratio: 1;
             font-weight: 700; font-size: 12px; color: #555;
             border: 1px solid rgba(0,0,0,0.04); transition: all 0.2s ease;
         }
@@ -339,10 +343,96 @@
         #access-denied { display: none; position: fixed; inset: 0; background: #1a1a2e; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        .winner-display { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .winner-content { background: #fff; border-radius: 20px; padding: 20px; text-align: center; max-width: 320px; border: 2px solid var(--btn-green); }
-        .winner-content h2 { font-size: 20px; color: var(--btn-green); margin: 10px 0; }
-        .winner-trophy { font-size: 30px; color: var(--btn-green); margin: 5px 0; }
+        
+        /* --- EXACT WINNER DISPLAY (FROM YOUR IMAGE) --- */
+        .winner-display { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
+        }
+        .winner-content { 
+            width: 100%; max-width: 340px; 
+            display: flex; flex-direction: column; gap: 16px; 
+            background: transparent; border: none; box-shadow: none;
+        }
+        /* Top Orange Box */
+        .winner-orange-box {
+            background: #FF9800;
+            border-radius: 16px;
+            padding: 20px 10px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .winner-orange-box h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .winner-orange-box p {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .winner-orange-box .winner-name-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 6px;
+            margin-right: 6px;
+            font-weight: 700;
+        }
+
+        /* Winner's Card Container */
+        .winner-card-wrapper {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 16px 16px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        /* Winner's B-I-N-G-O Header */
+        .winner-card-header {
+            display: flex; gap: 3px; margin-bottom: 8px;
+        }
+        .winner-card-header-cell {
+            flex: 1; text-align: center; border-radius: 6px; padding: 6px 0;
+            font-weight: 800; font-size: 15px; color: white;
+        }
+        .winner-card-header-cell.b { background: var(--letter-b); }
+        .winner-card-header-cell.i { background: var(--letter-i); }
+        .winner-card-header-cell.n { background: var(--letter-n); }
+        .winner-card-header-cell.g { background: var(--letter-g); }
+        .winner-card-header-cell.o { background: var(--letter-o); }
+
+        /* Winner 5x5 Grid */
+        .winner-card-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%;
+        }
+        .winner-card-cell {
+            aspect-ratio: 1; background: #f5f5f5; border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        /* Exact colors from winner image */
+        .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; } /* Yellow */
+        .winner-card-cell.free { background: #4CAF50 !important; border-color: #388E3C !important; color: white; } /* Green */
+
+        /* Bottom Countdown Bar (Orange Pill) */
+        .winner-countdown-bar {
+            background: #FF9800;
+            border-radius: 12px;
+            padding: 20px 10px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .winner-countdown-bar h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: 1px;
+        }
         .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
         @media (max-width: 520px) {
@@ -407,15 +497,48 @@
         <span id="notification-message">Success!</span>
     </div>
 
+    <!-- ==================== WINNER DISPLAY (EXACT IDENTICAL MATCH) ==================== -->
     <div class="winner-display" id="winner-announcement">
         <div class="winner-content">
-            <div class="winner-trophy"><i class="fas fa-trophy"></i></div>
-            <h2>🏆 BINGO WINNERS! 🏆</h2>
-            <div id="winners-compact-container" class="winners-compact-container"></div>
-            <div class="winner-countdown" id="winner-announcement-timer">New round starting in 10 seconds...</div>
+            <!-- Top Orange Box -->
+            <div class="winner-orange-box">
+                <h1>BINGO!</h1>
+                <p><span class="winner-name-badge" id="winners-name-badge">Na</span> <span id="winners-full-text">has won the game.</span></p>
+            </div>
+
+            <!-- Winner Card -->
+            <div class="winner-card-wrapper">
+                <div class="winner-card-header">
+                    <div class="winner-card-header-cell b">B</div>
+                    <div class="winner-card-header-cell i">I</div>
+                    <div class="winner-card-header-cell n">N</div>
+                    <div class="winner-card-header-cell g">G</div>
+                    <div class="winner-card-header-cell o">O</div>
+                </div>
+                <div class="winner-card-grid" id="winner-card-grid">
+                    <!-- Rendered by JS -->
+                </div>
+                <div style="text-align: center; margin-top: 12px; font-weight: 700; color: #388E3C; font-size: 15px;">
+                    Board Number <span id="winner-board-number">0</span>
+                </div>
+            </div>
+
+            <!-- Bottom Countdown Bar -->
+            <div class="winner-countdown-bar">
+                <h2 id="winner-announcement-timer">10</h2>
+            </div>
         </div>
     </div>
 
+    <!-- ==================== APP HEADER ==================== -->
+    <header class="app-header">
+        <div class="close">Close</div>
+        <div class="title-container">
+            <div class="title">Afro Bingo</div>
+            <div class="subtitle">mini app</div>
+        </div>
+        <div class="menu-btn"><i class="fas fa-ellipsis-circle"></i></div>
+    </header>
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
@@ -472,12 +595,11 @@
             </div>
         </div>
 
-        <!-- ==================== ACTIVE GAME SCREEN (NEW SPLIT LAYOUT) ==================== -->
+        <!-- ==================== ACTIVE GAME SCREEN ==================== -->
         <div id="game-screen" class="screen">
             
             <!-- 1. Top Stats Row -->
             <div class="stats-row">
-             
                 <div class="stat-box">
                     <span class="label">Derash</span>
                     <span class="value" id="game-prize-pool">0</span>
@@ -715,7 +837,6 @@
             document.getElementById(`page-${tabName}`).classList.add('active');
             
             if(tabName === 'game') {
-                // Only show action buttons during active game phase
                 if(gameState.gamePhase === "active" || gameState.gameStatus === "active") {
                     document.getElementById('game-bottom-actions').classList.add('active');
                 } else {
@@ -1348,8 +1469,8 @@
             if (data.game_id) gameState.gameId = data.game_id;
             switch (data.type) {
                 case "winner_confirmed": stopAllAudio(); handleWinnerConfirmed(data); break;
-                case "winner_display_started": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds) timerElement.textContent = `New round starting in ${data.remaining_seconds} seconds...`; } break;
-                case "winner_display_countdown": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds !== undefined) timerElement.textContent = `New round starting in ${data.remaining_seconds} seconds...`; } break;
+                case "winner_display_started": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds) timerElement.textContent = data.remaining_seconds; } break;
+                case "winner_display_countdown": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds !== undefined) timerElement.textContent = data.remaining_seconds; } break;
                 case "winner_display_completed": handleWinnerDisplayCompleted(data); break;
                 case "game_completed": const winnerAnnouncement = document.getElementById("winner-announcement"); if (winnerAnnouncement) winnerAnnouncement.style.display = "none"; gameState.gameComplete = true; gameState.winnerAnnounced = false; gameState.isWinnerDisplayActive = false; handleWinnerDisplayCompleted(data); break;
                 case "existing_game_resumed": handleExistingGameResumed(data); break;
@@ -1402,35 +1523,78 @@
 
         function showWinnerAnnouncementScreen(winnerData) {
             const announcement = document.getElementById("winner-announcement");
-            const winnersCompactContainer = document.getElementById("winners-compact-container");
+            const gridContainer = document.getElementById("winner-card-grid");
+            const nameBadge = document.getElementById("winners-name-badge");
+            const nameText = document.getElementById("winners-full-text");
+            const boardNum = document.getElementById("winner-board-number");
             const timerElement = document.getElementById("winner-announcement-timer");
+            
             if (!announcement) return;
             if (!winnerData) winnerData = gameState.winnerData || { full_name: "Unknown Winner", username: "unknown", prize_amount: 0, card_index: 0, card_numbers: [], winning_pattern: [], pattern_type: "BINGO", all_winners: [] };
-            winnersCompactContainer.innerHTML = "";
-            const allWinners = winnerData.all_winners || [winnerData]; const winnerCount = allWinners.length;
-            allWinners.forEach((winner, index) => {
-                const winnerCard = document.createElement("div"); winnerCard.className = "winner-compact-card";
-                const cardNumbers = winner.card_numbers || winnerData.card_numbers || []; const winningPattern = winner.winning_pattern || winnerData.winning_pattern || []; const patternSet = new Set();
-                if (Array.isArray(winningPattern)) winningPattern.forEach((num) => { if (num !== 0 && num !== "0" && num !== null && num !== undefined) patternSet.add(num.toString()); });
-                const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners"; const cornerIndices = [0, 4, 20, 24]; const cardIndex = winner.card_index || index + 1;
-                let cardHTML = `<div class="winner-compact-header"><span class="winner-compact-name">${winner.full_name || winner.username || `Winner ${index + 1}`}</span><span class="winner-compact-prize">Card #${cardIndex} • ${winner.prize_amount || winnerData.prize_amount || 0} birr</span></div><div class="winner-card-grid-display">`;
-                for (let i = 0; i < 25; i++) { const num = cardNumbers[i] !== undefined ? cardNumbers[i] : "?"; const isFree = i === 12 || num === 0 || num === "0" || num === "FREE"; const numStr = num.toString(); const isMarked = patternSet.has(numStr) || (isFourCorners && cornerIndices.includes(i)); cardHTML += `<div class="winner-card-cell ${isFree ? "free" : ""} ${isMarked ? "marked" : ""}">${isFree ? "FREE" : num}</div>`; }
-                cardHTML += "</div>";
-                if (index === 0 && winningPattern.length > 0) { const filteredPattern = winningPattern.filter((num) => num !== 0 && num !== "0" && num !== null && num !== undefined); if (filteredPattern.length > 0) { cardHTML += `<div class="winning-pattern-display"><div class="winning-pattern-title"><i class="fas fa-star"></i> WINNING NUMBERS <i class="fas fa-star"></i></div><div class="winning-pattern-numbers">${filteredPattern.map((num) => `<span class="winning-pattern-number">${num}</span>`).join("")}</div></div>`; } }
-                winnerCard.innerHTML = cardHTML; winnersCompactContainer.appendChild(winnerCard);
-            });
-            startWinnerDisplayCountdown(winnerData.game_id, 10); announcement.style.display = "flex";
+            
+            const winner = winnerData.all_winners ? winnerData.all_winners[winnerData.all_winners.length - 1] : winnerData;
+            
+            // Setup text
+            const name = winner.full_name || winner.username || "Winner";
+            nameBadge.textContent = name.charAt(0).toUpperCase();
+            nameText.textContent = `has won the game.`;
+            boardNum.textContent = winner.card_index || 0;
+
+            // Render Winner Card Grid
+            gridContainer.innerHTML = "";
+            const cardNums = winner.card_numbers || winnerData.card_numbers || [];
+            const pattern = winner.winning_pattern || winnerData.winning_pattern || [];
+            const patternSet = new Set(pattern.map(n => n.toString()));
+
+            // Determine if it's a "Four Corners" win for special handling
+            const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners";
+            const cornerIndices = [0, 4, 20, 24];
+
+            for(let i=0; i < 25; i++) {
+                const cell = document.createElement("div");
+                cell.className = "winner-card-cell";
+                const num = cardNums[i];
+                const numStr = num ? num.toString() : "?";
+
+                // Setup Cell
+                if(i === 12 || num === 0 || num === "0" || num === "FREE") {
+                    cell.classList.add("free");
+                    cell.textContent = "*";
+                } else {
+                    cell.textContent = num;
+                    // Determine if marked (Yellow)
+                    let isMarked = patternSet.has(numStr);
+                    if(isFourCorners && cornerIndices.includes(i)) {
+                        isMarked = true;
+                    }
+                    if(isMarked) {
+                        cell.classList.add("marked");
+                    }
+                }
+                gridContainer.appendChild(cell);
+            }
+
+            // Reset Countdown Timer
+            const DEFAULT_WINNER_DURATION = 10;
+            startWinnerDisplayCountdown(winnerData.game_id, DEFAULT_WINNER_DURATION);
+            announcement.style.display = "flex";
         }
 
         function startWinnerDisplayCountdown(gameId, durationSeconds = 10) {
             if (gameState.winnerDisplayInterval) clearInterval(gameState.winnerDisplayInterval);
-            gameState.isWinnerDisplayActive = true; gameState.winnerDisplayCountdown = durationSeconds;
+            gameState.isWinnerDisplayActive = true; 
+            gameState.winnerDisplayCountdown = durationSeconds;
             const timerElement = document.getElementById("winner-announcement-timer");
-            if (timerElement) timerElement.textContent = `New round starting in ${gameState.winnerDisplayCountdown} seconds...`;
+            if (timerElement) timerElement.textContent = gameState.winnerDisplayCountdown;
+            
             gameState.winnerDisplayInterval = setInterval(() => {
                 gameState.winnerDisplayCountdown--;
-                if (timerElement) timerElement.textContent = `New round starting in ${gameState.winnerDisplayCountdown} seconds...`;
-                if (gameState.winnerDisplayCountdown <= 0) { clearInterval(gameState.winnerDisplayInterval); gameState.winnerDisplayInterval = null; handleWinnerDisplayCompleted({ game_id: gameId }); }
+                if (timerElement) timerElement.textContent = gameState.winnerDisplayCountdown;
+                if (gameState.winnerDisplayCountdown <= 0) { 
+                    clearInterval(gameState.winnerDisplayInterval); 
+                    gameState.winnerDisplayInterval = null; 
+                    handleWinnerDisplayCompleted({ game_id: gameId }); 
+                }
             }, 1000);
         }
 
@@ -1625,8 +1789,6 @@
                 { letter: "O", min: 61, max: 75 }
             ];
 
-            // The most recently called number gets a distinct GREEN highlight,
-            // overriding its usual column color (matches reference design).
             const latestCalledNumber = gameState.calledNumbers.length > 0
                 ? gameState.calledNumbers[gameState.calledNumbers.length - 1]
                 : null;
@@ -1731,8 +1893,6 @@
             if(!innerContainer) return;
             innerContainer.innerHTML = '';
 
-            // When the player has no card during an active round, show a
-            // centered waiting message instead of an empty card grid.
             const waitingBox = document.createElement('div');
             waitingBox.className = 'no-card-waiting';
             waitingBox.innerHTML = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
