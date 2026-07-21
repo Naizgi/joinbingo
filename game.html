@@ -206,9 +206,13 @@
         .board-cell.called.highlight-n { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-g { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-o { background: var(--red-accent); border-color: var(--border-light); color: white; }
-        /* The most-recently called number is always highlighted GREEN, overriding the column color */
-        .board-cell.called.current-call { background: var(--btn-green) !important; border-color: var(--btn-green) !important; color: white; }
-
+              /* The most-recently called number blinks GREEN */
+        .board-cell.called.current-call { 
+            background: var(--btn-green) !important; 
+            border-color: var(--btn-green) !important; 
+            color: white; 
+            animation: winningBlink 0.8s infinite ease-in-out !important;
+        }
         /* RIGHT: CARDS & CONTROLS */
         .right-panel { 
             flex: 1; width: 45%; 
@@ -228,7 +232,13 @@
         .current-call-label { font-weight: 700; font-size: 10px; }
         .current-call-badge {
             background: var(--orange-accent); color: var(--text-white);
-            padding: 4px 16px; border-radius: 50%; font-weight: 800; font-size: 10px;
+            width: 50px;          /* Force perfect circle width */
+            height: 50px;         /* Force perfect circle height */
+            border-radius: 50%;   /* Make it a perfect circle */
+            display: flex;        /* Center the text horizontally */
+            align-items: center;  /* Center the text vertically */
+            justify-content: center;
+            font-weight: 800; font-size: 14px;
         }
 
         /* RECENT CALLS PILLS (BUBBLE CONTAINER) */
