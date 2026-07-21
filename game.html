@@ -133,13 +133,13 @@
         }
 
         .cards-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px;
-            max-height: 420px; min-height: 420px; overflow-y: auto; padding: 6px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 3px;
+            max-height: 400px; min-height: 400px; overflow-y: auto; padding: 6px;
             background: rgba(255,255,255,0.4); border-radius: 12px; border: 2px solid rgba(255,255,255,0.6); margin-bottom: 8px; width: 100%;
         }
         .card-item {
             aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
+            font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
         .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
         .card-item.sold { background: var(--grey-card); color: #888; cursor: not-allowed; }
@@ -308,7 +308,7 @@
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-        /* --- Bottom Action Buttons --- */
+        /* --- Bottom Action Buttons (Hidden on Waiting Page) --- */
         .bottom-actions {
             position: fixed; bottom: 70px; left: 0; width: 100%;
             background: var(--surface-white); padding: 10px 16px;
@@ -706,7 +706,7 @@
     </nav>
 
     <!-- ==================== BOTTOM ACTION BUTTONS ==================== -->
-    <div class="bottom-actions active" id="game-bottom-actions">
+    <div class="bottom-actions" id="game-bottom-actions">
         <button class="action-btn blue" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
@@ -721,7 +721,12 @@
             document.getElementById(`page-${tabName}`).classList.add('active');
             
             if(tabName === 'game') {
-                document.getElementById('game-bottom-actions').classList.add('active');
+                // The bottom actions should only trigger for active screen inside game page
+                if(gameState.gamePhase === "active" || gameState.gameStatus === "active") {
+                    document.getElementById('game-bottom-actions').classList.add('active');
+                } else {
+                    document.getElementById('game-bottom-actions').classList.remove('active');
+                }
             } else {
                 document.getElementById('game-bottom-actions').classList.remove('active');
             }
@@ -1298,9 +1303,9 @@
                     updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); else updateCurrentCalledDisplay("--");
                     updateBingoGrid(); updateGameStats();
                     gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
-                    if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
-                    else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); if (gameState.hasCard) renderPlayerCard(); else renderEmptyPlayerCard(); }
-                    else if (gameState.gamePhase === "winner_display" && gameState.winnerData) showWinnerAnnouncementScreen(gameState.winnerData);
+                    if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
+                    else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active'); if (gameState.hasCard) renderPlayerCard(); else renderEmptyPlayerCard(); }
+                    else if (gameState.gamePhase === "winner_display" && gameState.winnerData) { document.getElementById('game-bottom-actions').classList.remove('active'); showWinnerAnnouncementScreen(gameState.winnerData); }
                     updateBingoButton(); gameState.lastFullSyncTime = Date.now(); return true;
                 } else { return false; }
             } catch (error) { console.error("Error fetching complete game state:", error); return false; } finally { gameState.fullSyncInProgress = false; }
@@ -1442,7 +1447,7 @@
             gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); gameState.calledNumbers = [];
             gameState.prizePool = 0; gameState.playerCount = 0; gameState.hasClaimedBingo = false; gameState.bingoClaimInProgress = false; gameState.gameStartConfirmed = false;
             gameState.countdown = 30; gameState.countdownTotal = 30; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
-            showScreen("waiting-screen");
+            showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
             updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateGameStats();
             resetCardsForNewRound();
             setTimeout(() => { fetchActiveGame().then((gameData) => { if (gameData && gameData.success) { gameState.gameId = gameData.game_id; gameState.currentRound = gameData.round_number || gameState.currentRound + 1; gameState.countdown = gameData.countdown_remaining || 0; gameState.countdownTotal = gameData.countdown_remaining || 30; document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown(); } }); }, 200);
@@ -1462,7 +1467,8 @@
             gameState.prizePool = 0; gameState.playerCount = 0; gameState.cardsSold = new Set(); gameState.cardsCache.soldCards = new Set(); gameState.cardsCache.ownedCardIndex = null;
             gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
             updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
-            showScreen("waiting-screen"); updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateBingoButton(); updateGameStats(); resetCardsForNewRound();
+            showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
+            updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateBingoButton(); updateGameStats(); resetCardsForNewRound();
             document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown();
         }
 
@@ -1477,7 +1483,8 @@
             if (data.phase) { gameState.gamePhase = data.phase; gameState.gameStatus = data.phase; gameState.lastConfirmedPhase = data.phase; } else { gameState.gamePhase = "card_purchase"; gameState.gameStatus = "card_purchase"; gameState.lastConfirmedPhase = "card_purchase"; }
             gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase"; gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); gameState.calledNumbers = [];
             gameState.cardsSold = new Set(); gameState.cardsCache.soldCards = new Set(); gameState.cardsCache.ownedCardIndex = null;
-            showScreen("waiting-screen"); updateGameStats();
+            showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
+            updateGameStats();
             setTimeout(() => {
                 if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid();
                 else { fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`).then((res) => res.json()).then((data) => { if (data.success) { const soldCards = new Set(data.sold_cards || []); for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { if (soldCards.has(i)) { cardElement.classList.remove("available", "owned", "selected"); cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.remove("sold", "owned", "selected"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); } } } gameState.cardsSold = soldCards; gameState.cardsCache.soldCards = soldCards; } }); }
@@ -1569,12 +1576,12 @@
 
         function updateGameUI() {
             if (gameState.isWinnerDisplayActive) return;
-            if (gameState.gameComplete && !gameState.isWinnerDisplayActive) { showScreen("waiting-screen"); return; }
+            if (gameState.gameComplete && !gameState.isWinnerDisplayActive) { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); return; }
             if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
             if (gameState.numberCallInterval) { clearInterval(gameState.numberCallInterval); gameState.numberCallInterval = null; }
             const isGamePlayPhase = gameState.gamePhase === "game_play" || gameState.gameStatus === "active" || gameState.gameStatus === "game_play";
             if (gameState.gamePhase === "card_purchase" || gameState.gameStatus === "card_purchase") {
-                showScreen("waiting-screen");
+                showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
                 updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
                 if (gameState.purchasePhaseActive && !gameState.cardsLoaded && !gameState.cardsLoadAttempted) {
                     gameState.cardsLoadAttempted = true;
@@ -1583,15 +1590,15 @@
                 }
                 document.getElementById("current-round-number").textContent = gameState.currentRound; gameState.gameActive = false;
             } else if (isGamePlayPhase) {
-                gameState.gameActive = true; gameState.purchasePhaseActive = false; showScreen("game-screen");
+                gameState.gameActive = true; gameState.purchasePhaseActive = false; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active');
                 updateCalledNumbersDisplay(); updateCurrentCalledDisplay(); updateBingoGrid();
                 if (gameState.hasCard && Array.isArray(gameState.selectedCardNumbers) && gameState.selectedCardNumbers.length > 0) renderPlayerCard();
                 else renderEmptyPlayerCard();
                 setTimeout(() => { updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) { updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); updateBingoGrid(); } }, 100);
             } else if (gameState.gamePhase === "winner_display" || gameState.gameStatus === "winner_display") {
-                gameState.gameActive = false; gameState.purchasePhaseActive = false;
+                gameState.gameActive = false; gameState.purchasePhaseActive = false; document.getElementById('game-bottom-actions').classList.remove('active');
                 if (!gameState.isWinnerDisplayActive) showScreen("waiting-screen");
-            } else { showScreen("waiting-screen"); }
+            } else { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); }
             updateGameStats();
         }
 
@@ -1952,6 +1959,7 @@
                     gameState.cardsLoadAttempted = true;
                     setTimeout(() => { if (document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { console.log("✅ Cards loaded at initialization"); }); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } }, 100);
                 }
+                document.getElementById('game-bottom-actions').classList.remove('active');
             } else { console.log("No active game found"); setTimeout(() => { initGame(); }, 5000); return; }
             await initWebSocket(); await checkUserCardStatus(); startSyncInterval();
             setInterval(() => { if (gameState.gameId && !gameState.fullSyncInProgress && !gameState.winnerAnnounced) getCompleteGameState(); }, 300000);
