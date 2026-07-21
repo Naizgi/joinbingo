@@ -114,7 +114,7 @@
         .game-stats {
             background: var(--surface-white);
             border-radius: 12px;
-            padding: 8px 6px;
+            padding: 4px 6px;
             margin-bottom: 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -138,8 +138,8 @@
             aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
-        .card-item.available { background: var(--orange-accent); color: white; cursor: pointer; }
-        .card-item.sold { background: var(--grey-card); color: #888; cursor: not-allowed; }
+        .card-item.available { background: var(--grey-card); color: white; cursor: pointer; }
+        .card-item.sold { background: var(--orange-accent); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
 
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
@@ -193,17 +193,17 @@
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: transparent; border-radius: 6px; aspect-ratio: 1;
+            background: var(--grey-card); border-radius: 6px; aspect-ratio: 1;
             font-weight: 700; font-size: 12px; color: #555;
             border: 1px solid rgba(0,0,0,0.04); transition: all 0.2s ease;
         }
         /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
         .board-cell.called { background: var(--surface-white); border: 1px solid rgba(0,0,0,0.1); color: white; }
-        .board-cell.called.highlight-b { background: var(--letter-b); border-color: var(--letter-b); color: white; }
-        .board-cell.called.highlight-i { background: var(--letter-i); border-color: var(--letter-i); color: white; }
-        .board-cell.called.highlight-n { background: var(--letter-n); border-color: var(--letter-n); color: white; }
-        .board-cell.called.highlight-g { background: var(--letter-g); border-color: var(--letter-g); color: white; }
-        .board-cell.called.highlight-o { background: var(--letter-o); border-color: var(--letter-o); color: white; }
+        .board-cell.called.highlight-b { background: var(--orange-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-i { background: var(--orange-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-n { background: var(--orange-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-g { background: var(--orange-accent); border-color: var(--border-light); color: white; }
+        .board-cell.called.highlight-o { background: var(--orange-accent); border-color: var(--border-light); color: white; }
         /* The most-recently called number is always highlighted GREEN, overriding the column color */
         .board-cell.called.current-call { background: var(--btn-green) !important; border-color: var(--btn-green) !important; color: white; }
 
