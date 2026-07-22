@@ -2134,49 +2134,95 @@ class Database:
                 # First, check if any records exist at all for this game
                 cursor.execute("""
                     SELECT COUNT(*) as total,
-                         SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active,
-                         SUM(CASE WHEN is_fake = 1 AND is_active = 1 THEN 1 ELSE 0 END) as fake_active
+                        SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active,
+                        SUM(CASE WHEN is_fake = 1 AND is_active = 1 THEN 1 ELSE 0 END) as fake_active
                     FROM player_cards 
                     WHERE game_id = ?
                 """, (game_id,))
                 count_result = cursor.fetchone()
             
                 if count_result:
-                  total = count_result[0] or 0
-                  active = count_result[1] or 0
-                  fake_active = count_result[2] or 0
-                  real_active = active - fake_active
+                    total = count_result[0] or 0
+                    active = count_result[1] or 0
+                    fake_active = count_result[2] or 0
+                    real_active = active - fake_active
+                    logger.info(f"📊 Game {game_id} cards: TOTAL={total}, ACTIVE={active} (Real: {real_active}, Fake: {fake_active})")
                 
-                logger.info(f"📊 Game {game_id} cards: TOTAL={total}, ACTIVE={active} (Real: {real_active}, Fake: {fake_active})")
-            
-            # Get all active cards with user info
-            cursor.execute("""
-                SELECT pc.*, u.username, u.full_name 
-                FROM player_cards pc
-                LEFT JOIN users u ON pc.user_id = u.user_id
-                WHERE pc.game_id = ? AND pc.is_active = 1
-                ORDER BY pc.card_index
-            """, (game_id,))
-            rows = cursor.fetchall()
-            
-            cards = []
-            for row in rows:
-                card = dict(row)
-                try:
-                    card['card_numbers'] = json.loads(card['card_numbers']) if card.get('card_numbers') else []
-                    card['card_data'] = json.loads(card['card_data']) if card.get('card_data') else {}
-                except:
-                    card['card_numbers'] = []
-                    card['card_data'] = {}
+                # Get all active cards with user info - NOW INSIDE THE SAME 'with' BLOCK
+                cursor.execute("""
+                    SELECT pc.*, u.username, u.full_name 
+                    FROM player_cards pc
+                    LEFT JOIN users u ON pc.user_id = u.user_id
+                    WHERE pc.game_id = ? AND pc.is_active = 1
+                    ORDER BY pc.card_index
+                """, (game_id,))
+                rows = cursor.fetchall()
                 
-                cards.append(card)
-            
-            logger.info(f"✅ Game {game_id}: Returning {len(cards)} active cards")
-            return cards
-            
+                cards = []
+                for row in rows:
+                    card = dict(row)
+                    try:
+                        card['card_numbers'] = json.loads(card['card_numbers']) if card.get('card_numbers') else []
+                        card['card_data'] = json.loads(card['card_data']) if card.get('card_data') else {}
+                    except:
+                        card['card_numbers'] = []
+                        card['card_data'] = {}
+                    
+                    cards.append(card)
+                
+                logger.info(f"✅ Game {game_id}: Returning {len(cards)} active cards")
+                return cards
+                
         except Exception as e:
-         logger.error(f"❌ Error getting game cards for {game_id}: {e}")
-        return []
+            logger.error(f"❌ Error getting game cards for {game_id}: {e}")
+            return []
+        
+        
+        
+        
+    @classmethod
+    async def add_player_card(cls, user_id: int, game_id: str, card_index: int, 
+                            card_data: List[int], is_fake: bool = False, 
+                            price: float = 10.00) -> int:
+        """Add a player card to the game"""
+        try:
+            card_numbers_json = json.dumps(card_data)
+            now = datetime.now()
+            
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO player_cards (
+                        game_id, user_id, card_index, card_numbers, 
+                        purchase_price, purchase_time, created_at,
+                        is_active, is_fake
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    game_id, user_id, card_index, card_numbers_json,
+                    price, now, now,
+                    1,  # is_active
+                    1 if is_fake else 0
+                ))
+                
+                card_id = cursor.lastrowid
+                
+                # Update game stats - total players
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_players = total_players + 1,
+                        total_cards_sold = total_cards_sold + 1
+                    WHERE game_id = ?
+                """, (game_id,))
+                
+                logger.info(f"✅ Added player card #{card_index} for user {user_id} in game {game_id}")
+                return card_id
+                
+        except Exception as e:
+            logger.error(f"Error adding player card: {e}")
+            return 0
+        
+        
+        
+        
     
     @classmethod
     async def increment_cards_sold(cls, game_id: str):
