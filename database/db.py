@@ -1330,6 +1330,73 @@ class Database:
         except Exception as e:
             logger.error(f"Error marking number on fake cards: {e}")
             return 0
+        
+        
+        
+            @staticmethod
+    async def get_user_active_cards_in_game(user_id: int, game_id: str) -> List[dict]:
+        """Get all active cards for a specific user in a specific game"""
+        try:
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, user_id, game_id, card_index, card_data, is_fake, is_active, purchase_time
+                    FROM player_cards 
+                    WHERE user_id = ? AND game_id = ? AND is_active = 1
+                """, (user_id, game_id))
+                
+                rows = cursor.fetchall()
+                cards = []
+                for row in rows:
+                    # Parse card_data if it's JSON
+                    card_data = row[4]
+                    if isinstance(card_data, str):
+                        try:
+                            card_data = json.loads(card_data)
+                        except:
+                            card_data = {}
+                    
+                    cards.append({
+                        'id': row[0],
+                        'user_id': row[1],
+                        'game_id': row[2],
+                        'card_index': row[3],
+                        'card_data': card_data,
+                        'is_fake': row[5],
+                        'is_active': row[6],
+                        'purchase_time': row[7]
+                    })
+                return cards
+        except Exception as e:
+            logger.error(f"Error getting active cards for user {user_id} in game {game_id}: {e}")
+            return []
+        
+        
+        
+         @staticmethod
+    async def decrement_prize_pool(game_id: str, amount: float):
+        """Decrease the prize pool for a game"""
+        try:
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET prize_pool = MAX(0, prize_pool - ?) 
+                    WHERE game_id = ?
+                """, (amount, game_id))
+        except Exception as e:
+            logger.error(f"Error decrementing prize pool for {game_id}: {e}")
+
+    @staticmethod
+    async def decrement_cards_sold(game_id: str):
+        """Decrease the total cards sold for a game"""
+        try:
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_cards_sold = MAX(0, total_cards_sold - 1) 
+                    WHERE game_id = ?
+                """, (game_id,))
+        except Exception as e:
+            logger.error(f"Error decrementing cards sold for {game_id}: {e}")   
     
     # ==================== DRAWN NUMBERS METHODS ====================
     
