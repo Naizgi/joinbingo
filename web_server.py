@@ -5163,7 +5163,6 @@ async def toggle_card_purchase(request):
                 })
             
             # ========== FIXED: Use fixed cards from game_manager ==========
-            # Use the 400 pre-generated fixed cards (same numbers every game)
             card_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
             if not card_numbers:
                 logger.warning(f"Card index {card_index} not found in fixed cards, using fallback")
@@ -5177,27 +5176,25 @@ async def toggle_card_purchase(request):
                 notes=f'Purchased board #{card_index} in game {game_id}'
             )
             
-            # Create the card using Database method
-            card_id = await Database.create_player_card(
+            # Add player card
+            await Database.add_player_card(
                 user_id=user_id,
                 game_id=game_id,
                 card_index=card_index,
-                card_numbers=card_numbers,
-                price=card_price,
-                is_active=1,
-                is_fake=0
+                card_data=card_numbers,
+                is_fake=False,
+                price=card_price
             )
             
-            # Update game stats
-            await Database.increment_cards_sold(game_id)
-            await Database.increment_prize_pool(game_id, card_price * 0.8)
-    
-    # ... rest of the code remains the same ...            
-            # Update active game object in game_manager if it's currently active
-            active_game = await game_manager.get_active_round_game()
-            if active_game and active_game.get('game_id') == game_id:
-                if hasattr(game_manager, '_update_active_game_stats'):
-                    await game_manager._update_active_game_stats(game_id)
+            # Update game stats - Use direct SQL since increment methods might not exist
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_cards_sold = total_cards_sold + 1,
+                        prize_pool = prize_pool + ?,
+                        total_sales = total_sales + ?
+                    WHERE game_id = ?
+                """, (card_price * 0.8, card_price, game_id))
             
             logger.info(f"✅ User {user_id} purchased Board #{card_index} in game {game_id}")
             
@@ -5250,14 +5247,14 @@ async def toggle_card_purchase(request):
             )
             
             # Update game stats (decrease prize pool/cards sold)
-            await Database.decrement_prize_pool(game_id, card_price * 0.8)
-            await Database.decrement_cards_sold(game_id)
-            
-            # Update active game object
-            active_game = await game_manager.get_active_round_game()
-            if active_game and active_game.get('game_id') == game_id:
-                if hasattr(game_manager, '_update_active_game_stats'):
-                    await game_manager._update_active_game_stats(game_id)
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_cards_sold = total_cards_sold - 1,
+                        prize_pool = MAX(0, prize_pool - ?),
+                        total_sales = total_sales - ?
+                    WHERE game_id = ?
+                """, (card_price * 0.8, card_price, game_id))
             
             logger.info(f"♻️ User {user_id} refunded Board #{card_index} in game {game_id}")
             
@@ -5283,7 +5280,6 @@ async def toggle_card_purchase(request):
             'success': False, 
             'message': f'Server error: {str(e)}'
         }, status=500)
-
 
 
 
