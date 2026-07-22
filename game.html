@@ -145,24 +145,25 @@
 
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
         
-           /* GAME TOP STATS ROW */
-                /* GAME TOP STATS ROW */
+               /* GAME TOP STATS ROW */
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
             background: transparent; 
-            padding: 8px 3px; /* ← Increased height here */
+            padding: 10px 0; /* ← Zero side padding ensures it touches the full screen edges */
             border: 2px solid #FFFFFF; /* Solid white border */
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             margin-bottom: 8px;
+            width: 100%; /* Forces full width */
+            box-sizing: border-box; /* Ensures padding doesn't cause overflow */
         }
         .stat-box {
             background: var(--surface-white);
             border: 1px solid rgba(0,0,0,0.05); border-radius: 6px;
             text-align: center; padding: 2px 2px;
         }
-        .stat-box .label { font-size: 8px; color: var(--text-muted); display: block; line-height: 1.2; font-weight: 600; }
-        .stat-box .value { font-size: 10px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
+         .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; } /* ← Increased from 8px */
+        .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; } /* ← Increased from 10px */
         /* SIDE-BY-SIDE 50/50 LAYOUT - Strict alignment fix */
         .game-layout { 
             display: flex; 
@@ -201,7 +202,7 @@
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: var(--grey-card); border-radius: 2px; aspect-ratio: 1;
+            background: var(--grey-card); border-radius: 6px; aspect-ratio: 1;
             font-weight: 700; font-size: 7px; color: #fff;
             border: 1px solid rgba(255,255,255,0.8); transition: all 0.2s ease;
         }
@@ -247,14 +248,14 @@
             font-weight: 800; font-size: 14px;
         }
 
-        /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
+                /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
         .recent-calls-box {
             background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 4px 6px;
             display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; 
             border: 1px solid rgba(255,255,255,0.8); min-height: 36px; 
-            width: 70%; /* ← Reduced width, leaving a gap on the right */
-            align-self: flex-end; /* Pushes it to the right side */
-            margin-top: 4px; /* Adds a tiny gap from the Current Call banner */
+            width: 85%; /* ← Wider than before, but still smaller than full width */
+            align-self: center; /* ← Centers it perfectly within the right panel */
+            margin: 4px auto; /* Centers it horizontally */
         }
         .call-bubble {
             border-radius: 50%; /* Make it a perfect circle */
