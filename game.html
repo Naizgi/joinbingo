@@ -149,12 +149,12 @@
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
             background: transparent; 
-            padding: 10px 0; /* ← Zero side padding ensures it touches the full screen edges */
+            padding: 4px 0; /* ← Reduced height by decreasing top/bottom padding to 4px */
             border: 2px solid #FFFFFF; /* Solid white border */
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             margin-bottom: 8px;
-            width: 100%; /* Forces full width */
+            width: 100%; /* Keeps full width */
             box-sizing: border-box; /* Ensures padding doesn't cause overflow */
         }
         .stat-box {
