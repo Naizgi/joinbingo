@@ -4171,6 +4171,7 @@ class GameManager:
         """Handle bingo claim with immediate verification and processing (10-second display)"""
         try:
             from database.db import Database
+            from web_server import websocket_server
             
             logger.info(f"🚨 IMMEDIATE BINGO CLAIM from user {user_id} in game {game_id}")
             
@@ -4178,18 +4179,36 @@ class GameManager:
             game = await Database.get_game(game_id)
             if not game or game.get('status') != 'active':
                 logger.warning(f"Game {game_id} not active for bingo claim")
+                # Send rejection response
+                await self._send_bingo_response(user_id, {
+                    'success': False,
+                    'reason': 'Game not active',
+                    'type': 'bingo_rejected'
+                })
                 return None
             
             # Check if we can add another winner
             if not await self.can_add_winner(game_id):
                 winners_count = await self.get_winners_count(game_id)
                 logger.warning(f"Game {game_id} already has {winners_count}/{self.max_winners} winners")
+                # Send rejection response
+                await self._send_bingo_response(user_id, {
+                    'success': False,
+                    'reason': f'Game already has {winners_count} winner(s)',
+                    'type': 'bingo_rejected'
+                })
                 return None
             
             # Get user card
             user_card = await Database.get_user_card_in_game(user_id, game_id)
             if not user_card:
                 logger.warning(f"User {user_id} has no card in game {game_id}")
+                # Send rejection response
+                await self._send_bingo_response(user_id, {
+                    'success': False,
+                    'reason': 'No active card found',
+                    'type': 'bingo_rejected'
+                })
                 return None
             
             # Get called numbers
@@ -4201,22 +4220,151 @@ class GameManager:
             if has_bingo:
                 logger.info(f"✅ IMMEDIATE BINGO VERIFIED: User {user_id}, Pattern: {pattern_type}")
                 
-                # Note: process_winner already has its own _verification_lock
-                # So we don't need to lock here to avoid deadlock
                 # Double-check game is still active and we can add winner
                 current_game = await Database.get_game(game_id)
                 if current_game and current_game.get('status') == 'active' and await self.can_add_winner(game_id):
                     return await self.process_winner(game_id, user_id)
                 else:
                     logger.warning(f"Game {game_id} no longer active or cannot add winner during processing")
+                    # Send rejection response
+                    await self._send_bingo_response(user_id, {
+                        'success': False,
+                        'reason': 'Game no longer active',
+                        'type': 'bingo_rejected'
+                    })
                     return None
             else:
-                logger.info(f"❌ No bingo found for user {user_id}")
-                return None
+                # ========== FALSE CLAIM: DISQUALIFY THE PLAYER ==========
+                logger.warning(f"❌ FALSE BINGO CLAIM from user {user_id} - No valid pattern found")
                 
+                # Get the user's current card count (for disqualification)
+                user_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
+                card_index = user_cards[0].get('card_index') if user_cards else None
+                
+                # Disqualify the player
+                disqualify_result = await self._disqualify_player(game_id, user_id)
+                
+                # Send disqualification response to the client
+                await self._send_bingo_response(user_id, {
+                    'success': False,
+                    'reason': 'No valid bingo pattern found - You have been disqualified from this game',
+                    'type': 'bingo_rejected',
+                    'disqualified': True,
+                    'card_index': card_index,
+                    'refund_amount': disqualify_result.get('refund_amount', 0)
+                })
+                
+                # Broadcast disqualification to all players
+                await self._safe_broadcast({
+                    'type': 'player_disqualified',
+                    'game_id': game_id,
+                    'user_id': user_id,
+                    'card_index': card_index,
+                    'reason': 'False bingo claim',
+                    'refund_amount': disqualify_result.get('refund_amount', 0),
+                    'timestamp': datetime.now().isoformat()
+                }, game_id)
+                
+                # Broadcast updated game state
+                await self._broadcast_full_game_state(game_id)
+                
+                return None
+                    
         except Exception as e:
-            logger.error(f"Error in immediate bingo claim: {e}")
+            logger.error(f"Error in immediate bingo claim: {e}", exc_info=True)
+            # Send error response
+            await self._send_bingo_response(user_id, {
+                'success': False,
+                'reason': f'Server error: {str(e)}',
+                'type': 'bingo_rejected'
+            })
             return None
+
+    async def _send_bingo_response(self, user_id: int, response: dict):
+        """Send bingo response to a specific user"""
+        try:
+            from web_server import websocket_server
+            await websocket_server.send_to_user(str(user_id), response)
+        except Exception as e:
+            logger.warning(f"Could not send bingo response to user {user_id}: {e}")
+
+    async def _disqualify_player(self, game_id: str, user_id: int) -> dict:
+        """
+        Disqualify a player for false bingo claim.
+        Returns: dict with refund_amount and success status
+        """
+        try:
+            from database.db import Database
+            
+            logger.warning(f"⚠️ Player {user_id} made a FALSE BINGO claim in game {game_id} - DISQUALIFYING")
+            
+            # Get user's active card
+            user_card = await Database.get_user_card_in_game(user_id, game_id)
+            if not user_card:
+                logger.warning(f"Player {user_id} has no active card in game {game_id}")
+                return {'success': False, 'refund_amount': 0}
+            
+            card_id = user_card.get('id')
+            card_index = user_card.get('card_index')
+            purchase_price = float(user_card.get('purchase_price', 10.00))
+            
+            # Refund 80% of purchase price (punishment for false claim)
+            refund_amount = purchase_price * 0.8
+            
+            # Update user balance with refund
+            new_balance = await Database.add_user_balance(
+                user_id=user_id,
+                amount=refund_amount,
+                transaction_type='false_bingo_penalty',
+                notes=f'False bingo claim penalty - refunded {refund_amount} birr'
+            )
+            
+            # Deactivate the card
+            await Database.deactivate_player_card(card_id)
+            
+            # Update game stats (remove player's contribution)
+            with Database.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_cards_sold = total_cards_sold - 1,
+                        prize_pool = MAX(0, prize_pool - ?),
+                        total_sales = total_sales - ?,
+                        real_cards_sold = real_cards_sold - 1,
+                        total_players = (
+                            SELECT COUNT(DISTINCT user_id) 
+                            FROM player_cards 
+                            WHERE game_id = ? AND is_active = 1
+                        )
+                    WHERE game_id = ?
+                """, (purchase_price * 0.8, purchase_price, game_id, game_id))
+            
+            # Remove from owned cards tracking
+            if game_id in self.game_winners:
+                for winner in self.game_winners[game_id]:
+                    if winner.get('user_id') == user_id:
+                        self.game_winners[game_id].remove(winner)
+                        break
+            
+            # Remove from fake user tracking if it was a fake user
+            if game_id in self.fake_user_manager.game_fake_cards:
+                if user_id in self.fake_user_manager.game_fake_cards[game_id]:
+                    del self.fake_user_manager.game_fake_cards[game_id][user_id]
+            
+            # Update fake players count
+            self._fake_players_finalized[game_id] = False
+            
+            logger.info(f"✅ Player {user_id} disqualified from game {game_id} for false bingo claim")
+            
+            return {
+                'success': True,
+                'refund_amount': refund_amount,
+                'card_id': card_id,
+                'card_index': card_index
+            }
+            
+        except Exception as e:
+            logger.error(f"Error disqualifying player {user_id}: {e}", exc_info=True)
+            return {'success': False, 'refund_amount': 0}
     
     # NEW: Manual game recovery API method
     async def recover_stuck_game(self, game_id: str, admin_id: int):

@@ -13,30 +13,28 @@
            EXACT UI DESIGN SYSTEM (From Your Images)
            ========================================================= */
         :root {
-            --bg-main: #d9ade9;            /* Light pastel purple background */
+            --bg-main: #d9ade9;
             --surface-white: #FFFFFF;
-            --purple-dark: #6A1B9A;        /* Deep purple for banners & active tabs */
-            --purple-light: #E1BEE7;       /* Light purple for backgrounds */
-            --orange-accent: #FF9800;      /* Orange for current call badge */
-            --btn-blue: #2196F3;           /* Refresh button color */
-            --btn-green: #4CAF50;          /* Automatic button color */
+            --purple-dark: #6A1B9A;
+            --purple-light: #E1BEE7;
+            --orange-accent: #FF9800;
+            --btn-blue: #2196F3;
+            --btn-green: #4CAF50;
             --text-main: #212121;
             --text-muted: #757575;
             --text-white: #FFFFFF;
             --border-light: #e0e0e0;
-            --grey-card: #D1C4E9;          /* Unselected cards color */
+            --grey-card: #D1C4E9;
             --red-accent: #f2702f;
             
-            /* Bingo Letter Colors (Exact from Image) */
-            --letter-b: #FF9800; /* Dark Orange */
-            --letter-i: green; /* Red */
-            --letter-n: #1976D2; /* Blue */
-            --letter-g: #F44336; /* Red */
-            --letter-o: #9C27B0; /* Purple */
+            --letter-b: #FF9800;
+            --letter-i: green;
+            --letter-n: #1976D2;
+            --letter-g: #F44336;
+            --letter-o: #9C27B0;
             
-            /* Winner Card Colors */
-            --winner-highlight: #FFEB3B;   /* Yellow */
-            --winner-free: #4CAF50;        /* Green */
+            --winner-highlight: #FFEB3B;
+            --winner-free: #4CAF50;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -50,7 +48,96 @@
             overflow-x: hidden;
         }
 
-        /* --- Telegram Mini App Header --- */
+        /* === DISQUALIFIED OVERLAY === */
+        .disqualified-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .disqualified-overlay.active {
+            display: flex;
+        }
+        .disqualified-content {
+            background: #d9ade9;
+            border-radius: 20px;
+            padding: 30px 25px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .disqualified-content .icon {
+            font-size: 60px;
+            color: #F44336;
+            margin-bottom: 10px;
+        }
+        .disqualified-content h2 {
+            color: #6A1B9A;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .disqualified-content p {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+        .disqualified-content .refund-amount {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 12px 0;
+            font-weight: 700;
+            color: #2E7D32;
+            font-size: 18px;
+        }
+        .disqualified-content .continue-btn {
+            background: #6A1B9A;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .disqualified-content .continue-btn:hover {
+            background: #4A148C;
+        }
+
+        /* === DISQUALIFIED CARD IN GAME === */
+        .p-card-wrapper.disqualified {
+            opacity: 0.5;
+            border: 2px solid #F44336 !important;
+            position: relative;
+        }
+        .p-card-wrapper.disqualified::after {
+            content: '❌ DISQUALIFIED';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        /* === APP HEADER === */
         .app-header {
             background: var(--surface-white);
             display: flex;
@@ -67,7 +154,7 @@
         .app-header .subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; }
         .app-header .menu-btn { color: var(--btn-blue); font-size: 22px; cursor: pointer; }
 
-        /* --- Bottom Navigation Bar --- */
+        /* === BOTTOM NAV === */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
@@ -76,7 +163,6 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-        
             z-index: 100;
             box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
         }
@@ -99,17 +185,17 @@
         }
         .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
 
-        /* --- Pages --- */
+        /* === PAGES === */
         .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
         .page-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
 
-        /* --- Components --- */
+        /* === COMPONENTS === */
         .card { background: var(--surface-white); border-radius: 20px; padding: 16px; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); margin-bottom: 12px; }
 
-          /* --- WAITING SCREEN (Card Purchase) --- */
+        /* === WAITING SCREEN === */
         .game-stats {
             background: var(--surface-white);
             border-radius: 8px;
@@ -142,10 +228,15 @@
         .card-item.available { background: var(--grey-card); color: #000000; cursor: pointer; }
         .card-item.sold { background: var(--red-accent); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
+        .card-item.disqualified { 
+            background: #F44336 !important; 
+            color: white !important; 
+            border: 2px solid #B71C1C !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
 
-        /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
-        
-               /* GAME TOP STATS ROW */
+        /* === GAME SCREEN === */
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
             background: transparent; 
@@ -164,9 +255,9 @@
             width: 100%;
             box-sizing: border-box;
         }
-         .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; }
+        .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; }
         .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
-        /* SIDE-BY-SIDE 50/50 LAYOUT - Strict alignment fix */
+
         .game-layout { 
             display: flex; 
             flex-direction: row; 
@@ -177,7 +268,6 @@
             flex-wrap: nowrap;
         }
 
-        /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
             background: transparent; 
             border-radius: 8px; padding: 6px;
@@ -220,7 +310,7 @@
             color: white; 
             animation: winningBlink 0.8s infinite ease-in-out !important;
         }
-        /* RIGHT: CARDS & CONTROLS */
+
         .right-panel { 
             flex: 1; width: 68%; 
             display: flex; 
@@ -228,8 +318,7 @@
             gap: 8px; 
             min-width: 0; 
         }
-        
-        /* CURRENT CALL BANNER */
+
         .current-call-card {
             background: var(--purple-dark);
             border-radius: 30px; padding: 10px 16px;
@@ -248,7 +337,6 @@
             font-weight: 800; font-size: 14px;
         }
 
-        /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
         .recent-calls-box {
             background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 4px 6px;
             display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; 
@@ -273,7 +361,6 @@
         .call-bubble.g { background: var(--letter-g); }
         .call-bubble.o { background: var(--letter-o); }
 
-        /* TOGGLES */
         .controls-row {
             background: rgba(255, 255, 255, 0.5); border-radius: 12px;
             padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;
@@ -290,7 +377,6 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* PLAYER CARDS (STACKED) */
         .player-cards-container-inner {
             display: flex;
             flex-direction: column;
@@ -315,6 +401,26 @@
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
+        }
+        .p-card-wrapper.disqualified {
+            opacity: 0.5;
+            border: 2px solid #F44336 !important;
+            position: relative;
+        }
+        .p-card-wrapper.disqualified::after {
+            content: '❌ DISQUALIFIED';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            z-index: 10;
         }
         .p-card-title { 
             font-size: 11px; font-weight: 700; 
@@ -353,7 +459,6 @@
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-        /* --- No-card waiting message --- */
         .no-card-waiting {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
@@ -372,7 +477,6 @@
             justify-content: center;
         }
 
-        /* --- Bottom Action Buttons (Game Screen Only) --- */
         .bottom-actions {
             position: fixed; bottom: 70px; right: 16px; left: auto;
             width: auto;
@@ -394,12 +498,10 @@
         .action-btn:active { transform: scale(0.97); }
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
-        /* --- Overlays --- */
         #access-denied { display: none; position: fixed; inset: 0; background: #1a1a2e; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
-        /* --- WINNER DISPLAY --- */
         .winner-display { 
             position: fixed; inset: 0; background: #d9ade9;
             display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
@@ -439,7 +541,6 @@
             margin-right: 4px;
             font-weight: 700;
         }
-
         .winner-card-wrapper {
             background: #EAD6F1;
             border: 2px solid #FFFFFF;
@@ -459,7 +560,6 @@
         .winner-card-header-cell.n { background: var(--letter-n); }
         .winner-card-header-cell.g { background: var(--letter-g); }
         .winner-card-header-cell.o { background: var(--letter-o); }
-
         .winner-card-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%;
         }
@@ -472,11 +572,9 @@
         .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; }
         .winner-card-cell.free { background: #C8E6C9 !important; border-color: #81C784 !important; color: white; font-weight: 800; }
         .winner-card-cell.free::after { content: '*' !important; }
-
         .winner-board-text {
             text-align: center; margin-top: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px;
         }
-
         .winner-countdown-bar {
             background: #FF9800;
             border-radius: 12px;
@@ -497,8 +595,7 @@
             display: none; 
         }
 
-        /* --- STRICT SIDE-BY-SIDE FOR ALL MOBILE DEVICES --- */
-         @media (max-width: 600px) {
+        @media (max-width: 600px) {
             .game-layout { 
                 flex-direction: row !important; 
                 gap: 10px; 
@@ -509,7 +606,6 @@
             .board-cell { font-size: 10px; }
         }
         
-        /* --- OTHER PAGES (HISTORY, WALLET, PROFILE) --- */
         .history-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
         .history-winner-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
@@ -539,6 +635,21 @@
 </head>
 <body>
 
+    <!-- ==================== DISQUALIFIED OVERLAY ==================== -->
+    <div class="disqualified-overlay" id="disqualified-overlay">
+        <div class="disqualified-content">
+            <div class="icon">🚫</div>
+            <h2>You've Been Disqualified!</h2>
+            <p>You made an invalid BINGO claim.</p>
+            <p style="font-size:12px; color:#666;">Your card has been deactivated and you have been removed from this game.</p>
+            <div class="refund-amount">
+                💰 Refunded: <span id="dq-refund-amount">0.00</span> birr
+            </div>
+            <p style="font-size:12px; color:#999;">You can still watch the game and play the next round.</p>
+            <button class="continue-btn" onclick="closeDisqualifiedOverlay()">Continue Watching</button>
+        </div>
+    </div>
+
     <!-- Overlays -->
     <div id="access-denied">
         <i class="fas fa-lock" style="font-size: 50px; color: #f44336; margin-bottom: 20px"></i>
@@ -558,7 +669,6 @@
                 <h1>BINGO!</h1>
                 <p><span class="winner-name-badge" id="winners-name-badge">Na</span> <span id="winners-full-text">has won the game.</span></p>
             </div>
-
             <div class="winner-card-wrapper">
                 <div class="winner-card-header">
                     <div class="winner-card-header-cell b">B</div>
@@ -567,14 +677,11 @@
                     <div class="winner-card-header-cell g">G</div>
                     <div class="winner-card-header-cell o">O</div>
                 </div>
-                <div class="winner-card-grid" id="winner-card-grid">
-                    <!-- Rendered by JS -->
-                </div>
+                <div class="winner-card-grid" id="winner-card-grid"></div>
                 <div class="winner-board-text">
                     Board number <span id="winner-board-number">0</span>
                 </div>
             </div>
-
             <div class="winner-countdown-bar">
                 <h2 id="winner-announcement-timer">10</h2>
             </div>
@@ -586,7 +693,6 @@
         
         <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
-            
             <div class="game-stats">
                 <div class="stat-item">
                     <div class="stat-value orange" id="countdown-timer">30</div>
@@ -638,8 +744,6 @@
 
         <!-- ==================== ACTIVE GAME SCREEN ==================== -->
         <div id="game-screen" class="screen">
-            
-            <!-- 1. Top Stats Row -->
             <div class="stats-row">
                <div class="stat-box">
                     <span class="label">ID</span>
@@ -663,10 +767,7 @@
                 </div>
             </div>
 
-            <!-- 2. Main SIDE-BY-SIDE 50/50 Layout -->
             <div class="game-layout">
-                
-                <!-- LEFT: Master Bingo Board -->
                 <div class="board-container" id="master-board">
                     <div class="board-header-row">
                         <div class="board-header-cell b">B</div>
@@ -675,26 +776,17 @@
                         <div class="board-header-cell g">G</div>
                         <div class="board-header-cell o">O</div>
                     </div>
-                    <div class="board-columns" id="bingo-grid">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div class="board-columns" id="bingo-grid"></div>
                 </div>
 
-                <!-- RIGHT: Controls & Stacked Cards -->
                 <div class="right-panel">
-                    
-                    <!-- Current Call Banner -->
                     <div class="current-call-card">
                         <span class="current-call-label">Current Call</span>
                         <span class="current-call-badge" id="current-called-number">--</span>
                     </div>
 
-                    <!-- Recent Calls -->
-                    <div class="recent-calls-box" id="called-numbers-grid">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div class="recent-calls-box" id="called-numbers-grid"></div>
 
-                    <!-- Toggles -->
                     <div class="controls-row">
                         <div class="control-group">
                             <span class="control-label">Sound</span>
@@ -710,11 +802,8 @@
                         </div>
                     </div>
 
-                   <!-- Player Cards Container (Stacked) -->
                     <div class="player-cards-container" id="player-cards-container" style="background: rgba(255,255,255,0.3); border-radius: 12px; padding: 6px; border: 1px solid rgba(255,255,255,0.5); min-height: 100px; max-height: 380px; overflow-y: auto;">
-                        <div class="player-cards-container-inner" id="player-cards-inner">
-                            <!-- Rendered by JS -->
-                        </div>
+                        <div class="player-cards-container-inner" id="player-cards-inner"></div>
                     </div>
                 </div>
             </div>
@@ -760,7 +849,6 @@
                 </div>
                 <button class="btn-secondary" onclick="updateWalletUI()" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
             </div>
-            
             <div class="wallet-tabs">
                 <div class="wallet-tab active">BALANCES</div>
                 <div class="wallet-tab">HISTORY</div>
@@ -1061,6 +1149,16 @@
     }
     window.toggleAuto = toggleAuto;
 
+    // ==================== DISQUALIFIED OVERLAY FUNCTIONS ====================
+    function showDisqualifiedOverlay(refundAmount) {
+        document.getElementById('dq-refund-amount').textContent = refundAmount.toFixed(2);
+        document.getElementById('disqualified-overlay').classList.add('active');
+    }
+    
+    function closeDisqualifiedOverlay() {
+        document.getElementById('disqualified-overlay').classList.remove('active');
+    }
+
     // ==================== YOUR ORIGINAL LOGIC (COMPLETE) ====================
     const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
     const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
@@ -1092,7 +1190,10 @@
         phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false,
         // MULTI-CARD VARS:
         ownedCardIndices: [],
-        ownedCardsData: [] 
+        ownedCardsData: [],
+        // DISQUALIFICATION
+        disqualified: false,
+        disqualifiedCards: []
     };
 
     const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
@@ -1104,7 +1205,6 @@
 
     // ==================== UPDATED: NO NOTIFICATION FOR SOUND ENABLED ====================
     function showNotification(message, type = "info", duration = 3000) {
-        // Skip sound enabled notifications
         if (message && message.includes("Sound enabled")) return;
         
         const toast = document.getElementById("notification-toast");
@@ -1138,12 +1238,10 @@
         document.querySelectorAll("audio").forEach((audio) => { try { audio.pause(); audio.currentTime = 0; } catch (error) {} });
     }
 
-    // ==================== UPDATED: Silent Audio Initialization ====================
     function initializeAudio() {
         gameState.audioInitialized = true; gameState.audioEnabled = true;
         const toggle = document.getElementById('audio-toggle');
         if(toggle) toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size: 12px;"></i>';
-        // Removed notification - now silent
         preloadAudioFiles();
     }
     window.initializeAudio = initializeAudio;
@@ -1247,32 +1345,104 @@
         }
     }
 
+    // ==================== UPDATED: claimBingo with proper response handling ====================
     async function claimBingo() {
+        if (gameState.disqualified) {
+            showNotification("You have been disqualified from this game!", "error", 3000);
+            return;
+        }
         if (!gameState.gameId || !gameState.hasCard) return showNotification("No active game or card", "error");
         if (!validateGamePhase("active", "claimBingo")) return showNotification("Can only claim bingo during active game", "error");
         if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
+        
         const btn = document.getElementById("claim-bingo-btn");
-        if (btn) { btn.innerHTML = `<div class="loading-spinner"></div> Claiming BINGO...`; btn.disabled = true; }
-        gameState.bingoClaimInProgress = true; gameState.phaseChangeRequested = true;
-        const success = sendWebSocketMessage({
-            type: "player_bingo_claim", game_id: gameState.gameId, user_id: gameState.userId,
-            timestamp: Date.now(), called_numbers: gameState.calledNumbers,
-            card_numbers: gameState.selectedCardNumbers, marked_numbers: Array.from(gameState.markedNumbers),
-        });
-        if (!success) {
-            try {
+        if (btn) { 
+            btn.innerHTML = `<div class="loading-spinner"></div> Claiming BINGO...`; 
+            btn.disabled = true; 
+        }
+        
+        gameState.bingoClaimInProgress = true; 
+        gameState.phaseChangeRequested = true;
+        
+        // Set a timeout to reset the button if server doesn't respond
+        const timeoutId = setTimeout(() => {
+            if (gameState.bingoClaimInProgress) {
+                console.warn("Bingo claim timeout - resetting button");
+                gameState.bingoClaimInProgress = false;
+                gameState.phaseChangeRequested = false;
+                updateBingoButton();
+                showNotification("Server not responding. Please try again.", "error");
+            }
+        }, 10000);
+        
+        try {
+            const success = sendWebSocketMessage({
+                type: "player_bingo_claim", 
+                game_id: gameState.gameId, 
+                user_id: gameState.userId,
+                timestamp: Date.now(), 
+                called_numbers: gameState.calledNumbers,
+                card_numbers: gameState.selectedCardNumbers, 
+                marked_numbers: Array.from(gameState.markedNumbers),
+            });
+            
+            if (!success) {
                 const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, {
-                    method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
                     body: JSON.stringify({
-                        user_id: gameState.userId, game_type: gameState.gameType,
-                        called_numbers: gameState.calledNumbers, card_numbers: gameState.selectedCardNumbers,
+                        user_id: gameState.userId, 
+                        game_type: gameState.gameType,
+                        called_numbers: gameState.calledNumbers, 
+                        card_numbers: gameState.selectedCardNumbers,
                         marked_numbers: Array.from(gameState.markedNumbers),
                     }),
                 });
+                
                 const data = await response.json();
-                if (data.success) { gameState.winnerAnnounced = true; gameState.hasClaimedBingo = true; setTimeout(() => getUserBalance(), 1000); }
-                else { showNotification(data.message || "Failed to claim BINGO", "error"); gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false; updateBingoButton(); }
-            } catch (apiError) { console.error("Bingo claim API error:", apiError); showNotification("Failed to connect. Please try again.", "error"); gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false; updateBingoButton(); }
+                clearTimeout(timeoutId);
+                
+                if (data.success) { 
+                    gameState.winnerAnnounced = true; 
+                    gameState.hasClaimedBingo = true; 
+                    setTimeout(() => getUserBalance(), 1000); 
+                } else { 
+                    // ========== HANDLE REJECTION / DISQUALIFICATION ==========
+                    gameState.bingoClaimInProgress = false; 
+                    gameState.phaseChangeRequested = false; 
+                    
+                    if (data.disqualified) {
+                        // Player was disqualified
+                        gameState.disqualified = true;
+                        gameState.hasCard = false;
+                        showDisqualifiedOverlay(data.refund_amount || 8);
+                        updateBingoButton();
+                        renderEmptyPlayerCard();
+                        // Refresh game state
+                        setTimeout(() => getCompleteGameState(), 2000);
+                    } else {
+                        showNotification(data.message || "No valid bingo pattern found", "error", 4000);
+                        updateBingoButton();
+                    }
+                }
+            } else {
+                // WebSocket sent - response will come via WebSocket
+                setTimeout(() => {
+                    if (gameState.bingoClaimInProgress) {
+                        console.warn("Bingo claim pending - resetting button");
+                        gameState.bingoClaimInProgress = false;
+                        gameState.phaseChangeRequested = false;
+                        updateBingoButton();
+                    }
+                }, 8000);
+            }
+        } catch (apiError) { 
+            clearTimeout(timeoutId);
+            console.error("Bingo claim API error:", apiError); 
+            showNotification("Failed to connect. Please try again.", "error", 4000); 
+            gameState.bingoClaimInProgress = false; 
+            gameState.phaseChangeRequested = false; 
+            updateBingoButton(); 
         }
     }
     window.claimBingo = claimBingo;
@@ -1291,26 +1461,55 @@
         } catch (error) { console.error("Error checking bingo:", error); return false; }
     }
 
+    // ==================== UPDATED: updateBingoButton with disqualification ====================
     function updateBingoButton() {
-        const btn = document.getElementById("claim-bingo-btn"); if (!btn) return;
-        if (gameState.gameComplete || gameState.winnerAnnounced) { btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; btn.disabled = true; return; }
-        if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
-        if (!gameState.hasCard) { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
+        const btn = document.getElementById("claim-bingo-btn"); 
+        if (!btn) return;
+        
+        if (gameState.bingoClaimInProgress) {
+            btn.innerHTML = `<div class="loading-spinner"></div> Checking...`;
+            btn.disabled = true;
+            return;
+        }
+        
+        if (gameState.disqualified) {
+            btn.innerHTML = `<i class="fas fa-ban"></i> Disqualified`;
+            btn.disabled = true;
+            return;
+        }
+        
+        if (gameState.gameComplete || gameState.winnerAnnounced) { 
+            btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; 
+            btn.disabled = true; 
+            return; 
+        }
+        
+        if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { 
+            btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
+            btn.disabled = true; 
+            return; 
+        }
+        
+        if (!gameState.hasCard) { 
+            btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
+            btn.disabled = true; 
+            return; 
+        }
+        
         btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
         btn.className = "action-btn orange"; 
         btn.disabled = false;
         btn.onclick = claimBingo;
     }
 
-    // ==================== AUTO-PLAY: Auto-mark numbers when called ====================
+    // ==================== AUTO-PLAY FUNCTIONS ====================
     function handleServerNumberCalled(number, allCalled) {
         gameState.calledNumbers = allCalled;
         updateCalledNumbersDisplay(); 
         updateCurrentCalledDisplay(number); 
         updateBingoGrid();
         
-        // Auto-mark if autoMode is enabled
-        if (gameState.autoMode && gameState.hasCard) {
+        if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
             autoMarkNumber(number);
         }
         
@@ -1318,11 +1517,9 @@
         if (checkForBingo() && !gameState.hasClaimedBingo) updateBingoButton();
     }
 
-    // ==================== AUTO-PLAY: Auto-mark function ====================
     function autoMarkNumber(number) {
-        if (!gameState.autoMode || !gameState.hasCard) return;
+        if (!gameState.autoMode || !gameState.hasCard || gameState.disqualified) return;
         
-        // Find all player cards and mark the number if it exists
         const allCards = document.querySelectorAll('.p-card-cell');
         allCards.forEach(cell => {
             const cellNumber = parseInt(cell.textContent);
@@ -1330,14 +1527,11 @@
                 cell.classList.add('marked');
                 cell.style.background = '#4CAF50';
                 cell.style.color = 'white';
-                // Add to marked numbers set
                 if (!gameState.markedNumbers) gameState.markedNumbers = new Set();
                 gameState.markedNumbers.add(number);
                 
-                // Check for bingo after marking
                 if (checkForBingo() && !gameState.hasClaimedBingo) {
                     updateBingoButton();
-                    // If autoMode is on, automatically claim bingo after a short delay
                     if (gameState.autoMode) {
                         setTimeout(() => {
                             if (checkForBingo() && !gameState.hasClaimedBingo) {
@@ -1363,7 +1557,7 @@
     }
 
     function handlePlayerCardClick(cell, number) {
-        if (!gameState.gameActive || !gameState.hasCard) return showNotification("Game not active", "error");
+        if (!gameState.gameActive || !gameState.hasCard || gameState.disqualified) return showNotification("Game not active or disqualified", "error");
         if (number === 0 || number === "0") return;
         if (gameState.markedNumbers.has(number)) { gameState.markedNumbers.delete(number); cell.classList.remove("marked"); }
         else { gameState.markedNumbers.add(number); cell.classList.add("marked"); }
@@ -1449,18 +1643,21 @@
         }
     }
 
+    // ==================== UPDATED: instantCardUpdate with disqualification ====================
     function instantCardUpdate(cardIndex, newStatus, cardData = null) {
         const cardElement = gameState.cardsCache.cardElements[cardIndex]; if (!cardElement) return;
-        cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing");
+        cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified");
         switch (newStatus) {
             case "sold": cardElement.classList.add("sold"); cardElement.onclick = null; cardElement.title = "Sold to another player"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); break;
             case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; document.getElementById("selected-card-id").textContent = `#${cardIndex}`; if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
             case "available": cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Available to buy"; gameState.cardsSold.delete(cardIndex); gameState.cardsCache.soldCards.delete(cardIndex); break;
             case "selected": cardElement.classList.add("selected"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Selected"; gameState.uiSelectedCardIndex = cardIndex; break;
+            case "disqualified": cardElement.classList.add("disqualified"); cardElement.onclick = null; cardElement.title = "Disqualified - False claim"; break;
         }
         if (cardData) { if (cardData.prize_pool !== undefined) gameState.prizePool = cardData.prize_pool; if (cardData.total_players !== undefined) gameState.totalPlayers = cardData.total_players; if (cardData.wallet_balance !== undefined) gameState.walletBalance = cardData.wallet_balance; if (cardData.real_players !== undefined) gameState.realPlayers = cardData.real_players; if (cardData.fake_players !== undefined) gameState.fakePlayers = cardData.fake_players; updateGameStats(); }
     }
 
+    // ==================== UPDATED: getCompleteGameState with disqualification ====================
     async function getCompleteGameState() {
         if (!gameState.gameId) return false;
         if (gameState.fullSyncInProgress) return false;
@@ -1474,10 +1671,21 @@
                 gameState.gameId = data.game_id; gameState.gamePhase = data.game_phase; gameState.gameStatus = data.game_status; gameState.lastConfirmedPhase = data.game_phase; gameState.currentRound = data.round_number || gameState.currentRound;
                 gameState.prizePool = parseFloat(data.prize_pool || 0); gameState.realPlayers = data.real_players || 0; gameState.fakePlayers = data.fake_players || 0; gameState.totalPlayers = data.total_players || gameState.realPlayers + gameState.fakePlayers;
                 gameState.maxWinners = data.max_winners || 2; gameState.winnersCount = data.winners_count || 0; gameState.winners = data.winners || [];
+                
+                // Check if user is disqualified
+                if (data.disqualified) {
+                    gameState.disqualified = true;
+                    gameState.hasCard = false;
+                    gameState.ownedCardIndices = [];
+                    gameState.ownedCardsData = [];
+                    updateBoardCountText();
+                    renderEmptyPlayerCard();
+                    updateBingoButton();
+                }
+                
                 if (data.called_numbers && Array.isArray(data.called_numbers)) { 
                     gameState.calledNumbers = data.called_numbers; 
-                    // Auto-mark numbers if autoMode is on
-                    if (gameState.autoMode && gameState.hasCard) {
+                    if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
                         data.called_numbers.forEach(num => autoMarkNumber(num));
                     }
                 }
@@ -1494,8 +1702,7 @@
                     }
                 }
                 
-                // MULTI-CARD SUPPORT: Load all user cards
-                if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0) {
+                if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0 && !gameState.disqualified) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
                     gameState.ownedCardsData = data.user_cards.map(c => ({ 
                         card_index: c.card_index, 
@@ -1510,8 +1717,7 @@
                     if (gameState.gamePhase === "active" || gameState.gameStatus === "active") {
                         renderPlayerCardsFromOwned();
                     }
-                } else if (data.user_has_card && data.user_card) {
-                    // Fallback to single card mode
+                } else if (data.user_has_card && data.user_card && !gameState.disqualified) {
                     gameState.hasCard = true; gameState.selectedCardId = data.user_card.card_id; gameState.selectedCardIndex = data.user_card.card_index;
                     if (data.user_card.card_numbers) { 
                         try { 
@@ -1527,7 +1733,6 @@
                         } catch (e) { gameState.selectedCardNumbers = generateFallbackCardNumbers(); } 
                     } else { gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                     document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
-                    // Initialize owned arrays for single card
                     if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
                         gameState.ownedCardIndices = [data.user_card.card_index];
                         gameState.ownedCardsData = [{ card_index: data.user_card.card_index, numbers: gameState.selectedCardNumbers }];
@@ -1538,9 +1743,11 @@
                     gameState.selectedCardIndex = null; 
                     gameState.selectedCardNumbers = []; 
                     gameState.markedNumbers.clear();
-                    gameState.ownedCardIndices = [];
-                    gameState.ownedCardsData = [];
-                    updateBoardCountText();
+                    if (!gameState.disqualified) {
+                        gameState.ownedCardIndices = [];
+                        gameState.ownedCardsData = [];
+                        updateBoardCountText();
+                    }
                 }
                 
                 if (data.winners && data.winners.length > 0) {
@@ -1555,7 +1762,7 @@
                 updateBingoGrid(); updateGameStats();
                 gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
                 if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
-                else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active'); if (gameState.hasCard) renderPlayerCardsFromOwned(); else renderEmptyPlayerCard(); }
+                else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active'); if (gameState.hasCard && !gameState.disqualified) renderPlayerCardsFromOwned(); else renderEmptyPlayerCard(); }
                 else if (gameState.gamePhase === "winner_display" && gameState.winnerData) { document.getElementById('game-bottom-actions').classList.remove('active'); showWinnerAnnouncementScreen(gameState.winnerData); }
                 updateBingoButton(); gameState.lastFullSyncTime = Date.now(); return true;
             } else { return false; }
@@ -1611,6 +1818,7 @@
         gameState.countdownInterval = setInterval(() => {}, 10000);
     }
 
+    // ==================== UPDATED: handleWebSocketMessage with disqualification ====================
     async function handleWebSocketMessage(data) {
         console.log("WebSocket message received:", data.type, data); gameState.lastUpdateTime = Date.now();
         if (data.game_id) gameState.gameId = data.game_id;
@@ -1642,7 +1850,48 @@
             case "early_state_update": if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; if (data.fake_players !== undefined) gameState.fakePlayers = data.fake_players; if (data.real_players !== undefined) gameState.realPlayers = data.real_players; if (data.countdown !== undefined) { gameState.countdown = data.countdown; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); } updateGameStats(); if (data.fake_card_indices && Array.isArray(data.fake_card_indices) && data.fake_card_indices.length > 0) { if (!gameState.cardsLoaded && document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { updateFakeCardsImmediately(data.fake_card_indices); }); } else { updateFakeCardsImmediately(data.fake_card_indices); } } break;
             case "pong": break;
             case "full_state_update": if (gameState.gamePhase === "card_purchase" && gameState.cardsLoaded) { if (data.game_state) { if (data.game_state.prize_pool !== undefined) gameState.prizePool = data.game_state.prize_pool; if (data.game_state.real_players !== undefined) gameState.realPlayers = data.game_state.real_players; if (data.game_state.fake_players !== undefined) gameState.fakePlayers = data.game_state.fake_players; if (data.game_state.total_players !== undefined) gameState.totalPlayers = data.game_state.total_players; if (data.game_state.player_count !== undefined) gameState.playerCount = data.game_state.player_count; if (data.game_state.game_phase) { gameState.gamePhase = data.game_state.game_phase; gameState.gameStatus = data.game_state.game_phase; gameState.lastConfirmedPhase = data.game_state.game_phase; } updateGameStats(); break; } } if (data.game_state) { if (data.game_state.called_numbers) { gameState.calledNumbers = data.game_state.called_numbers; updateCalledNumbersDisplay(); updateBingoGrid(); } if (data.game_state.prize_pool !== undefined) gameState.prizePool = data.game_state.prize_pool; if (data.game_state.real_players !== undefined) gameState.realPlayers = data.game_state.real_players; if (data.game_state.fake_players !== undefined) gameState.fakePlayers = data.game_state.fake_players; if (data.game_state.total_players !== undefined) gameState.totalPlayers = data.game_state.total_players; if (data.game_state.player_count !== undefined) gameState.playerCount = data.game_state.player_count; if (data.game_state.game_phase) { gameState.gamePhase = data.game_state.game_phase; gameState.gameStatus = data.game_state.game_phase; gameState.lastConfirmedPhase = data.game_state.game_phase; } updateGameStats(); updateGameUI(); } break;
+            case "player_disqualified":
+                if (data.user_id == gameState.userId) {
+                    gameState.disqualified = true;
+                    gameState.hasCard = false;
+                    gameState.bingoClaimInProgress = false;
+                    gameState.phaseChangeRequested = false;
+                    showDisqualifiedOverlay(data.refund_amount || 8);
+                    updateBingoButton();
+                    renderEmptyPlayerCard();
+                    // Refresh game state after a moment
+                    setTimeout(() => getCompleteGameState(), 2000);
+                } else {
+                    showNotification(`Player ${data.user_id || 'someone'} was disqualified for false bingo claim`, 'warning', 3000);
+                }
+                break;
             default: console.log("Unknown WebSocket message type:", data.type, data);
+        }
+    }
+
+    function handleBingoClaimVerified(data) { 
+        gameState.bingoClaimInProgress = false;
+        gameState.phaseChangeRequested = false;
+        gameState.winnerAnnounced = true;
+        gameState.hasClaimedBingo = true;
+        showNotification('BINGO verified! You won!', 'success', 5000);
+        updateBingoButton();
+        setTimeout(() => getUserBalance(), 1000);
+    }
+
+    function handleBingoRejected(data) {
+        gameState.bingoClaimInProgress = false;
+        gameState.phaseChangeRequested = false;
+        updateBingoButton();
+        
+        if (data.disqualified) {
+            gameState.disqualified = true;
+            gameState.hasCard = false;
+            showDisqualifiedOverlay(data.refund_amount || 8);
+            renderEmptyPlayerCard();
+            setTimeout(() => getCompleteGameState(), 2000);
+        } else {
+            showNotification(data.reason || 'No valid bingo pattern found', 'error', 4000);
         }
     }
 
@@ -1750,7 +1999,9 @@
         gameState.countdown = 30; gameState.countdownTotal = 30; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
+        gameState.disqualified = false;
         updateBoardCountText();
+        closeDisqualifiedOverlay();
         showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
         updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateGameStats();
         resetCardsForNewRound();
@@ -1772,15 +2023,14 @@
         gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
+        gameState.disqualified = false;
         updateBoardCountText();
+        closeDisqualifiedOverlay();
         updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
         showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
         updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateBingoButton(); updateGameStats(); resetCardsForNewRound();
         document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown();
     }
-
-    function handleBingoClaimVerified(data) { gameState.bingoClaimInProgress = false; console.log("BINGO verified"); }
-    function handleBingoRejected(data) { gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false; updateBingoButton(); }
 
     function handleExistingGameResumed(data) {
         if (data.game_id) gameState.gameId = data.game_id;
@@ -1792,7 +2042,9 @@
         gameState.cardsSold = new Set(); gameState.cardsCache.soldCards = new Set(); gameState.cardsCache.ownedCardIndex = null;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
+        gameState.disqualified = false;
         updateBoardCountText();
+        closeDisqualifiedOverlay();
         showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
         updateGameStats();
         setTimeout(() => {
@@ -1902,9 +2154,13 @@
         } else if (isGamePlayPhase) {
             gameState.gameActive = true; gameState.purchasePhaseActive = false; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active');
             updateCalledNumbersDisplay(); updateCurrentCalledDisplay(); updateBingoGrid();
-            if (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0) renderPlayerCardsFromOwned();
-            else if (gameState.hasCard && Array.isArray(gameState.selectedCardNumbers) && gameState.selectedCardNumbers.length > 0) renderPlayerCard();
-            else renderEmptyPlayerCard();
+            if (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0 && !gameState.disqualified) {
+                renderPlayerCardsFromOwned();
+            } else if (gameState.hasCard && !gameState.disqualified) {
+                renderPlayerCard();
+            } else {
+                renderEmptyPlayerCard();
+            }
             setTimeout(() => { updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) { updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); updateBingoGrid(); } }, 100);
         } else if (gameState.gamePhase === "winner_display" || gameState.gameStatus === "winner_display") {
             gameState.gameActive = false; gameState.purchasePhaseActive = false; document.getElementById('game-bottom-actions').classList.remove('active');
@@ -1986,7 +2242,7 @@
         if(!innerContainer) return;
         innerContainer.innerHTML = '';
         
-        if(!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
+        if(gameState.disqualified || !gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length === 0) {
             renderEmptyPlayerCard();
             return;
         }
@@ -2040,6 +2296,11 @@
         if(!innerContainer) return;
         innerContainer.innerHTML = '';
 
+        let message = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
+        if (gameState.disqualified) {
+            message = '🚫 ውድቅ ተደርገሃል<br>በሚቀጥለው ጨዋታ ይሳተፉ';
+        }
+
         const waitingBox = document.createElement('div');
         waitingBox.className = 'no-card-waiting';
         waitingBox.style.minHeight = '120px';
@@ -2047,34 +2308,42 @@
         waitingBox.style.alignItems = 'center';
         waitingBox.style.justifyContent = 'center';
         waitingBox.style.fontSize = '16px';
-        waitingBox.style.color = '#6A1B9A';
+        waitingBox.style.color = gameState.disqualified ? '#F44336' : '#6A1B9A';
         waitingBox.style.background = 'rgba(255,255,255,0.2)';
         waitingBox.style.border = '2px solid #FFFFFF';
         waitingBox.style.borderRadius = '12px';
-        waitingBox.innerHTML = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
+        waitingBox.innerHTML = message;
         innerContainer.appendChild(waitingBox);
 
         const bingoBtn = document.getElementById("claim-bingo-btn");
         if (bingoBtn) { 
-            bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
-            bingoBtn.disabled = true; 
+            if (gameState.disqualified) {
+                bingoBtn.innerHTML = `<i class="fas fa-ban"></i> Disqualified`;
+                bingoBtn.disabled = true;
+            } else {
+                bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`;
+                bingoBtn.disabled = true;
+            }
         }
 
-        // Update card count
         const boardCountText = document.getElementById('boards-count-text');
         if (boardCountText) {
-            boardCountText.textContent = '0/2';
+            boardCountText.textContent = gameState.disqualified ? '0/2 (DQ)' : '0/2';
         }
     }
 
+    // ==================== UPDATED: renderPlayerCardsFromOwned with disqualification ====================
     function renderPlayerCardsFromOwned() {
         const innerContainer = document.getElementById("player-cards-inner");
         if(!innerContainer) return;
         
-        // Clear the container
         innerContainer.innerHTML = '';
 
-        // Check if we have cards
+        if (gameState.disqualified) {
+            renderEmptyPlayerCard();
+            return;
+        }
+
         if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
             renderEmptyPlayerCard();
             return;
@@ -2083,7 +2352,6 @@
         console.log(`🎴 Rendering ${gameState.ownedCardIndices.length} cards:`, gameState.ownedCardIndices);
         console.log('Card data:', gameState.ownedCardsData);
 
-        // Loop through all owned cards and render them
         gameState.ownedCardIndices.forEach((index) => {
             const cardData = gameState.ownedCardsData ? gameState.ownedCardsData.find(c => c.card_index === index) : null;
             if (!cardData) {
@@ -2091,7 +2359,6 @@
                 return;
             }
 
-            // Ensure we have numbers
             let numbersToUse = cardData.numbers || [];
             if (!numbersToUse || numbersToUse.length === 0) {
                 console.warn(`No numbers for card ${index}, generating fallback`);
@@ -2105,7 +2372,6 @@
             wrapper.style.borderRadius = '12px';
             wrapper.style.padding = '6px';
             
-            // Title with card number
             const title = document.createElement('div');
             title.className = 'p-card-title';
             title.innerHTML = `Cartela #${index}`;
@@ -2116,7 +2382,6 @@
             title.style.textAlign = 'center';
             wrapper.appendChild(title);
 
-            // B-I-N-G-O Header
             const headerRow = document.createElement('div');
             headerRow.className = 'p-card-header-row';
             const letters = ['B', 'I', 'N', 'G', 'O'];
@@ -2131,7 +2396,6 @@
             });
             wrapper.appendChild(headerRow);
 
-            // Grid
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
             grid.style.gap = '2px';
@@ -2158,7 +2422,6 @@
                     cell.style.fontWeight = 'bold';
                 } else {
                     cell.textContent = num;
-                    // Check if this number has been called
                     if (gameState.calledNumbers && gameState.calledNumbers.includes(num)) {
                         cell.classList.add('marked');
                         cell.style.background = '#FFEB3B';
@@ -2174,7 +2437,6 @@
             innerContainer.appendChild(wrapper);
         });
 
-        // Update the card count
         const boardCountText = document.getElementById('boards-count-text');
         if (boardCountText) {
             const owned = gameState.ownedCardIndices ? gameState.ownedCardIndices.length : 0;
@@ -2212,30 +2474,30 @@
     }
 
     async function handleCardSelection(cardIndex, element) {
+        if (gameState.disqualified) {
+            showNotification("You have been disqualified from this game!", "error", 3000);
+            return;
+        }
         if (!validateGamePhase("card_purchase", "handleCardSelection")) return showNotification("Card purchase only during purchase phase", "error");
         if (gameState.isCardOperationInProgress) return;
         if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); await fetchActiveGame(); return; }
         if (!gameState.purchasePhaseActive) return showNotification("Card purchase is only available during card purchase phase", "error");
 
-        // Show preview of the card when clicked
         const cardNumbers = gameState.fixedCards ? gameState.fixedCards.get(`card_${cardIndex}`) : null;
         if (cardNumbers) {
             showPreviewForIndex(cardIndex, cardNumbers);
         }
 
-        // If clicking a card you already own -> REFUND it
         if (gameState.ownedCardIndices && gameState.ownedCardIndices.includes(cardIndex)) {
             await toggleCardPurchase(cardIndex, element, "refund");
             return;
         }
 
-        // Check if we have reached the 2 card limit
         if (gameState.ownedCardIndices && gameState.ownedCardIndices.length >= 2) {
             showNotification("You can only buy up to 2 boards per round.", "error");
             return;
         }
 
-        // Attempt to buy the card
         gameState.uiSelectedCardIndex = cardIndex;
         if (element) element.classList.add("selected");
         await toggleCardPurchase(cardIndex, element, "buy");
@@ -2243,6 +2505,10 @@
     window.handleCardSelection = handleCardSelection;
 
     async function toggleCardPurchase(cardIndex, element, action) {
+        if (gameState.disqualified) {
+            showNotification("You have been disqualified from this game!", "error", 3000);
+            return;
+        }
         if (!validateGamePhase("card_purchase", "toggleCardPurchase")) { if (element) element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
         gameState.isCardOperationInProgress = true;
         if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); gameState.isCardOperationInProgress = false; await fetchActiveGame(); return; }
@@ -2369,12 +2635,22 @@
         const grid = document.getElementById("cards-grid"); if (!grid) return;
         for (let i = 1; i <= 400; i++) {
             const cardElement = gameState.cardsCache.cardElements[i]; if (!cardElement) continue;
-            cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing");
+            cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified");
             const isOwned = gameState.ownedCardIndices && gameState.ownedCardIndices.includes(i);
             const isSold = gameState.cardsSold.has(i);
-            if (isOwned) { cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(i, cardElement); } 
-            else if (isSold) { cardElement.classList.add("sold"); cardElement.onclick = null; } 
-            else { cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
+            if (gameState.disqualified && isOwned) {
+                cardElement.classList.add("disqualified");
+                cardElement.onclick = null;
+            } else if (isOwned) { 
+                cardElement.classList.add("owned"); 
+                cardElement.onclick = () => handleCardSelection(i, cardElement); 
+            } else if (isSold) { 
+                cardElement.classList.add("sold"); 
+                cardElement.onclick = null; 
+            } else { 
+                cardElement.classList.add("available"); 
+                cardElement.onclick = () => handleCardSelection(i, cardElement); 
+            }
             if (gameState.uiSelectedCardIndex === i && !isOwned && !isSold) cardElement.classList.add("selected");
         }
     }
@@ -2397,9 +2673,19 @@
                 const cardElement = document.createElement("div"); cardElement.className = "card-item"; cardElement.innerHTML = i; cardElement.dataset.cardIndex = i;
                 const isOwned = gameState.ownedCardIndices && gameState.ownedCardIndices.includes(i);
                 const isSold = gameState.cardsSold.has(i);
-                if (isOwned) { cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
-                else if (isSold) { cardElement.classList.add("sold"); cardElement.onclick = null; }
-                else { cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); }
+                if (gameState.disqualified && isOwned) {
+                    cardElement.classList.add("disqualified");
+                    cardElement.onclick = null;
+                } else if (isOwned) { 
+                    cardElement.classList.add("owned"); 
+                    cardElement.onclick = () => handleCardSelection(i, cardElement); 
+                } else if (isSold) { 
+                    cardElement.classList.add("sold"); 
+                    cardElement.onclick = null; 
+                } else { 
+                    cardElement.classList.add("available"); 
+                    cardElement.onclick = () => handleCardSelection(i, cardElement); 
+                }
                 if (gameState.uiSelectedCardIndex === i && !isOwned && !isSold) cardElement.classList.add("selected");
                 gameState.cardsCache.cardElements[i] = cardElement; fragment.appendChild(cardElement);
             }
@@ -2442,7 +2728,7 @@
             if (!response.ok) { if (response.status === 404) { gameState.hasCard = false; return; } throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success) {
-                if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0) {
+                if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0 && !gameState.disqualified) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
                     gameState.ownedCardsData = data.user_cards.map(c => ({ 
                         card_index: c.card_index, 
@@ -2453,7 +2739,7 @@
                     if (gameState.gamePhase === "active" || gameState.gameStatus === "active") {
                         renderPlayerCardsFromOwned();
                     }
-                } else {
+                } else if (!gameState.disqualified) {
                     gameState.hasCard = data.has_card || false;
                     if (data.has_card && data.user_card) {
                         gameState.selectedCardId = data.user_card.card_id; 
@@ -2471,7 +2757,6 @@
                             } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                         } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
                         document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
-                        // Initialize owned arrays for single card
                         if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
                             gameState.ownedCardIndices = [data.user_card.card_index];
                             gameState.ownedCardsData = [{ card_index: data.user_card.card_index, numbers: gameState.selectedCardNumbers }];
@@ -2493,9 +2778,11 @@
         gameState.pendingFakeCardIndices = []; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
+        gameState.disqualified = false;
         updateBoardCountText();
+        closeDisqualifiedOverlay();
         if (grid.children.length === 0) { loadCardsGrid(); return; }
-        for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
+        for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
         gameState.cardsSold.clear(); gameState.cardsCache.soldCards.clear(); gameState.cardsCache.ownedCardIndex = null; gameState.selectedCardIndex = null; gameState.hasCard = false; gameState.uiSelectedCardIndex = null;
     }
 
