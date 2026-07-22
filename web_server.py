@@ -4987,7 +4987,7 @@ async def get_active_game(request):
 # ==================== FIXED USER GAME STATE ENDPOINT ====================
 @routes.get('/api/game/{game_id}/user-state/{user_id}')
 async def get_user_game_state(request):
-    """Get user's state in game - FIXED: Shows correct total players and prize pool"""
+    """Get user's state in game - FIXED: Returns ALL active cards"""
     try:
         game_id = request.match_info['game_id']
         user_id_str = request.match_info['user_id']
@@ -5006,11 +5006,10 @@ async def get_user_game_state(request):
             )
             user_data = await Database.get_user_with_balance(user_id)
         
-        # FIX: Use correct balance (10.00 for new users)
         balance = float(user_data.get('balance', 10.00)) if user_data else 10.00
         
-        # Get user card
-        user_card = await Database.get_user_card_in_game(user_id, game_id)
+        # ========== FIXED: Get ALL active cards for this user ==========
+        user_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
         
         # Get game status via game_manager
         game_status = await game_manager.get_game_status(game_id)
@@ -5021,60 +5020,46 @@ async def get_user_game_state(request):
                 'message': game_status.get('message', 'Game not found')
             }, status=404)
         
-        # ========== FIXED: Get BOTH real and fake player counts ==========
+        # Get player counts
         real_players = await Database.count_game_players(game_id)
-        
-        # Get fake players count from game_manager
         fake_players = 0
         if hasattr(game_manager, 'fake_user_manager'):
             fake_players = len(game_manager.fake_user_manager.game_fake_cards.get(game_id, {}))
-        
         total_players = real_players + fake_players
         
-        # ========== FIXED: Calculate correct prize pool ==========
-        correct_prize_pool = total_players * 8  # 80% of 10 birr card price
-        
-        # Get called numbers
+        correct_prize_pool = total_players * 8
         numbers_called = await Database.get_drawn_numbers(game_id)
         
-        # Build response
+        # Build response with ALL cards
         response_data = {
             'success': True,
-            'has_card': user_card is not None,
+            'has_card': len(user_cards) > 0,
+            'user_cards': user_cards,  # <-- Send ALL cards
             'game_status': game_status.get('status', 'unknown'),
             'game_type': 'round_based',
             'phase': game_status.get('phase', 'unknown'),
             'balance': balance,
             'current_number': None,
             'numbers_called': numbers_called,
-            'prize_pool': correct_prize_pool,  # FIXED: Use correct prize pool
-            'total_players': total_players,  # FIXED: Show total players
-            'real_players': real_players,  # ADDED: Show real players
-            'fake_players': fake_players,  # ADDED: Show fake players
+            'prize_pool': correct_prize_pool,
+            'total_players': total_players,
+            'real_players': real_players,
+            'fake_players': fake_players,
             'current_round': game_status.get('round_number', 1),
             'countdown_remaining': game_status.get('countdown_remaining', 0),
             'has_winner': game_status.get('status') == 'winner_display',
             'card_price': 10.00
         }
         
-        # Add user_card data if exists
-        if user_card:
-            response_data['user_card'] = {
-                'card_id': user_card.get('id'),
-                'card_index': user_card.get('card_index'),
-                'card_data': user_card.get('card_data'),
-                'game_id': user_card.get('game_id'),
-                'user_id': user_card.get('user_id')
-            }
-        
         # Get active game for current_number
         active_game = await game_manager.get_active_round_game()
         if active_game and active_game.get('game_id') == game_id:
             response_data['current_number'] = active_game.get('current_number')
         
-        response_data = convert_to_json_serializable(response_data)
-        
-        return web.json_response(response_data, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
+        return web.json_response(
+            convert_to_json_serializable(response_data),
+            dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder)
+        )
             
     except Exception as e:
         logger.error(f"Error getting user game state: {e}", exc_info=True)
@@ -5083,9 +5068,7 @@ async def get_user_game_state(request):
             'message': f'Error getting user game state: {str(e)}'
         }, status=500)
 
-
 # ==================== CARD PURCHASE API ====================
-# ==================== FIXED CARD PURCHASE API (MULTI-CARD SUPPORT) ====================
 @routes.post('/api/game/{game_id}/toggle-card')
 async def toggle_card_purchase(request):
     """Toggle card purchase/refund - Allows up to 2 active cards per user"""
@@ -5162,7 +5145,7 @@ async def toggle_card_purchase(request):
                     'message': f'Insufficient balance. Need {card_price} birr.'
                 })
             
-            # ========== FIXED: Use fixed cards from game_manager ==========
+            # Use fixed cards from game_manager
             card_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
             if not card_numbers:
                 logger.warning(f"Card index {card_index} not found in fixed cards, using fallback")
@@ -5177,7 +5160,7 @@ async def toggle_card_purchase(request):
             )
             
             # Add player card
-            await Database.add_player_card(
+            card_id = await Database.add_player_card(
                 user_id=user_id,
                 game_id=game_id,
                 card_index=card_index,
@@ -5186,15 +5169,23 @@ async def toggle_card_purchase(request):
                 price=card_price
             )
             
-            # Update game stats - Use direct SQL since increment methods might not exist
+            # Update game stats
             with Database.get_cursor() as cursor:
                 cursor.execute("""
                     UPDATE games 
                     SET total_cards_sold = total_cards_sold + 1,
                         prize_pool = prize_pool + ?,
-                        total_sales = total_sales + ?
+                        total_sales = total_sales + ?,
+                        total_players = (
+                            SELECT COUNT(DISTINCT user_id) 
+                            FROM player_cards 
+                            WHERE game_id = ? AND is_active = 1
+                        )
                     WHERE game_id = ?
-                """, (card_price * 0.8, card_price, game_id))
+                """, (card_price * 0.8, card_price, game_id, game_id))
+            
+            # ========== CRITICAL FIX: Get ALL active cards for this user ==========
+            updated_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
             
             logger.info(f"✅ User {user_id} purchased Board #{card_index} in game {game_id}")
             
@@ -5208,6 +5199,7 @@ async def toggle_card_purchase(request):
                 'real_players': existing_cards_count + 1,
                 'fake_players': 0,
                 'wallet_balance': new_balance,
+                'user_cards': updated_cards,  # <-- ADD THIS: All active cards
                 'message': f'Board #{card_index} purchased successfully!'
             })
         
@@ -5252,9 +5244,17 @@ async def toggle_card_purchase(request):
                     UPDATE games 
                     SET total_cards_sold = total_cards_sold - 1,
                         prize_pool = MAX(0, prize_pool - ?),
-                        total_sales = total_sales - ?
+                        total_sales = total_sales - ?,
+                        total_players = (
+                            SELECT COUNT(DISTINCT user_id) 
+                            FROM player_cards 
+                            WHERE game_id = ? AND is_active = 1
+                        )
                     WHERE game_id = ?
-                """, (card_price * 0.8, card_price, game_id))
+                """, (card_price * 0.8, card_price, game_id, game_id))
+            
+            # ========== CRITICAL FIX: Get remaining active cards ==========
+            updated_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
             
             logger.info(f"♻️ User {user_id} refunded Board #{card_index} in game {game_id}")
             
@@ -5265,6 +5265,7 @@ async def toggle_card_purchase(request):
                 'prize_pool': max(0, float(game.get('prize_pool', 0)) - (card_price * 0.8)),
                 'total_players': existing_cards_count - 1,
                 'wallet_balance': new_balance,
+                'user_cards': updated_cards,  # <-- ADD THIS: Remaining active cards
                 'message': f'Board #{card_index} refunded successfully.'
             })
             
@@ -5280,7 +5281,6 @@ async def toggle_card_purchase(request):
             'success': False, 
             'message': f'Server error: {str(e)}'
         }, status=500)
-
 
 
 # ==================== PLAYER HISTORY API ENDPOINT ====================
