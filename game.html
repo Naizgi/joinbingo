@@ -294,10 +294,31 @@
 
         /* PLAYER CARDS (STACKED) */
         .player-cards-container-inner {
-            display: flex; flex-direction: column; gap: 6px; /* Tighter card spacing */
-            max-height: 420px; /* ← Increased height to match the bingo grid size */
-            overflow-y: auto; padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--purple-dark) transparent;
         }
+        .player-cards-container-inner::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .player-cards-container-inner::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .player-cards-container-inner::-webkit-scrollbar-thumb {
+            background: var(--purple-dark);
+            border-radius: 4px;
+        }
+
+
+
+
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
@@ -720,12 +741,12 @@
                         </div>
                     </div>
 
-                    <!-- Player Cards Container (Stacked) -->
-                    <div class="player-cards-container" id="player-cards-container">
-                        <div class="player-cards-container-inner" id="player-cards-inner">
-                            <!-- Rendered by JS -->
-                        </div>
-                    </div>
+                   <!-- Player Cards Container (Stacked) -->
+<div class="player-cards-container" id="player-cards-container" style="background: rgba(255,255,255,0.3); border-radius: 12px; padding: 6px; border: 1px solid rgba(255,255,255,0.5); min-height: 100px; max-height: 380px; overflow-y: auto;">
+    <div class="player-cards-container-inner" id="player-cards-inner">
+        <!-- Rendered by JS -->
+    </div>
+</div>
                 </div>
             </div>
         </div>
@@ -1097,7 +1118,7 @@
         lastCountdownSync: 0, countdownSyncThreshold: 5, cardsLoaded: false, cardsLoadAttempted: false,
         countdownStartTime: null, gameStartConfirmed: false, lastConfirmedPhase: "card_purchase",
         phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false,
-        // NEW MULTI-CARD VARS:
+        // MULTI-CARD VARS:
         ownedCardIndices: [],
         ownedCardsData: [] 
     };
@@ -1453,7 +1474,7 @@
                     }
                 }
                 
-                // ========== MULTI-CARD SUPPORT: Load all user cards ==========
+                // MULTI-CARD SUPPORT: Load all user cards
                 if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
                     gameState.ownedCardsData = data.user_cards.map(c => ({ 
@@ -2001,35 +2022,81 @@
 
         const waitingBox = document.createElement('div');
         waitingBox.className = 'no-card-waiting';
+        waitingBox.style.minHeight = '120px';
+        waitingBox.style.display = 'flex';
+        waitingBox.style.alignItems = 'center';
+        waitingBox.style.justifyContent = 'center';
+        waitingBox.style.fontSize = '16px';
+        waitingBox.style.color = '#6A1B9A';
+        waitingBox.style.background = 'rgba(255,255,255,0.2)';
+        waitingBox.style.border = '2px solid #FFFFFF';
+        waitingBox.style.borderRadius = '12px';
         waitingBox.innerHTML = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
         innerContainer.appendChild(waitingBox);
 
         const bingoBtn = document.getElementById("claim-bingo-btn");
-        if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
+        if (bingoBtn) { 
+            bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
+            bingoBtn.disabled = true; 
+        }
+
+        // Update card count
+        const boardCountText = document.getElementById('boards-count-text');
+        if (boardCountText) {
+            boardCountText.textContent = '0/2';
+        }
     }
 
     function renderPlayerCardsFromOwned() {
         const innerContainer = document.getElementById("player-cards-inner");
         if(!innerContainer) return;
+        
+        // Clear the container
         innerContainer.innerHTML = '';
 
+        // Check if we have cards
         if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
             renderEmptyPlayerCard();
             return;
         }
 
+        console.log(`🎴 Rendering ${gameState.ownedCardIndices.length} cards:`, gameState.ownedCardIndices);
+        console.log('Card data:', gameState.ownedCardsData);
+
+        // Loop through all owned cards and render them
         gameState.ownedCardIndices.forEach((index) => {
             const cardData = gameState.ownedCardsData ? gameState.ownedCardsData.find(c => c.card_index === index) : null;
-            if (!cardData) return; 
+            if (!cardData) {
+                console.warn(`No card data found for index ${index}`);
+                return;
+            }
+
+            // Ensure we have numbers
+            let numbersToUse = cardData.numbers || [];
+            if (!numbersToUse || numbersToUse.length === 0) {
+                console.warn(`No numbers for card ${index}, generating fallback`);
+                numbersToUse = generateFallbackCardNumbers();
+            }
 
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
+            wrapper.style.marginBottom = '4px';
+            wrapper.style.background = '#FFFFFF';
+            wrapper.style.borderRadius = '12px';
+            wrapper.style.padding = '6px';
             
+            // Title with card number
             const title = document.createElement('div');
             title.className = 'p-card-title';
             title.innerHTML = `Cartela #${index}`;
+            title.style.color = '#6A1B9A';
+            title.style.fontSize = '12px';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '4px';
+            title.style.textAlign = 'center';
             wrapper.appendChild(title);
 
+            // B-I-N-G-O Header
             const headerRow = document.createElement('div');
             headerRow.className = 'p-card-header-row';
             const letters = ['B', 'I', 'N', 'G', 'O'];
@@ -2038,26 +2105,47 @@
                 const box = document.createElement('div');
                 box.className = `p-card-header-cell ${colors[i]}`;
                 box.textContent = l;
+                box.style.fontSize = '9px';
+                box.style.padding = '2px 0';
                 headerRow.appendChild(box);
             });
             wrapper.appendChild(headerRow);
 
+            // Grid
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
+            grid.style.gap = '2px';
             grid.id = `player-card-grid-${index}`;
             
-            const numbersToUse = cardData.numbers || [];
             numbersToUse.forEach((num, i) => {
-                const cell = document.createElement("div"); 
+                const cell = document.createElement('div');
                 cell.className = 'p-card-cell';
-                if(num === 0 || num === '0') { 
-                    cell.classList.add('free'); 
-                    cell.textContent = '★'; 
+                cell.style.fontSize = '10px';
+                cell.style.padding = '2px';
+                cell.style.aspectRatio = '1';
+                cell.style.display = 'flex';
+                cell.style.alignItems = 'center';
+                cell.style.justifyContent = 'center';
+                cell.style.background = '#f5f5f5';
+                cell.style.border = '1px solid #e0e0e0';
+                cell.style.borderRadius = '4px';
+                
+                if(num === 0 || num === '0' || i === 12) {
+                    cell.classList.add('free');
+                    cell.textContent = '★';
+                    cell.style.background = '#C8E6C9';
+                    cell.style.color = '#2E7D32';
+                    cell.style.fontWeight = 'bold';
                 } else {
                     cell.textContent = num;
-                    if(gameState.markedNumbers.has(num)) cell.classList.add('marked');
+                    // Check if this number has been called
+                    if (gameState.calledNumbers && gameState.calledNumbers.includes(num)) {
+                        cell.classList.add('marked');
+                        cell.style.background = '#FFEB3B';
+                        cell.style.color = '#333';
+                    }
                 }
-                if(i === 12) cell.classList.add('star');
+                
                 cell.onclick = () => handlePlayerCardClick(cell, num);
                 grid.appendChild(cell);
             });
@@ -2065,6 +2153,13 @@
 
             innerContainer.appendChild(wrapper);
         });
+
+        // Update the card count
+        const boardCountText = document.getElementById('boards-count-text');
+        if (boardCountText) {
+            const owned = gameState.ownedCardIndices ? gameState.ownedCardIndices.length : 0;
+            boardCountText.textContent = `${owned}/2`;
+        }
 
         updateBingoButton();
     }
@@ -2102,16 +2197,25 @@
         if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); await fetchActiveGame(); return; }
         if (!gameState.purchasePhaseActive) return showNotification("Card purchase is only available during card purchase phase", "error");
 
+        // Show preview of the card when clicked
+        const cardNumbers = gameState.fixedCards ? gameState.fixedCards.get(`card_${cardIndex}`) : null;
+        if (cardNumbers) {
+            showPreviewForIndex(cardIndex, cardNumbers);
+        }
+
+        // If clicking a card you already own -> REFUND it
         if (gameState.ownedCardIndices && gameState.ownedCardIndices.includes(cardIndex)) {
             await toggleCardPurchase(cardIndex, element, "refund");
             return;
         }
 
+        // Check if we have reached the 2 card limit
         if (gameState.ownedCardIndices && gameState.ownedCardIndices.length >= 2) {
             showNotification("You can only buy up to 2 boards per round.", "error");
             return;
         }
 
+        // Attempt to buy the card
         gameState.uiSelectedCardIndex = cardIndex;
         if (element) element.classList.add("selected");
         await toggleCardPurchase(cardIndex, element, "buy");
