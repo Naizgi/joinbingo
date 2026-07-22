@@ -5085,9 +5085,10 @@ async def get_user_game_state(request):
 
 
 # ==================== CARD PURCHASE API ====================
+# ==================== FIXED CARD PURCHASE API (MULTI-CARD SUPPORT) ====================
 @routes.post('/api/game/{game_id}/toggle-card')
 async def toggle_card_purchase(request):
-    """Toggle card purchase/refund"""
+    """Toggle card purchase/refund - Allows up to 2 active cards per user"""
     try:
         game_id = request.match_info['game_id']
         data = await request.json()
@@ -5096,50 +5097,184 @@ async def toggle_card_purchase(request):
         card_index = data.get('card_index')
         action = data.get('action', 'buy')
         
-        if not user_id_str or not card_index:
+        if not user_id_str or card_index is None:
             return web.json_response({
                 'success': False, 
-                'message': 'Missing parameters'
+                'message': 'Missing user_id or card_index parameters'
             })
         
         user_id = parse_user_id(user_id_str)
         
         from utils.game_manager import game_manager
         
-        result = await game_manager.toggle_card_purchase(
-            game_id, 
-            int(user_id), 
-            int(card_index), 
-            action
-        )
+        # 1. Get game details
+        game = await Database.get_game(game_id)
+        if not game:
+            return web.json_response({
+                'success': False, 
+                'message': 'Game not found'
+            })
         
-        # Broadcast update if successful
-        if result.get('success'):
-            await websocket_server.broadcast_with_retry({
-                'type': 'card_purchased',
-                'game_id': game_id,
-                'user_id': user_id,
+        # 2. Check if purchase phase is active
+        current_phase = game.get('current_phase', 'card_purchase')
+        if current_phase not in ['card_purchase', 'waiting']:
+            return web.json_response({
+                'success': False, 
+                'message': 'Card purchase is only available during the purchase phase'
+            })
+        
+        # 3. Get user balance
+        user = await Database.get_user(user_id)
+        if not user:
+            return web.json_response({
+                'success': False, 
+                'message': 'User not found'
+            })
+        
+        wallet_balance = float(user.get('balance', 0.0))
+        card_price = float(game.get('card_price', 10.0))
+        
+        # 4. Check for existing active cards for this user in this game
+        existing_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
+        existing_cards_count = len(existing_cards)
+        already_owns_this_card = any(card.get('card_index') == card_index for card in existing_cards)
+        
+        # ======= ACTION: BUY =======
+        if action == 'buy':
+            # Prevent buying if they already own this specific card
+            if already_owns_this_card:
+                return web.json_response({
+                    'success': False, 
+                    'message': f'You already own Board #{card_index}'
+                })
+            
+            # Prevent buying if they already have 2 cards
+            if existing_cards_count >= 2:
+                return web.json_response({
+                    'success': False, 
+                    'message': 'You already own 2 boards. You cannot buy more.'
+                })
+            
+            # Check balance
+            if wallet_balance < card_price:
+                return web.json_response({
+                    'success': False, 
+                    'message': f'Insufficient balance. Need {card_price} birr.'
+                })
+            
+            # Generate card numbers (5x5 grid)
+            card_numbers = game_manager._generate_card_numbers()
+            
+            # Deduct balance and create card
+            new_balance = await Database.add_user_balance(
+                user_id=user_id,
+                amount=-card_price,
+                transaction_type='card_purchase',
+                notes=f'Purchased board #{card_index} in game {game_id}'
+            )
+            
+            await Database.add_player_card(
+                user_id=user_id,
+                game_id=game_id,
+                card_index=card_index,
+                card_data=card_numbers,
+                is_fake=False
+            )
+            
+            # Update game stats
+            await Database.increment_cards_sold(game_id)
+            await Database.increment_prize_pool(game_id, card_price * 0.8)
+            
+            # Update active game object in game_manager if it's currently active
+            active_game = await game_manager.get_active_round_game()
+            if active_game and active_game.get('game_id') == game_id:
+                if hasattr(game_manager, '_update_active_game_stats'):
+                    await game_manager._update_active_game_stats(game_id)
+            
+            logger.info(f"✅ User {user_id} purchased Board #{card_index} in game {game_id}")
+            
+            return web.json_response({
+                'success': True,
                 'card_index': card_index,
-                'prize_pool': result.get('prize_pool', 0),
-                'timestamp': datetime.now().isoformat()
+                'card_numbers': card_numbers,
+                'new_balance': new_balance,
+                'prize_pool': float(game.get('prize_pool', 0)) + (card_price * 0.8),
+                'total_players': existing_cards_count + 1,
+                'real_players': existing_cards_count + 1,
+                'fake_players': 0,
+                'wallet_balance': new_balance,
+                'message': f'Board #{card_index} purchased successfully!'
+            })
+        
+        # ======= ACTION: REFUND =======
+        elif action == 'refund':
+            if not already_owns_this_card:
+                return web.json_response({
+                    'success': False, 
+                    'message': f'You do not own Board #{card_index} to refund.'
+                })
+            
+            # Find the specific card entry
+            card_to_refund = None
+            for card in existing_cards:
+                if card.get('card_index') == card_index:
+                    card_to_refund = card
+                    break
+            
+            if not card_to_refund:
+                return web.json_response({
+                    'success': False, 
+                    'message': f'Active card #{card_index} not found.'
+                })
+            
+            card_id = card_to_refund.get('id')
+            
+            # Mark card as inactive
+            await Database.deactivate_player_card(card_id)
+            
+            # Refund the card price (80% refund)
+            refund_amount = card_price * 0.8
+            new_balance = await Database.add_user_balance(
+                user_id=user_id,
+                amount=refund_amount,
+                transaction_type='card_refund',
+                notes=f'Refunded board #{card_index} from game {game_id}'
+            )
+            
+            # Update game stats (decrease prize pool/cards sold)
+            await Database.decrement_prize_pool(game_id, card_price * 0.8)
+            await Database.decrement_cards_sold(game_id)
+            
+            # Update active game object
+            active_game = await game_manager.get_active_round_game()
+            if active_game and active_game.get('game_id') == game_id:
+                if hasattr(game_manager, '_update_active_game_stats'):
+                    await game_manager._update_active_game_stats(game_id)
+            
+            logger.info(f"♻️ User {user_id} refunded Board #{card_index} in game {game_id}")
+            
+            return web.json_response({
+                'success': True,
+                'card_index': card_index,
+                'new_balance': new_balance,
+                'prize_pool': max(0, float(game.get('prize_pool', 0)) - (card_price * 0.8)),
+                'total_players': existing_cards_count - 1,
+                'wallet_balance': new_balance,
+                'message': f'Board #{card_index} refunded successfully.'
             })
             
-            # Also broadcast player count update
-            # from database.db import Database
-            # real_players = await Database.count_game_players(game_id)
-            # fake_players = len(game_manager.fake_user_manager.game_fake_cards.get(game_id, {})) if hasattr(game_manager, 'fake_user_manager') else 0
-            # await websocket_server.broadcast_player_count(game_id, real_players, fake_players)
-        
-        return web.json_response(result, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
-        
+        else:
+            return web.json_response({
+                'success': False, 
+                'message': 'Invalid action. Use "buy" or "refund".'
+            })
+            
     except Exception as e:
-        logger.error(f"Error in toggle_card_purchase: {e}", exc_info=True)
+        logger.error(f"❌ Error in toggle_card_purchase: {e}", exc_info=True)
         return web.json_response({
             'success': False, 
-            'message': 'Server error'
+            'message': f'Server error: {str(e)}'
         }, status=500)
-
-
 
 
 
