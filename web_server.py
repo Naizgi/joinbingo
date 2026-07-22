@@ -4879,10 +4879,22 @@ async def get_active_game(request):
         if not active_game:
             # No active game, create one via game_manager
             result = await game_manager.start_new_round_game()
-            if not result.get('success'):
+            
+            # FIXED: Check if result is a dict or string
+            if isinstance(result, dict):
+                if not result.get('success'):
+                    return web.json_response({
+                        'success': False,
+                        'message': 'No active game found and failed to create new one',
+                        'game_type': 'round_based'
+                    }, status=404)
+            elif isinstance(result, str):
+                # If result is a string (game_id), it was successful
+                pass
+            else:
                 return web.json_response({
                     'success': False,
-                    'message': 'No active game found and failed to create new one',
+                    'message': 'Failed to create new game',
                     'game_type': 'round_based'
                 }, status=404)
             
@@ -4910,7 +4922,6 @@ async def get_active_game(request):
         sold_cards = await Database.count_sold_cards(game_id)
         
         # ========== FIXED: Calculate correct prize pool based on ALL players ==========
-        # Prize pool = total players × 8 birr (80% of 10 birr card price)
         correct_prize_pool = total_players * 8
         
         # Get game status via game_manager for consistent countdown
