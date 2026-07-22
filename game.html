@@ -1255,7 +1255,9 @@
 
         async function claimBingo() {
             if (!gameState.gameId || !gameState.hasCard) return showNotification("No active game or card", "error");
-            if (!checkForBingo()) return showNotification("You do not have a winning pattern yet", "error");
+            // NOTE: We no longer call checkForBingo() here! The button is now ALWAYS clickable.
+            // if (!checkForBingo()) return showNotification("You do not have a winning pattern yet", "error");
+            
             if (!validateGamePhase("active", "claimBingo")) return showNotification("Can only claim bingo during active game", "error");
             if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
             const btn = document.getElementById("claim-bingo-btn");
@@ -1284,6 +1286,8 @@
         }
         window.claimBingo = claimBingo;
 
+        // REMOVED OLD LOGIC: checkForBingo() was tied to disabling the button. 
+        // We keep the function purely as a helper for cases where needed, but the button is always active now.
         function checkForBingo() {
             try {
                 if (!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length !== 25) return false;
@@ -1298,21 +1302,18 @@
             } catch (error) { console.error("Error checking bingo:", error); return false; }
         }
 
+        // Button always shows "BINGO!" and is always clickable.
         function updateBingoButton() {
             const btn = document.getElementById("claim-bingo-btn"); if (!btn) return;
             if (gameState.gameComplete || gameState.winnerAnnounced) { btn.innerHTML = `<i class="fas fa-trophy"></i> Game Complete`; btn.disabled = true; return; }
             if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
             if (!gameState.hasCard) { btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; btn.disabled = true; return; }
-            const hasBingo = checkForBingo(); btn.disabled = !hasBingo || gameState.bingoClaimInProgress || gameState.hasClaimedBingo;
-            if (hasBingo && !gameState.bingoClaimInProgress && !gameState.hasClaimedBingo) {
-                btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
-                btn.className = "action-btn green"; 
-                btn.onclick = claimBingo;
-            } else {
-                btn.innerHTML = `<i class="fas fa-bell"></i> BINGO`;
-                btn.className = "action-btn orange"; 
-                btn.onclick = null; btn.disabled = true;
-            }
+            
+            // Keep it simply always active.
+            btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
+            btn.className = "action-btn orange"; 
+            btn.disabled = false;
+            btn.onclick = claimBingo;
         }
 
         function handleServerNumberCalled(number, allCalled) {
@@ -1337,10 +1338,15 @@
         function handlePlayerCardClick(cell, number) {
             if (!gameState.gameActive || !gameState.hasCard) return showNotification("Game not active", "error");
             if (number === 0 || number === "0") return;
-            if (!gameState.calledNumbers.includes(number)) return showNotification("This number has not been called yet!", "error");
+            
+            // REMOVED CHECK: No longer checking if the number is called!
+            // if (!gameState.calledNumbers.includes(number)) return showNotification("This number has not been called yet!", "error");
+            
             if (gameState.markedNumbers.has(number)) { gameState.markedNumbers.delete(number); cell.classList.remove("marked"); }
             else { gameState.markedNumbers.add(number); cell.classList.add("marked"); }
-            if (checkForBingo() && !gameState.hasClaimedBingo) updateBingoButton();
+            
+            // Just keeping the button active.
+            updateBingoButton();
         }
         window.handlePlayerCardClick = handlePlayerCardClick;
 
@@ -2050,29 +2056,12 @@
             gameState.uiSelectedCardIndex = cardIndex;
             element.classList.add("selected");
             
-            // Show the preview box for this card immediately
-            // We pass cardIndex here so we can generate a preview
-            previewCardLocally(cardIndex);
-
             // Attempt to buy the card
             await toggleCardPurchase(cardIndex, element, "buy");
         }
         window.handleCardSelection = handleCardSelection;
 
-        // 2. Helper to show preview based on selected card
-        function previewCardLocally(cardIndex) {
-            const previewContainer = document.getElementById("selected-card-info");
-            const previewGrid = document.getElementById("card-preview-grid");
-            const idSpan = document.getElementById("selected-card-id");
-            if (!previewContainer || !previewGrid) return;
-
-            // Since we haven't bought the card yet, we must request its specific data from the server
-            // Or simply rely on the stored data after purchase. 
-            // NOTE: For instant preview BEFORE buy, we should ideally fetch the card layout from the server.
-            // For this implementation, we will trigger the preview *after* a successful buy.
-        }
-
-        // 3. Request Card Data & Process Buy/Refund actions
+        // 2. Request Card Data & Process Buy/Refund actions
         async function toggleCardPurchase(cardIndex, element, action) {
             if (!validateGamePhase("card_purchase", "toggleCardPurchase")) { if (element) element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
             gameState.isCardOperationInProgress = true;
@@ -2188,7 +2177,7 @@
         window.toggleCardPurchase = toggleCardPurchase;
 
 
-        // 4. Preview renderer
+        // 3. Preview renderer
         function showPreviewForIndex(cardIndex, numbers) {
             const previewContainer = document.getElementById("selected-card-info");
             const previewGrid = document.getElementById("card-preview-grid");
@@ -2215,7 +2204,7 @@
             previewContainer.style.display = "block";
         }
 
-        // 5. Render Multiple owned cards on Right Panel
+        // 4. Render Multiple owned cards on Right Panel
         function renderPlayerCardsFromOwned() {
             const innerContainer = document.getElementById("player-cards-inner");
             if(!innerContainer) return;
@@ -2282,7 +2271,7 @@
         }
         window.renderPlayerCardsFromOwned = renderPlayerCardsFromOwned;
         
-        // 6. Override the `renderEmptyPlayerCard` to use the transparent box if no cards exist
+        // 5. Override the `renderEmptyPlayerCard` to use the transparent box if no cards exist
         function renderEmptyPlayerCard() {
             const innerContainer = document.getElementById("player-cards-inner");
             if(!innerContainer) return;
