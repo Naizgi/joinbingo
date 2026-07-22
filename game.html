@@ -118,7 +118,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
-            border: 2px solid #FFFFFF; /* Added solid white border */
+            border: 2px solid #FFFFFF;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
         .stat-item { text-align: center; border-right: 1px solid rgba(0,0,0,0.05); padding: 3px 0; }
@@ -131,15 +131,15 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 3px;
             max-height: 200px; min-height: 200px; overflow-y: auto; padding: 6px;
             background: rgba(255,255,255,0.4); border-radius: 8px; 
-            border: 2px solid #FFFFFF; /* SOLID WHITE BORDER LIKE GAME SCREEN */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* SAME SHADOW */
+            border: 2px solid #FFFFFF;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             margin-bottom: 8px; width: 100%;
         }
         .card-item {
             aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
-        .card-item.available { background: var(--grey-card); color: #000000; cursor: pointer; } /* CHANGED TO BLACK */
+        .card-item.available { background: var(--grey-card); color: #000000; cursor: pointer; }
         .card-item.sold { background: var(--red-accent); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
 
@@ -149,39 +149,39 @@
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
             background: transparent; 
-            padding: 4px 0; /* ← Reduced height by decreasing top/bottom padding to 4px */
-            border: 2px solid #FFFFFF; /* Solid white border */
+            padding: 4px 0;
+            border: 2px solid #FFFFFF;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             margin-bottom: 8px;
-            width: 100%; /* Keeps full width */
-            box-sizing: border-box; /* Ensures padding doesn't cause overflow */
+            width: 100%;
+            box-sizing: border-box;
         }
         .stat-box {
             background: var(--surface-white);
             border: 1px solid rgba(0,0,0,0.05); border-radius: 6px;
             text-align: center; padding: 2px 2px;
-            width: 100%; /* Forces the box to fill its assigned grid column */
-            box-sizing: border-box; /* Ensures padding doesn't push it out of bounds */
+            width: 100%;
+            box-sizing: border-box;
         }
-         .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; } /* ← Increased from 8px */
-        .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; } /* ← Increased from 10px */
+         .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; }
+        .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
         /* SIDE-BY-SIDE 50/50 LAYOUT - Strict alignment fix */
         .game-layout { 
             display: flex; 
             flex-direction: row; 
             gap: 14px; 
-            align-items: stretch; /* Forces both columns to equal height & prevents drop-down */
+            align-items: stretch;
             justify-content: space-between;
             width: 100%;
-            flex-wrap: nowrap; /* Forces side-by-side on all devices */
+            flex-wrap: nowrap;
         }
 
         /* LEFT: MASTER BINGO BOARD (TRANSPARENT) */
         .board-container {
             background: transparent; 
             border-radius: 8px; padding: 6px;
-            border: 2px solid #FFFFFF; /* Solid White Border */
+            border: 2px solid #FFFFFF;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             width: 32%; 
             height: inherit;
@@ -208,14 +208,12 @@
             font-weight: 700; font-size: 7px; color: #fff;
             border: 1px solid rgba(255,255,255,0.8); transition: all 0.2s ease;
         }
-        /* EXACT HIGHLIGHT COLORS BASED ON IMAGE */
         .board-cell.called { background: var(--surface-white); border: 1px solid rgba(0,0,0,0.1); color: white; }
         .board-cell.called.highlight-b { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-i { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-n { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-g { background: var(--red-accent); border-color: var(--border-light); color: white; }
         .board-cell.called.highlight-o { background: var(--red-accent); border-color: var(--border-light); color: white; }
-              /* The most-recently called number blinks GREEN */
         .board-cell.called.current-call { 
             background: var(--btn-green) !important; 
             border-color: var(--btn-green) !important; 
@@ -241,31 +239,31 @@
         .current-call-label { font-weight: 700; font-size: 10px; }
         .current-call-badge {
             background: var(--orange-accent); color: var(--text-white);
-            width: 50px;          /* Force perfect circle width */
-            height: 50px;         /* Force perfect circle height */
-            border-radius: 50%;   /* Make it a perfect circle */
-            display: flex;        /* Center the text horizontally */
-            align-items: center;  /* Center the text vertically */
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
             justify-content: center;
             font-weight: 800; font-size: 14px;
         }
 
-                /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
+        /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
         .recent-calls-box {
             background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 4px 6px;
             display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; 
             border: 1px solid rgba(255,255,255,0.8); min-height: 36px; 
-            width: 85%; /* ← Wider than before, but still smaller than full width */
-            align-self: center; /* ← Centers it perfectly within the right panel */
-            margin: 4px auto; /* Centers it horizontally */
+            width: 85%;
+            align-self: center;
+            margin: 4px auto;
         }
         .call-bubble {
-            border-radius: 50%; /* Make it a perfect circle */
+            border-radius: 50%;
             padding: 0; 
-            width: 28px; /* Fixed width for circle */
-            height: 28px; /* Fixed height for circle */
+            width: 28px;
+            height: 28px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 11px; /* Smaller text to fit circle */
+            font-weight: 700; font-size: 11px;
             color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -306,18 +304,13 @@
         .player-cards-container-inner::-webkit-scrollbar {
             width: 4px;
         }
-
         .player-cards-container-inner::-webkit-scrollbar-track {
             background: transparent;
         }
-
         .player-cards-container-inner::-webkit-scrollbar-thumb {
             background: var(--purple-dark);
             border-radius: 4px;
         }
-
-
-
 
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
@@ -360,20 +353,20 @@
         }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
-             /* --- No-card waiting message (shown in place of a card during an active round) --- */
+        /* --- No-card waiting message --- */
         .no-card-waiting {
-            background: rgba(255, 255, 255, 0.2); /* Transparent like the grid */
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            padding: 60px 20px; /* Increased padding for more height and width */
+            padding: 60px 20px;
             text-align: center;
             color: var(--purple-dark);
             font-weight: 800;
-            font-size: 18px; /* Slightly larger text */
+            font-size: 18px;
             line-height: 1.8;
-            backdrop-filter: blur(2px); /* Optional subtle blur for glass effect */
-            border: 2px solid #FFFFFF; /* Solid white border like the grids */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Match other grid shadows */
-            min-height: 150px; /* Ensures it has enough height even if text is short */
+            backdrop-filter: blur(2px);
+            border: 2px solid #FFFFFF;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            min-height: 150px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -381,16 +374,16 @@
 
         /* --- Bottom Action Buttons (Game Screen Only) --- */
         .bottom-actions {
-            position: fixed; bottom: 70px; right: 16px; left: auto; /* Pushes to the right side */
-            width: auto; /* Fits the content size only */
+            position: fixed; bottom: 70px; right: 16px; left: auto;
+            width: auto;
             background: transparent; padding: 0;
             display: none; gap: 10px; z-index: 99;
         }
         .bottom-actions.active { display: flex; }
         .action-btn {
-            border: none; border-radius: 10px; height: 36px; /* Reduced height */
-            padding: 0 20px; /* Reduced width via padding */
-            font-weight: 700; font-size: 13px; /* Slightly smaller text */
+            border: none; border-radius: 10px; height: 36px;
+            padding: 0 20px;
+            font-weight: 700; font-size: 13px;
             color: white;
             display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -406,27 +399,25 @@
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
-       /* --- FIXED WINNER DISPLAY (MATCHING SCREENSHOT) --- */
-              /* --- IDENTICAL WINNER DISPLAY (MATCHING IMAGE) --- */
+        /* --- WINNER DISPLAY --- */
         .winner-display { 
-            position: fixed; inset: 0; background: #d9ade9; /* ← FULL PAGE LIGHT PURPLE BACKGROUND */ 
+            position: fixed; inset: 0; background: #d9ade9;
             display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
-            pointer-events: none; /* Let clicks pass through to game if needed */
+            pointer-events: none;
         }
         .winner-content { 
-            width: 100%; max-width: 290px; /* Adjusted width to match image perfectly */
+            width: 100%; max-width: 290px;
             display: flex; flex-direction: column; gap: 14px; 
             background: transparent; 
-            pointer-events: auto; /* Restore clicks on the popup itself */
+            pointer-events: auto;
         }
-        /* Top Orange Box */
         .winner-orange-box {
             background: #FF9800;
             border-radius: 12px;
             padding: 14px 10px;
             text-align: center;
             color: white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2); /* Soft shadow */
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
         }
         .winner-orange-box h1 {
             font-size: 32px;
@@ -441,7 +432,7 @@
         }
         .winner-orange-box .winner-name-badge {
             display: inline-block;
-            background: #0F7B1B; /* Darker Green Match */
+            background: #0F7B1B;
             color: white;
             padding: 3px 12px;
             border-radius: 6px;
@@ -449,15 +440,13 @@
             font-weight: 700;
         }
 
-                /* Winner's Card Container (Light Purple Background & White Border) */
         .winner-card-wrapper {
-            background: #EAD6F1; /* Exact Light Purple Match */
-            border: 2px solid #FFFFFF; /* Solid White Border */
+            background: #EAD6F1;
+            border: 2px solid #FFFFFF;
             border-radius: 14px;
             padding: 14px 14px 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        /* Winner's B-I-N-G-O Header */
         .winner-card-header {
             display: flex; gap: 3px; margin-bottom: 6px;
         }
@@ -471,7 +460,6 @@
         .winner-card-header-cell.g { background: var(--letter-g); }
         .winner-card-header-cell.o { background: var(--letter-o); }
 
-        /* Winner 5x5 Grid (Smaller Cells) */
         .winner-card-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%;
         }
@@ -481,24 +469,21 @@
             font-weight: 700; font-size: 12px; color: #333;
             border: 1px solid #E0E0E0;
         }
-        /* Exact colors from winner image */
-        .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; } /* Yellow */
-        .winner-card-cell.free { background: #C8E6C9 !important; border-color: #81C784 !important; color: white; font-weight: 800; } /* Light Green & Star clean */
-        .winner-card-cell.free::after { content: '*' !important; } /* Replaces the Star with an * */
+        .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; }
+        .winner-card-cell.free { background: #C8E6C9 !important; border-color: #81C784 !important; color: white; font-weight: 800; }
+        .winner-card-cell.free::after { content: '*' !important; }
 
-        /* Winner Board Number Text */
         .winner-board-text {
             text-align: center; margin-top: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px;
         }
 
-        /* Bottom Countdown Bar (Orange Pill) */
         .winner-countdown-bar {
             background: #FF9800;
             border-radius: 12px;
             padding: 16px 10px;
             text-align: center;
             color: white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2); /* Soft shadow */
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
         }
         .winner-countdown-bar h2 {
             font-size: 34px;
@@ -506,18 +491,22 @@
             margin: 0;
             letter-spacing: 1px;
         }
-        .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
+        .audio-loading { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; 
+            display: none; 
+        }
 
-        /* --- STRICT SIDE-BY-SIDE FOR ALL MOBILE DEVICES (Removed column breakpoint) --- */
+        /* --- STRICT SIDE-BY-SIDE FOR ALL MOBILE DEVICES --- */
          @media (max-width: 600px) {
             .game-layout { 
                 flex-direction: row !important; 
                 gap: 10px; 
                 align-items: stretch;
             }
-            .board-container { width: 42%; flex-shrink: 0; } /* Matches the new width */
-            .right-panel { width: 68%; flex-shrink: 0; }   /* Matches the new width */
-            .board-cell { font-size: 10px; } /* Makes cells even smaller on tiny screens */
+            .board-container { width: 42%; flex-shrink: 0; }
+            .right-panel { width: 68%; flex-shrink: 0; }
+            .board-cell { font-size: 10px; }
         }
         
         /* --- OTHER PAGES (HISTORY, WALLET, PROFILE) --- */
@@ -562,30 +551,14 @@
         <span id="status-text">Connecting...</span>
     </div>
 
-    <div id="audio-loading" class="audio-loading">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <div class="loading-spinner"></div>
-            <div style="font-size: 14px">Loading audio files...</div>
-            <div id="audio-loading-progress" style="font-size: 12px; opacity: 0.8;">0/75 loaded</div>
-            <div class="audio-loading-progress"><div id="audio-loading-bar" class="audio-loading-bar"></div></div>
-        </div>
-    </div>
-
-    <div id="notification-toast" class="notification-toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="notification-message">Success!</span>
-    </div>
-
-    <!-- ==================== WINNER DISPLAY (EXACT IDENTICAL MATCH) ==================== -->
+    <!-- ==================== WINNER DISPLAY ==================== -->
     <div class="winner-display" id="winner-announcement">
         <div class="winner-content">
-            <!-- Top Orange Box -->
             <div class="winner-orange-box">
                 <h1>BINGO!</h1>
                 <p><span class="winner-name-badge" id="winners-name-badge">Na</span> <span id="winners-full-text">has won the game.</span></p>
             </div>
 
-            <!-- Winner Card -->
             <div class="winner-card-wrapper">
                 <div class="winner-card-header">
                     <div class="winner-card-header-cell b">B</div>
@@ -602,14 +575,11 @@
                 </div>
             </div>
 
-            <!-- Bottom Countdown Bar -->
             <div class="winner-countdown-bar">
                 <h2 id="winner-announcement-timer">10</h2>
             </div>
         </div>
     </div>
-
-
 
     <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
@@ -641,7 +611,6 @@
                     <div class="cards-grid" id="cards-grid"></div>
                 </div>
 
-                <!-- CARD PREVIEW AREA (NOW DYNAMICALLY TRIGGERED) -->
                 <div class="selected-card-info" id="selected-card-info" style="display: none">
                     <div style="background: var(--surface-white); border-radius: 10px; padding: 15px; border: 1px solid var(--border-light);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -697,7 +666,7 @@
             <!-- 2. Main SIDE-BY-SIDE 50/50 Layout -->
             <div class="game-layout">
                 
-                <!-- LEFT: Master Bingo Board (Transparent Grid) -->
+                <!-- LEFT: Master Bingo Board -->
                 <div class="board-container" id="master-board">
                     <div class="board-header-row">
                         <div class="board-header-cell b">B</div>
@@ -720,7 +689,7 @@
                         <span class="current-call-badge" id="current-called-number">--</span>
                     </div>
 
-                    <!-- Recent Calls (Pills) -->
+                    <!-- Recent Calls -->
                     <div class="recent-calls-box" id="called-numbers-grid">
                         <!-- Rendered by JS -->
                     </div>
@@ -742,11 +711,11 @@
                     </div>
 
                    <!-- Player Cards Container (Stacked) -->
-<div class="player-cards-container" id="player-cards-container" style="background: rgba(255,255,255,0.3); border-radius: 12px; padding: 6px; border: 1px solid rgba(255,255,255,0.5); min-height: 100px; max-height: 380px; overflow-y: auto;">
-    <div class="player-cards-container-inner" id="player-cards-inner">
-        <!-- Rendered by JS -->
-    </div>
-</div>
+                    <div class="player-cards-container" id="player-cards-container" style="background: rgba(255,255,255,0.3); border-radius: 12px; padding: 6px; border: 1px solid rgba(255,255,255,0.5); min-height: 100px; max-height: 380px; overflow-y: auto;">
+                        <div class="player-cards-container-inner" id="player-cards-inner">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -903,7 +872,7 @@
     </div>
 
     <!-- ==================== SCRIPTS ==================== -->
-   <script>
+    <script>
     // ==================== TAB SWITCHING ====================
     function switchTab(tabName) {
         document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -1072,6 +1041,7 @@
     }
     window.toggleAudio = toggleAudio;
 
+    // ==================== AUTO PLAY FUNCTION ====================
     function toggleAuto() {
         gameState.autoMode = !gameState.autoMode;
         const toggle = document.getElementById('profile-auto-toggle');
@@ -1081,10 +1051,12 @@
             toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
             gameToggleText.textContent = 'ON';
             gameToggle.classList.remove('orange'); gameToggle.classList.add('green');
+            showNotification('Auto-Play Enabled - Cards will auto-mark!', 'success', 2000);
         } else {
             toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
             gameToggleText.textContent = 'OFF';
             gameToggle.classList.remove('green'); gameToggle.classList.add('orange');
+            showNotification('Auto-Play Disabled', 'info', 1500);
         }
     }
     window.toggleAuto = toggleAuto;
@@ -1130,7 +1102,11 @@
     }
     const tg = window.Telegram.WebApp; tg.expand();
 
+    // ==================== UPDATED: NO NOTIFICATION FOR SOUND ENABLED ====================
     function showNotification(message, type = "info", duration = 3000) {
+        // Skip sound enabled notifications
+        if (message && message.includes("Sound enabled")) return;
+        
         const toast = document.getElementById("notification-toast");
         const messageEl = document.getElementById("notification-message");
         if (toast && messageEl) {
@@ -1162,11 +1138,13 @@
         document.querySelectorAll("audio").forEach((audio) => { try { audio.pause(); audio.currentTime = 0; } catch (error) {} });
     }
 
+    // ==================== UPDATED: Silent Audio Initialization ====================
     function initializeAudio() {
         gameState.audioInitialized = true; gameState.audioEnabled = true;
         const toggle = document.getElementById('audio-toggle');
         if(toggle) toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size: 12px;"></i>';
-        showNotification("Sound enabled!", "success", 2000); preloadAudioFiles();
+        // Removed notification - now silent
+        preloadAudioFiles();
     }
     window.initializeAudio = initializeAudio;
 
@@ -1197,15 +1175,10 @@
             console.log("All MP3 audio files preloaded"); gameState.audioPreloaded = true;
             setTimeout(() => {
                 if (loadingElement) loadingElement.style.display = "none";
-                const audioStatus = document.getElementById("audio-status");
-                if (audioStatus) {
-                    if (loadedCount === gameState.totalAudioFiles) audioStatus.innerHTML = `<i class="fas fa-check-circle"></i> Audio ready (${gameState.totalAudioFiles} numbers)`;
-                    else audioStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Audio partially loaded (${loadedCount}/${gameState.totalAudioFiles})`;
-                }
                 testAudioPlayback();
             }, 500);
             return true;
-        } catch (error) { console.error("Error preloading audio:", error); gameState.audioEnabled = false; updateAudioToggle(); if (loadingElement) loadingElement.style.display = "none"; const audioStatus = document.getElementById("audio-status"); if (audioStatus) audioStatus.innerHTML = `<i class="fas fa-times-circle"></i> Audio disabled`; return false; }
+        } catch (error) { console.error("Error preloading audio:", error); gameState.audioEnabled = false; updateAudioToggle(); if (loadingElement) loadingElement.style.display = "none"; return false; }
     }
 
     function testAudioPlayback() {
@@ -1329,11 +1302,52 @@
         btn.onclick = claimBingo;
     }
 
+    // ==================== AUTO-PLAY: Auto-mark numbers when called ====================
     function handleServerNumberCalled(number, allCalled) {
         gameState.calledNumbers = allCalled;
-        updateCalledNumbersDisplay(); updateCurrentCalledDisplay(number); updateBingoGrid();
+        updateCalledNumbersDisplay(); 
+        updateCurrentCalledDisplay(number); 
+        updateBingoGrid();
+        
+        // Auto-mark if autoMode is enabled
+        if (gameState.autoMode && gameState.hasCard) {
+            autoMarkNumber(number);
+        }
+        
         if (gameState.audioEnabled && gameState.audioPreloaded && gameState.audioInitialized && !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) playNumberAudio(number);
         if (checkForBingo() && !gameState.hasClaimedBingo) updateBingoButton();
+    }
+
+    // ==================== AUTO-PLAY: Auto-mark function ====================
+    function autoMarkNumber(number) {
+        if (!gameState.autoMode || !gameState.hasCard) return;
+        
+        // Find all player cards and mark the number if it exists
+        const allCards = document.querySelectorAll('.p-card-cell');
+        allCards.forEach(cell => {
+            const cellNumber = parseInt(cell.textContent);
+            if (cellNumber === number && !cell.classList.contains('marked') && !cell.classList.contains('free')) {
+                cell.classList.add('marked');
+                cell.style.background = '#4CAF50';
+                cell.style.color = 'white';
+                // Add to marked numbers set
+                if (!gameState.markedNumbers) gameState.markedNumbers = new Set();
+                gameState.markedNumbers.add(number);
+                
+                // Check for bingo after marking
+                if (checkForBingo() && !gameState.hasClaimedBingo) {
+                    updateBingoButton();
+                    // If autoMode is on, automatically claim bingo after a short delay
+                    if (gameState.autoMode) {
+                        setTimeout(() => {
+                            if (checkForBingo() && !gameState.hasClaimedBingo) {
+                                claimBingo();
+                            }
+                        }, 500);
+                    }
+                }
+            }
+        });
     }
 
     function updateCurrentCalledDisplay(number) {
@@ -1460,7 +1474,13 @@
                 gameState.gameId = data.game_id; gameState.gamePhase = data.game_phase; gameState.gameStatus = data.game_status; gameState.lastConfirmedPhase = data.game_phase; gameState.currentRound = data.round_number || gameState.currentRound;
                 gameState.prizePool = parseFloat(data.prize_pool || 0); gameState.realPlayers = data.real_players || 0; gameState.fakePlayers = data.fake_players || 0; gameState.totalPlayers = data.total_players || gameState.realPlayers + gameState.fakePlayers;
                 gameState.maxWinners = data.max_winners || 2; gameState.winnersCount = data.winners_count || 0; gameState.winners = data.winners || [];
-                if (data.called_numbers && Array.isArray(data.called_numbers)) { gameState.calledNumbers = data.called_numbers; }
+                if (data.called_numbers && Array.isArray(data.called_numbers)) { 
+                    gameState.calledNumbers = data.called_numbers; 
+                    // Auto-mark numbers if autoMode is on
+                    if (gameState.autoMode && gameState.hasCard) {
+                        data.called_numbers.forEach(num => autoMarkNumber(num));
+                    }
+                }
                 if (data.countdown_remaining !== undefined) {
                     if (Math.abs(data.countdown_remaining - gameState.countdown) > 2 || gameState.countdownInterval === null) {
                         gameState.countdown = data.countdown_remaining; gameState.countdownTotal = data.countdown_remaining;
@@ -2526,6 +2546,6 @@
             window.addEventListener("offline", function () { updateConnectionStatus("Offline - waiting for network...", "red"); });
         } catch (error) { console.error("Failed to initialize game:", error); showNotification("Failed to initialize game. Please refresh the page.", "error"); setTimeout(() => { window.location.reload(); }, 10000); }
     });
-</script>
+    </script>
 </body>
 </html>
