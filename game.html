@@ -1750,6 +1750,12 @@
                     }
                 }
                 
+                // Clear preview on new game
+                if (gameState.gamePhase === "card_purchase") {
+                    document.getElementById("selected-card-info").style.display = "none";
+                    gameState.uiSelectedCardIndex = null;
+                }
+                
                 if (data.winners && data.winners.length > 0) {
                     gameState.winners = data.winners; gameState.winnersCount = data.winners_count || data.winners.length; gameState.maxWinners = data.max_winners || 2;
                     const lastWinner = data.winners[data.winners.length - 1];
@@ -2000,6 +2006,9 @@
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
+        // Clear preview
+        document.getElementById("selected-card-info").style.display = "none";
+        gameState.uiSelectedCardIndex = null;
         updateBoardCountText();
         closeDisqualifiedOverlay();
         showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
@@ -2013,6 +2022,9 @@
         const winnerAnnouncement = document.getElementById("winner-announcement");
         if (winnerAnnouncement) winnerAnnouncement.style.display = "none";
         if (gameState.winnerDisplayInterval) { clearInterval(gameState.winnerDisplayInterval); gameState.winnerDisplayInterval = null; }
+        // Clear preview
+        document.getElementById("selected-card-info").style.display = "none";
+        gameState.uiSelectedCardIndex = null;
         if (gameState.gamePhase === "card_purchase" && gameState.cardsLoaded) { gameState.gameId = data.game_id; gameState.currentRound = data.round_number || gameState.currentRound + 1; gameState.countdown = data.countdown_seconds || 0; gameState.countdownTotal = data.countdown_seconds || 30; document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown(); return; }
         gameState.gameId = data.game_id; gameState.gamePhase = data.phase || "card_purchase"; gameState.gameStatus = data.status || "card_purchase"; gameState.lastConfirmedPhase = data.phase || "card_purchase";
         gameState.gameActive = false; gameState.purchasePhaseActive = true; gameState.currentRound = data.round_number || gameState.currentRound + 1; gameState.countdown = data.countdown_seconds || 0; gameState.countdownTotal = data.countdown_seconds || 30;
@@ -2043,6 +2055,9 @@
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
+        // Clear preview
+        document.getElementById("selected-card-info").style.display = "none";
+        gameState.uiSelectedCardIndex = null;
         updateBoardCountText();
         closeDisqualifiedOverlay();
         showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
@@ -2781,6 +2796,9 @@
         gameState.disqualified = false;
         updateBoardCountText();
         closeDisqualifiedOverlay();
+        // Clear preview
+        document.getElementById("selected-card-info").style.display = "none";
+        gameState.uiSelectedCardIndex = null;
         if (grid.children.length === 0) { loadCardsGrid(); return; }
         for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
         gameState.cardsSold.clear(); gameState.cardsCache.soldCards.clear(); gameState.cardsCache.ownedCardIndex = null; gameState.selectedCardIndex = null; gameState.hasCard = false; gameState.uiSelectedCardIndex = null;
