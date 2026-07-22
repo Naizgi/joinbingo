@@ -115,28 +115,6 @@
             background: #4A148C;
         }
 
-        /* === DISQUALIFIED CARD IN GAME === */
-        .p-card-wrapper.disqualified {
-            opacity: 0.5;
-            border: 2px solid #F44336 !important;
-            position: relative;
-        }
-        .p-card-wrapper.disqualified::after {
-            content: '❌ DISQUALIFIED';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(244, 67, 54, 0.9);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 12px;
-            letter-spacing: 1px;
-            z-index: 10;
-        }
-
         /* === APP HEADER === */
         .app-header {
             background: var(--surface-white);
@@ -964,16 +942,21 @@
     // ==================== TAB SWITCHING ====================
     function switchTab(tabName) {
         document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.nav-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        const btn = document.querySelector(`.nav-btn[onclick="switchTab('${tabName}')"]`);
+        if (btn) btn.classList.add('active');
         document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
-        document.getElementById(`page-${tabName}`).classList.add('active');
+        const page = document.getElementById(`page-${tabName}`);
+        if (page) page.classList.add('active');
         
         if(tabName === 'game') {
-            if(gameState.gamePhase === "active" || gameState.gameStatus === "active") {
+            // Check both gamePhase and gameStatus for active state
+            if(gameState.gamePhase === "active" || gameState.gameStatus === "active" || gameState.gameActive) {
                 document.getElementById('game-bottom-actions').classList.add('active');
             } else {
                 document.getElementById('game-bottom-actions').classList.remove('active');
             }
+            // Update button state
+            updateBingoButton();
         } else {
             document.getElementById('game-bottom-actions').classList.remove('active');
         }
@@ -990,8 +973,10 @@
         const tabs = document.querySelectorAll('.wallet-tab');
         if(tab === 'balances') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
 
-        document.getElementById('wallet-balances-view').style.display = tab === 'balances' ? 'block' : 'none';
-        document.getElementById('wallet-history-view').classList.toggle('active', tab === 'history');
+        const balancesView = document.getElementById('wallet-balances-view');
+        const historyView = document.getElementById('wallet-history-view');
+        if (balancesView) balancesView.style.display = tab === 'balances' ? 'block' : 'none';
+        if (historyView) historyView.classList.toggle('active', tab === 'history');
         
         if(tab === 'history') { loadWalletHistory(); }
     }
@@ -1000,6 +985,7 @@
     // ==================== LOAD WALLET HISTORY ====================
     async function loadWalletHistory() {
         const container = document.getElementById('wallet-transactions-container');
+        if (!container) return;
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
         
         setTimeout(() => {
@@ -1033,6 +1019,7 @@
     async function loadPlayerHistory(page = 1) {
         const listContainer = document.getElementById('history-list-container');
         const statsContainer = document.getElementById('history-stats-container');
+        if (!listContainer) return;
         listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>';
         try {
             const userId = getUserId();
@@ -1040,10 +1027,13 @@
             if (!response.ok) throw new Error('Failed to fetch history');
             const data = await response.json();
             if (data.success) {
-                statsContainer.style.display = 'block';
-                document.getElementById('history-total-games').textContent = data.stats.total_games;
-                document.getElementById('history-total-wins').textContent = data.stats.total_wins;
-                document.getElementById('history-total-winnings').textContent = data.stats.total_winnings.toFixed(2) + ' birr';
+                if (statsContainer) statsContainer.style.display = 'block';
+                const totalGames = document.getElementById('history-total-games');
+                const totalWins = document.getElementById('history-total-wins');
+                const totalWinnings = document.getElementById('history-total-winnings');
+                if (totalGames) totalGames.textContent = data.stats.total_games;
+                if (totalWins) totalWins.textContent = data.stats.total_wins;
+                if (totalWinnings) totalWinnings.textContent = data.stats.total_winnings.toFixed(2) + ' birr';
 
                 if (data.history.length === 0) {
                     listContainer.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted); padding:20px;">No game history found.</div>';
@@ -1064,7 +1054,7 @@
                                 <div>Stake: <span style="font-weight:600; color:var(--text-main);">Br ${CARD_PRICE.toFixed(2)}</span></div>
                                 <div>Prize: <span style="font-weight:600; color:var(--text-main);">Br ${game.prize_pool.toFixed(2)}</span></div>
                                 <div>My Boards: <span style="font-weight:600; color:var(--text-main);">#${game.card_index}</span></div>
-                                <div>Winners' Boards: <span style="font-weight:600; color:var(--text-main);">#${game.winner_id || 'N/A'}</span></div>
+                                <div>Winners\' Boards: <span style="font-weight:600; color:var(--text-main);">#${game.winner_id || 'N/A'}</span></div>
                             </div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Winner count: ${game.is_winner ? 1 : 0}</div>
                         </div>
@@ -1086,12 +1076,18 @@
             const data = await response.json();
             if (data.success) {
                 const profile = data.profile;
-                document.getElementById('profile-avatar-letter').textContent = (profile.full_name || 'U').charAt(0).toUpperCase();
-                document.getElementById('profile-username').textContent = '@' + (profile.username || profile.user_id);
-                document.getElementById('profile-balance').textContent = 'Br ' + (profile.balance || 0).toFixed(2);
-                document.getElementById('profile-total-wins').textContent = profile.stats.total_wins || 0;
-                document.getElementById('profile-total-withdrawal').textContent = 'Br ' + (profile.total_withdrawal || 0).toFixed(2);
-                document.getElementById('profile-total-invites').textContent = profile.total_invites || 0;
+                const avatar = document.getElementById('profile-avatar-letter');
+                const username = document.getElementById('profile-username');
+                const balance = document.getElementById('profile-balance');
+                const wins = document.getElementById('profile-total-wins');
+                const withdrawals = document.getElementById('profile-total-withdrawal');
+                const invites = document.getElementById('profile-total-invites');
+                if (avatar) avatar.textContent = (profile.full_name || 'U').charAt(0).toUpperCase();
+                if (username) username.textContent = '@' + (profile.username || profile.user_id);
+                if (balance) balance.textContent = 'Br ' + (profile.balance || 0).toFixed(2);
+                if (wins) wins.textContent = profile.stats.total_wins || 0;
+                if (withdrawals) withdrawals.textContent = 'Br ' + (profile.total_withdrawal || 0).toFixed(2);
+                if (invites) invites.textContent = profile.total_invites || 0;
             }
         } catch (error) {
             console.error("Error loading profile:", error);
@@ -1105,8 +1101,10 @@
             if(response.ok) {
                 const data = await response.json();
                 const formatted = data.balance.toFixed(2);
-                document.getElementById('wallet-balance-display').textContent = 'Br ' + formatted;
-                document.getElementById('wallet-total-balance').textContent = 'Br ' + formatted;
+                const display = document.getElementById('wallet-balance-display');
+                const total = document.getElementById('wallet-total-balance');
+                if (display) display.textContent = 'Br ' + formatted;
+                if (total) total.textContent = 'Br ' + formatted;
             }
         } catch(e) {
             console.error("Error loading wallet", e);
@@ -1120,11 +1118,11 @@
         const toggle = document.getElementById('profile-sound-toggle');
         const gameToggle = document.getElementById('audio-toggle');
         if (gameState.audioEnabled) {
-            toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
-            gameToggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:12px;"></i>';
+            if (toggle) { toggle.className = 'profile-toggle on'; toggle.textContent = 'ON'; }
+            if (gameToggle) gameToggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:12px;"></i>';
         } else {
-            toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
-            gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:12px;"></i>';
+            if (toggle) { toggle.className = 'profile-toggle'; toggle.textContent = 'OFF'; }
+            if (gameToggle) gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:12px;"></i>';
         }
     }
     window.toggleAudio = toggleAudio;
@@ -1136,14 +1134,14 @@
         const gameToggle = document.getElementById('auto-toggle');
         const gameToggleText = document.getElementById('auto-status-text');
         if (gameState.autoMode) {
-            toggle.className = 'profile-toggle on'; toggle.textContent = 'ON';
-            gameToggleText.textContent = 'ON';
-            gameToggle.classList.remove('orange'); gameToggle.classList.add('green');
+            if (toggle) { toggle.className = 'profile-toggle on'; toggle.textContent = 'ON'; }
+            if (gameToggleText) gameToggleText.textContent = 'ON';
+            if (gameToggle) { gameToggle.classList.remove('orange'); gameToggle.classList.add('green'); }
             showNotification('Auto-Play Enabled - Cards will auto-mark!', 'success', 2000);
         } else {
-            toggle.className = 'profile-toggle'; toggle.textContent = 'OFF';
-            gameToggleText.textContent = 'OFF';
-            gameToggle.classList.remove('green'); gameToggle.classList.add('orange');
+            if (toggle) { toggle.className = 'profile-toggle'; toggle.textContent = 'OFF'; }
+            if (gameToggleText) gameToggleText.textContent = 'OFF';
+            if (gameToggle) { gameToggle.classList.remove('green'); gameToggle.classList.add('orange'); }
             showNotification('Auto-Play Disabled', 'info', 1500);
         }
     }
@@ -1151,12 +1149,15 @@
 
     // ==================== DISQUALIFIED OVERLAY FUNCTIONS ====================
     function showDisqualifiedOverlay(refundAmount) {
-        document.getElementById('dq-refund-amount').textContent = refundAmount.toFixed(2);
-        document.getElementById('disqualified-overlay').classList.add('active');
+        const refundEl = document.getElementById('dq-refund-amount');
+        if (refundEl) refundEl.textContent = refundAmount.toFixed(2);
+        const overlay = document.getElementById('disqualified-overlay');
+        if (overlay) overlay.classList.add('active');
     }
     
     function closeDisqualifiedOverlay() {
-        document.getElementById('disqualified-overlay').classList.remove('active');
+        const overlay = document.getElementById('disqualified-overlay');
+        if (overlay) overlay.classList.remove('active');
     }
 
     // ==================== YOUR ORIGINAL LOGIC (COMPLETE) ====================
@@ -1198,18 +1199,26 @@
 
     const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
     if (!isTelegram) {
-        document.getElementById("access-denied").style.display = "flex";
+        const denied = document.getElementById("access-denied");
+        if (denied) denied.style.display = "flex";
         throw new Error("Unauthorized: Outside Telegram Environment");
     }
     const tg = window.Telegram.WebApp; tg.expand();
 
-    // ==================== UPDATED: NO NOTIFICATION FOR SOUND ENABLED ====================
+    // ==================== SHOW NOTIFICATION ====================
     function showNotification(message, type = "info", duration = 3000) {
         if (message && message.includes("Sound enabled")) return;
-        
-        const toast = document.getElementById("notification-toast");
+        // Create toast if it doesn't exist
+        let toast = document.getElementById("notification-toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "notification-toast";
+            toast.className = "notification-toast";
+            toast.innerHTML = '<span id="notification-message"></span>';
+            document.body.appendChild(toast);
+        }
         const messageEl = document.getElementById("notification-message");
-        if (toast && messageEl) {
+        if (messageEl) {
             messageEl.textContent = message;
             toast.style.display = "flex";
             if (duration > 0) setTimeout(() => { toast.style.display = "none"; }, duration);
@@ -1345,14 +1354,16 @@
         }
     }
 
-    // ==================== UPDATED: claimBingo with proper response handling ====================
+    // ==================== CLAIM BINGO ====================
     async function claimBingo() {
         if (gameState.disqualified) {
             showNotification("You have been disqualified from this game!", "error", 3000);
             return;
         }
         if (!gameState.gameId || !gameState.hasCard) return showNotification("No active game or card", "error");
-        if (!validateGamePhase("active", "claimBingo")) return showNotification("Can only claim bingo during active game", "error");
+        if (!gameState.gameActive && gameState.gamePhase !== "active" && gameState.gameStatus !== "active") {
+            return showNotification("Can only claim bingo during active game", "error");
+        }
         if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
         
         const btn = document.getElementById("claim-bingo-btn");
@@ -1364,7 +1375,6 @@
         gameState.bingoClaimInProgress = true; 
         gameState.phaseChangeRequested = true;
         
-        // Set a timeout to reset the button if server doesn't respond
         const timeoutId = setTimeout(() => {
             if (gameState.bingoClaimInProgress) {
                 console.warn("Bingo claim timeout - resetting button");
@@ -1407,18 +1417,15 @@
                     gameState.hasClaimedBingo = true; 
                     setTimeout(() => getUserBalance(), 1000); 
                 } else { 
-                    // ========== HANDLE REJECTION / DISQUALIFICATION ==========
                     gameState.bingoClaimInProgress = false; 
                     gameState.phaseChangeRequested = false; 
                     
                     if (data.disqualified) {
-                        // Player was disqualified
                         gameState.disqualified = true;
                         gameState.hasCard = false;
                         showDisqualifiedOverlay(data.refund_amount || 8);
                         updateBingoButton();
                         renderEmptyPlayerCard();
-                        // Refresh game state
                         setTimeout(() => getCompleteGameState(), 2000);
                     } else {
                         showNotification(data.message || "No valid bingo pattern found", "error", 4000);
@@ -1426,7 +1433,6 @@
                     }
                 }
             } else {
-                // WebSocket sent - response will come via WebSocket
                 setTimeout(() => {
                     if (gameState.bingoClaimInProgress) {
                         console.warn("Bingo claim pending - resetting button");
@@ -1461,7 +1467,7 @@
         } catch (error) { console.error("Error checking bingo:", error); return false; }
     }
 
-    // ==================== UPDATED: updateBingoButton with disqualification ====================
+    // ==================== UPDATE BINGO BUTTON - FIXED ====================
     function updateBingoButton() {
         const btn = document.getElementById("claim-bingo-btn"); 
         if (!btn) return;
@@ -1484,16 +1490,27 @@
             return; 
         }
         
-        if (gameState.gamePhase !== "active" && gameState.gameStatus !== "active") { 
+        // Check if game is active - use both phase and gameActive flag
+        const isActive = gameState.gameActive || gameState.gamePhase === "active" || gameState.gameStatus === "active";
+        
+        if (!isActive) { 
+            btn.innerHTML = `<i class="fas fa-clock"></i> Waiting for Game...`; 
+            btn.disabled = true; 
+            return; 
+        }
+        
+        if (!gameState.hasCard && gameState.ownedCardIndices.length === 0) { 
             btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
             btn.disabled = true; 
             return; 
         }
         
-        if (!gameState.hasCard) { 
+        // Check if user has any active card
+        const hasCard = gameState.hasCard || gameState.ownedCardIndices.length > 0;
+        if (!hasCard) {
             btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
             btn.disabled = true; 
-            return; 
+            return;
         }
         
         btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
@@ -1508,6 +1525,9 @@
         updateCalledNumbersDisplay(); 
         updateCurrentCalledDisplay(number); 
         updateBingoGrid();
+        // Update the called numbers stat
+        const calledStat = document.getElementById("called-numbers-stat");
+        if (calledStat) calledStat.textContent = allCalled.length;
         
         if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
             autoMarkNumber(number);
@@ -1587,7 +1607,8 @@
                     } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                 } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
                 gameState.markedNumbers.clear();
-                document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
+                const idEl = document.getElementById("selected-card-id");
+                if (idEl) idEl.textContent = `#${data.user_card.card_index || "0"}`;
                 if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard();
                 return true;
             } else { gameState.hasCard = false; return false; }
@@ -1620,7 +1641,7 @@
             gameState.websocket = new WebSocket(wsUrl);
             gameState.websocket.onopen = function () {
                 console.log("WebSocket connected successfully"); gameState.isConnected = true; gameState.connectionRetryCount = 0; gameState.reconnectAttempts = 0; gameState.isReconnecting = false; updateConnectionStatus("Connected", "green");
-                sendWebSocketMessage({ type: "auth", user_id: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
+                sendWebSocketMessage({ type: "auth", userId: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
                 setTimeout(() => { if (gameState.gameId) { console.log("Requesting full game state after reconnect"); getCompleteGameState(); } }, 500);
                 if (gameState.pendingMessages.length > 0) { gameState.pendingMessages.forEach((msg) => { try { gameState.websocket.send(JSON.stringify(msg)); } catch (e) { console.error("Failed to send pending message:", e); } }); gameState.pendingMessages = []; }
                 if (gameState.pingInterval) clearInterval(gameState.pingInterval);
@@ -1643,13 +1664,13 @@
         }
     }
 
-    // ==================== UPDATED: instantCardUpdate with disqualification ====================
+    // ==================== INSTANT CARD UPDATE ====================
     function instantCardUpdate(cardIndex, newStatus, cardData = null) {
         const cardElement = gameState.cardsCache.cardElements[cardIndex]; if (!cardElement) return;
         cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified");
         switch (newStatus) {
             case "sold": cardElement.classList.add("sold"); cardElement.onclick = null; cardElement.title = "Sold to another player"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); break;
-            case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; document.getElementById("selected-card-id").textContent = `#${cardIndex}`; if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
+            case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; const idEl = document.getElementById("selected-card-id"); if (idEl) idEl.textContent = `#${cardIndex}`; if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
             case "available": cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Available to buy"; gameState.cardsSold.delete(cardIndex); gameState.cardsCache.soldCards.delete(cardIndex); break;
             case "selected": cardElement.classList.add("selected"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Selected"; gameState.uiSelectedCardIndex = cardIndex; break;
             case "disqualified": cardElement.classList.add("disqualified"); cardElement.onclick = null; cardElement.title = "Disqualified - False claim"; break;
@@ -1657,7 +1678,7 @@
         if (cardData) { if (cardData.prize_pool !== undefined) gameState.prizePool = cardData.prize_pool; if (cardData.total_players !== undefined) gameState.totalPlayers = cardData.total_players; if (cardData.wallet_balance !== undefined) gameState.walletBalance = cardData.wallet_balance; if (cardData.real_players !== undefined) gameState.realPlayers = cardData.real_players; if (cardData.fake_players !== undefined) gameState.fakePlayers = cardData.fake_players; updateGameStats(); }
     }
 
-    // ==================== UPDATED: getCompleteGameState with disqualification ====================
+    // ==================== GET COMPLETE GAME STATE - FIXED ====================
     async function getCompleteGameState() {
         if (!gameState.gameId) return false;
         if (gameState.fullSyncInProgress) return false;
@@ -1668,9 +1689,18 @@
             if (!response.ok) { if (response.status === 404) return false; throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success) {
-                gameState.gameId = data.game_id; gameState.gamePhase = data.game_phase; gameState.gameStatus = data.game_status; gameState.lastConfirmedPhase = data.game_phase; gameState.currentRound = data.round_number || gameState.currentRound;
-                gameState.prizePool = parseFloat(data.prize_pool || 0); gameState.realPlayers = data.real_players || 0; gameState.fakePlayers = data.fake_players || 0; gameState.totalPlayers = data.total_players || gameState.realPlayers + gameState.fakePlayers;
-                gameState.maxWinners = data.max_winners || 2; gameState.winnersCount = data.winners_count || 0; gameState.winners = data.winners || [];
+                // Update all game state from server
+                gameState.gameId = data.game_id;
+                gameState.gamePhase = data.game_phase;
+                gameState.gameStatus = data.game_status;
+                gameState.lastConfirmedPhase = data.game_phase;
+                gameState.currentRound = data.round_number || gameState.currentRound;
+                gameState.prizePool = parseFloat(data.prize_pool || 0);
+                gameState.realPlayers = data.real_players || 0;
+                gameState.fakePlayers = data.fake_players || 0;
+                gameState.totalPlayers = data.total_players || gameState.realPlayers + gameState.fakePlayers;
+                gameState.gameActive = data.game_phase === "active" || data.game_status === "active";
+                gameState.purchasePhaseActive = data.game_phase === "card_purchase";
                 
                 // Check if user is disqualified
                 if (data.disqualified) {
@@ -1683,25 +1713,22 @@
                     updateBingoButton();
                 }
                 
+                // Update called numbers
                 if (data.called_numbers && Array.isArray(data.called_numbers)) { 
                     gameState.calledNumbers = data.called_numbers; 
                     if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
                         data.called_numbers.forEach(num => autoMarkNumber(num));
                     }
                 }
+                
+                // Update countdown
                 if (data.countdown_remaining !== undefined) {
-                    if (Math.abs(data.countdown_remaining - gameState.countdown) > 2 || gameState.countdownInterval === null) {
-                        gameState.countdown = data.countdown_remaining; gameState.countdownTotal = data.countdown_remaining;
-                        updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
-                        if (gameState.gamePhase === "card_purchase") startServerCoordinatedCountdown();
-                        if (data.countdown_remaining <= 0 && gameState.gamePhase === "card_purchase") {
-                            if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
-                            const statusElement = document.getElementById("countdown-status-text");
-                            if (statusElement) statusElement.textContent = "Game starting...";
-                        }
-                    }
+                    gameState.countdown = data.countdown_remaining;
+                    updateCountdownDisplay(gameState.countdown);
+                    updateCountdownStatusText(gameState.countdown);
                 }
                 
+                // Update user cards
                 if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0 && !gameState.disqualified) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
                     gameState.ownedCardsData = data.user_cards.map(c => ({ 
@@ -1714,11 +1741,13 @@
                         gameState.selectedCardNumbers = gameState.ownedCardsData[0].numbers;
                     }
                     updateBoardCountText();
-                    if (gameState.gamePhase === "active" || gameState.gameStatus === "active") {
+                    if (gameState.gameActive) {
                         renderPlayerCardsFromOwned();
                     }
                 } else if (data.user_has_card && data.user_card && !gameState.disqualified) {
-                    gameState.hasCard = true; gameState.selectedCardId = data.user_card.card_id; gameState.selectedCardIndex = data.user_card.card_index;
+                    gameState.hasCard = true;
+                    gameState.selectedCardId = data.user_card.card_id;
+                    gameState.selectedCardIndex = data.user_card.card_index;
                     if (data.user_card.card_numbers) { 
                         try { 
                             if (typeof data.user_card.card_numbers === "string") gameState.selectedCardNumbers = JSON.parse(data.user_card.card_numbers); 
@@ -1732,7 +1761,8 @@
                             else if (cardData.numbers) gameState.selectedCardNumbers = cardData.numbers; 
                         } catch (e) { gameState.selectedCardNumbers = generateFallbackCardNumbers(); } 
                     } else { gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
-                    document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
+                    const idEl = document.getElementById("selected-card-id");
+                    if (idEl) idEl.textContent = `#${data.user_card.card_index || "0"}`;
                     if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
                         gameState.ownedCardIndices = [data.user_card.card_index];
                         gameState.ownedCardsData = [{ card_index: data.user_card.card_index, numbers: gameState.selectedCardNumbers }];
@@ -1750,27 +1780,88 @@
                     }
                 }
                 
-                // Clear preview on new game
+                // Clear preview on card purchase phase
                 if (gameState.gamePhase === "card_purchase") {
-                    document.getElementById("selected-card-info").style.display = "none";
+                    const preview = document.getElementById("selected-card-info");
+                    if (preview) preview.style.display = "none";
                     gameState.uiSelectedCardIndex = null;
                 }
                 
+                // Handle winners
                 if (data.winners && data.winners.length > 0) {
-                    gameState.winners = data.winners; gameState.winnersCount = data.winners_count || data.winners.length; gameState.maxWinners = data.max_winners || 2;
+                    gameState.winners = data.winners;
+                    gameState.winnersCount = data.winners_count || data.winners.length;
+                    gameState.maxWinners = data.max_winners || 2;
                     const lastWinner = data.winners[data.winners.length - 1];
-                    let winningPattern = lastWinner.winning_pattern || lastWinner.marked_numbers || []; if (typeof winningPattern === "string") { try { winningPattern = JSON.parse(winningPattern); } catch (e) { winningPattern = []; } }
-                    let cardNumbers = lastWinner.card_numbers || []; if ((!cardNumbers || cardNumbers.length === 0) && data.card_numbers) cardNumbers = data.card_numbers;
-                    gameState.winnerData = { user_id: lastWinner.user_id, username: lastWinner.username, full_name: lastWinner.full_name, prize_amount: parseFloat(lastWinner.prize_amount || 0), card_index: lastWinner.card_index, card_numbers: cardNumbers, winning_pattern: winningPattern, pattern_type: lastWinner.pattern_type || "BINGO", prize_pool: data.prize_pool, game_id: data.game_id, winner_number: lastWinner.winner_number || data.winners.indexOf(lastWinner) + 1, total_winners: data.winners.length, all_winners: data.winners, is_final_winner: data.winners_count >= data.max_winners, corner_details: lastWinner.corner_details || null, column_details: lastWinner.column_details || null };
-                    gameState.winnerAnnounced = true; gameState.gameComplete = data.winners_count >= data.max_winners;
-                } else { gameState.winnerAnnounced = false; gameState.gameComplete = false; }
-                updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); else updateCurrentCalledDisplay("--");
-                updateBingoGrid(); updateGameStats();
+                    let winningPattern = lastWinner.winning_pattern || lastWinner.marked_numbers || []; 
+                    if (typeof winningPattern === "string") { try { winningPattern = JSON.parse(winningPattern); } catch (e) { winningPattern = []; } }
+                    let cardNumbers = lastWinner.card_numbers || []; 
+                    if ((!cardNumbers || cardNumbers.length === 0) && data.card_numbers) cardNumbers = data.card_numbers;
+                    gameState.winnerData = { 
+                        user_id: lastWinner.user_id, 
+                        username: lastWinner.username, 
+                        full_name: lastWinner.full_name, 
+                        prize_amount: parseFloat(lastWinner.prize_amount || 0), 
+                        card_index: lastWinner.card_index, 
+                        card_numbers: cardNumbers, 
+                        winning_pattern: winningPattern, 
+                        pattern_type: lastWinner.pattern_type || "BINGO", 
+                        prize_pool: data.prize_pool, 
+                        game_id: data.game_id, 
+                        winner_number: lastWinner.winner_number || data.winners.indexOf(lastWinner) + 1, 
+                        total_winners: data.winners.length, 
+                        all_winners: data.winners, 
+                        is_final_winner: data.winners_count >= data.max_winners, 
+                        corner_details: lastWinner.corner_details || null, 
+                        column_details: lastWinner.column_details || null 
+                    };
+                    gameState.winnerAnnounced = true; 
+                    gameState.gameComplete = data.winners_count >= data.max_winners;
+                } else { 
+                    gameState.winnerAnnounced = false; 
+                    gameState.gameComplete = false; 
+                }
+                
+                // Update UI
+                updateCalledNumbersDisplay(); 
+                if (gameState.calledNumbers.length > 0) {
+                    updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); 
+                } else {
+                    updateCurrentCalledDisplay("--");
+                }
+                updateBingoGrid(); 
+                updateGameStats();
                 gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
-                if (gameState.gamePhase === "card_purchase") { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; if (document.getElementById("cards-grid").children.length === 0) { setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } } }
-                else if (gameState.gamePhase === "active" || gameState.gameStatus === "active") { gameState.gameActive = true; gameState.gameStartConfirmed = true; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active'); if (gameState.hasCard && !gameState.disqualified) renderPlayerCardsFromOwned(); else renderEmptyPlayerCard(); }
-                else if (gameState.gamePhase === "winner_display" && gameState.winnerData) { document.getElementById('game-bottom-actions').classList.remove('active'); showWinnerAnnouncementScreen(gameState.winnerData); }
-                updateBingoButton(); gameState.lastFullSyncTime = Date.now(); return true;
+                
+                // Show correct screen
+                if (gameState.gamePhase === "card_purchase") { 
+                    showScreen("waiting-screen"); 
+                    document.getElementById('game-bottom-actions').classList.remove('active'); 
+                    if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { 
+                        gameState.cardsLoadAttempted = true; 
+                        if (document.getElementById("cards-grid").children.length === 0) { 
+                            setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100); 
+                        } else { 
+                            updateCardsGridInstant(); 
+                            gameState.cardsLoaded = true; 
+                        } 
+                    } 
+                } else if (gameState.gameActive) { 
+                    gameState.gameStartConfirmed = true; 
+                    showScreen("game-screen"); 
+                    document.getElementById('game-bottom-actions').classList.add('active'); 
+                    if (gameState.hasCard && !gameState.disqualified) {
+                        renderPlayerCardsFromOwned(); 
+                    } else {
+                        renderEmptyPlayerCard(); 
+                    }
+                } else if (gameState.gamePhase === "winner_display" && gameState.winnerData) { 
+                    document.getElementById('game-bottom-actions').classList.remove('active'); 
+                    showWinnerAnnouncementScreen(gameState.winnerData); 
+                }
+                updateBingoButton(); 
+                gameState.lastFullSyncTime = Date.now(); 
+                return true;
             } else { return false; }
         } catch (error) { console.error("Error fetching complete game state:", error); return false; } finally { gameState.fullSyncInProgress = false; }
     }
@@ -1802,9 +1893,6 @@
         const calledStatElem = document.getElementById("called-numbers-stat");
         if (calledStatElem) calledStatElem.textContent = gameState.calledNumbers.length;
 
-        const calledCountElem = document.getElementById("called-count");
-        if (calledCountElem) calledCountElem.textContent = gameState.calledNumbers.length;
-
         const roundElem = document.getElementById("current-round-number");
         if (roundElem) roundElem.textContent = gameState.currentRound;
     }
@@ -1820,42 +1908,266 @@
     function startServerCoordinatedCountdown() {
         if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
         if (gameState.gamePhase !== "card_purchase") return;
-        if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { gameState.cardsLoadAttempted = true; gameState.countdownStartTime = Date.now(); if (document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } }
+        if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) { 
+            gameState.cardsLoadAttempted = true; 
+            gameState.countdownStartTime = Date.now(); 
+            if (document.getElementById("cards-grid").children.length === 0) { 
+                loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); 
+            } else { 
+                updateCardsGridInstant(); 
+                gameState.cardsLoaded = true; 
+            } 
+        }
         gameState.countdownInterval = setInterval(() => {}, 10000);
     }
 
-    // ==================== UPDATED: handleWebSocketMessage with disqualification ====================
+    // ==================== HANDLE WEBSOCKET MESSAGE - FIXED ====================
     async function handleWebSocketMessage(data) {
-        console.log("WebSocket message received:", data.type, data); gameState.lastUpdateTime = Date.now();
+        console.log("WebSocket message received:", data.type, data); 
+        gameState.lastUpdateTime = Date.now();
         if (data.game_id) gameState.gameId = data.game_id;
+        
         switch (data.type) {
-            case "winner_confirmed": stopAllAudio(); handleWinnerConfirmed(data); break;
-            case "winner_display_started": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds) timerElement.textContent = data.remaining_seconds; } break;
-            case "winner_display_countdown": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds !== undefined) timerElement.textContent = data.remaining_seconds; } break;
-            case "winner_display_completed": handleWinnerDisplayCompleted(data); break;
-            case "game_completed": const winnerAnnouncement = document.getElementById("winner-announcement"); if (winnerAnnouncement) winnerAnnouncement.style.display = "none"; gameState.gameComplete = true; gameState.winnerAnnounced = false; gameState.isWinnerDisplayActive = false; handleWinnerDisplayCompleted(data); break;
-            case "existing_game_resumed": handleExistingGameResumed(data); break;
-            case "new_game_started": handleNewRoundStarted(data); setTimeout(() => getCompleteGameState(), 1000); break;
-            case "bingo_claim_verified": handleBingoClaimVerified(data); break;
-            case "bingo_rejected": handleBingoRejected(data); break;
-            case "phase_change_confirmed": handlePhaseChangeConfirmed(data); break;
-            case "force_sync": getCompleteGameState(); break;
-            case "player_joined": if (data.total_players !== undefined) { gameState.totalPlayers = data.total_players; gameState.realPlayers = data.real_players || gameState.realPlayers; gameState.fakePlayers = data.fake_players || gameState.fakePlayers; updateGameStats(); } break;
-            case "player_left": if (data.total_players !== undefined) { gameState.totalPlayers = data.total_players; gameState.realPlayers = data.real_players || gameState.realPlayers; gameState.fakePlayers = data.fake_players || gameState.fakePlayers; updateGameStats(); } break;
-            case "card_purchased": if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; if (data.total_players !== undefined) { gameState.totalPlayers = data.total_players; gameState.realPlayers = data.real_players || gameState.realPlayers; gameState.fakePlayers = data.fake_players || gameState.fakePlayers; updateGameStats(); } if (gameState.gamePhase === "card_purchase" && data.card_index) { const cardIndex = data.card_index; if (cardIndex !== gameState.selectedCardIndex) instantCardUpdate(cardIndex, "sold"); } break;
-            case "number_called": if (data.game_id === gameState.gameId && data.number) handleServerNumberCalled(data.number, data.called_numbers || []); break;
-            case "game_update": if (data.data) { if (data.data.status === "winner_display" && gameState.winnerAnnounced) return; handleCriticalGameUpdate(data.data); } break;
-            case "new_round_started": handleNewRoundStarted(data); setTimeout(() => getCompleteGameState(), 1000); break;
-            case "sync_response": if (data.server_state) updateFromServerState(data.server_state); break;
-            case "auth_success": gameState.connectionRetryCount = 0; gameState.reconnectAttempts = 0; break;
-            case "welcome": updateConnectionStatus("Connected", "green"); break;
-            case "countdown_reset": if (data.new_countdown !== undefined) { gameState.countdown = data.new_countdown; gameState.countdownTotal = data.new_countdown; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); if (gameState.gamePhase === "card_purchase") startServerCoordinatedCountdown(); } break;
-            case "countdown_update": if (data.seconds_remaining !== undefined) { gameState.countdown = data.seconds_remaining; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); if (data.seconds_remaining <= 0 && gameState.gamePhase === "card_purchase") { if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; } const statusElement = document.getElementById("countdown-status-text"); if (statusElement) statusElement.textContent = "Game starting..."; getCompleteGameState(); } } break;
-            case "fake_card_purchased": if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; if (data.fake_players !== undefined) gameState.fakePlayers = data.fake_players; if (data.real_players !== undefined) gameState.realPlayers = data.real_players; updateGameStats(); if (data.card_index) instantCardUpdate(data.card_index, "sold"); break;
-            case "fake_users_added": if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; if (data.total_fake_players !== undefined) gameState.fakePlayers = data.total_fake_players; if (data.real_players !== undefined) gameState.realPlayers = data.real_players; updateGameStats(); if (data.fake_card_indices && Array.isArray(data.fake_card_indices) && data.fake_card_indices.length > 0) { if (!gameState.cardsLoaded && document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { updateFakeCardsImmediately(data.fake_card_indices); }); } else { updateFakeCardsImmediately(data.fake_card_indices); } } break;
-            case "early_state_update": if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; if (data.fake_players !== undefined) gameState.fakePlayers = data.fake_players; if (data.real_players !== undefined) gameState.realPlayers = data.real_players; if (data.countdown !== undefined) { gameState.countdown = data.countdown; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); } updateGameStats(); if (data.fake_card_indices && Array.isArray(data.fake_card_indices) && data.fake_card_indices.length > 0) { if (!gameState.cardsLoaded && document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { updateFakeCardsImmediately(data.fake_card_indices); }); } else { updateFakeCardsImmediately(data.fake_card_indices); } } break;
-            case "pong": break;
-            case "full_state_update": if (gameState.gamePhase === "card_purchase" && gameState.cardsLoaded) { if (data.game_state) { if (data.game_state.prize_pool !== undefined) gameState.prizePool = data.game_state.prize_pool; if (data.game_state.real_players !== undefined) gameState.realPlayers = data.game_state.real_players; if (data.game_state.fake_players !== undefined) gameState.fakePlayers = data.game_state.fake_players; if (data.game_state.total_players !== undefined) gameState.totalPlayers = data.game_state.total_players; if (data.game_state.player_count !== undefined) gameState.playerCount = data.game_state.player_count; if (data.game_state.game_phase) { gameState.gamePhase = data.game_state.game_phase; gameState.gameStatus = data.game_state.game_phase; gameState.lastConfirmedPhase = data.game_state.game_phase; } updateGameStats(); break; } } if (data.game_state) { if (data.game_state.called_numbers) { gameState.calledNumbers = data.game_state.called_numbers; updateCalledNumbersDisplay(); updateBingoGrid(); } if (data.game_state.prize_pool !== undefined) gameState.prizePool = data.game_state.prize_pool; if (data.game_state.real_players !== undefined) gameState.realPlayers = data.game_state.real_players; if (data.game_state.fake_players !== undefined) gameState.fakePlayers = data.game_state.fake_players; if (data.game_state.total_players !== undefined) gameState.totalPlayers = data.game_state.total_players; if (data.game_state.player_count !== undefined) gameState.playerCount = data.game_state.player_count; if (data.game_state.game_phase) { gameState.gamePhase = data.game_state.game_phase; gameState.gameStatus = data.game_state.game_phase; gameState.lastConfirmedPhase = data.game_state.game_phase; } updateGameStats(); updateGameUI(); } break;
+            case "winner_confirmed": 
+                stopAllAudio(); 
+                handleWinnerConfirmed(data); 
+                break;
+            case "winner_display_started": 
+                if (gameState.isWinnerDisplayActive) { 
+                    const timerElement = document.getElementById("winner-announcement-timer"); 
+                    if (timerElement && data.remaining_seconds) timerElement.textContent = data.remaining_seconds; 
+                } 
+                break;
+            case "winner_display_countdown": 
+                if (gameState.isWinnerDisplayActive) { 
+                    const timerElement = document.getElementById("winner-announcement-timer"); 
+                    if (timerElement && data.seconds_remaining !== undefined) timerElement.textContent = data.seconds_remaining; 
+                } 
+                break;
+            case "winner_display_completed": 
+                handleWinnerDisplayCompleted(data); 
+                break;
+            case "game_completed": 
+                const winnerAnnouncement = document.getElementById("winner-announcement"); 
+                if (winnerAnnouncement) winnerAnnouncement.style.display = "none"; 
+                gameState.gameComplete = true; 
+                gameState.winnerAnnounced = false; 
+                gameState.isWinnerDisplayActive = false; 
+                handleWinnerDisplayCompleted(data); 
+                break;
+            case "existing_game_resumed": 
+                handleExistingGameResumed(data); 
+                break;
+            case "new_game_started": 
+                handleNewRoundStarted(data); 
+                setTimeout(() => getCompleteGameState(), 1000); 
+                break;
+            case "bingo_claim_verified": 
+                handleBingoClaimVerified(data); 
+                break;
+            case "bingo_rejected": 
+                handleBingoRejected(data); 
+                break;
+            case "phase_change_confirmed": 
+                handlePhaseChangeConfirmed(data); 
+                break;
+            case "force_sync": 
+                getCompleteGameState(); 
+                break;
+            case "player_joined": 
+                if (data.total_players !== undefined) { 
+                    gameState.totalPlayers = data.total_players; 
+                    gameState.realPlayers = data.real_players || gameState.realPlayers; 
+                    gameState.fakePlayers = data.fake_players || gameState.fakePlayers; 
+                    updateGameStats(); 
+                } 
+                break;
+            case "player_left": 
+                if (data.total_players !== undefined) { 
+                    gameState.totalPlayers = data.total_players; 
+                    gameState.realPlayers = data.real_players || gameState.realPlayers; 
+                    gameState.fakePlayers = data.fake_players || gameState.fakePlayers; 
+                    updateGameStats(); 
+                } 
+                break;
+            case "card_purchased": 
+                if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; 
+                if (data.total_players !== undefined) { 
+                    gameState.totalPlayers = data.total_players; 
+                    gameState.realPlayers = data.real_players || gameState.realPlayers; 
+                    gameState.fakePlayers = data.fake_players || gameState.fakePlayers; 
+                    updateGameStats(); 
+                } 
+                if (gameState.gamePhase === "card_purchase" && data.card_index) { 
+                    const cardIndex = data.card_index; 
+                    if (cardIndex !== gameState.selectedCardIndex) instantCardUpdate(cardIndex, "sold"); 
+                } 
+                break;
+            case "number_called": 
+                if (data.game_id === gameState.gameId && data.number) {
+                    handleServerNumberCalled(data.number, data.called_numbers || []); 
+                }
+                break;
+            case "game_update": 
+                if (data.data) { 
+                    if (data.data.status === "winner_display" && gameState.winnerAnnounced) return; 
+                    handleCriticalGameUpdate(data.data); 
+                } 
+                break;
+            case "new_round_started": 
+                handleNewRoundStarted(data); 
+                setTimeout(() => getCompleteGameState(), 1000); 
+                break;
+            case "sync_response": 
+                if (data.server_state) updateFromServerState(data.server_state); 
+                break;
+            case "auth_success": 
+                gameState.connectionRetryCount = 0; 
+                gameState.reconnectAttempts = 0; 
+                break;
+            case "welcome": 
+                updateConnectionStatus("Connected", "green"); 
+                break;
+            case "countdown_reset": 
+                if (data.new_countdown !== undefined) { 
+                    gameState.countdown = data.new_countdown; 
+                    gameState.countdownTotal = data.new_countdown; 
+                    updateCountdownDisplay(gameState.countdown); 
+                    updateCountdownStatusText(gameState.countdown); 
+                    if (gameState.gamePhase === "card_purchase") startServerCoordinatedCountdown(); 
+                } 
+                break;
+            case "countdown_update": 
+                if (data.seconds_remaining !== undefined) { 
+                    gameState.countdown = data.seconds_remaining; 
+                    updateCountdownDisplay(gameState.countdown); 
+                    updateCountdownStatusText(gameState.countdown); 
+                    if (data.seconds_remaining <= 0 && gameState.gamePhase === "card_purchase") { 
+                        if (gameState.countdownInterval) { 
+                            clearInterval(gameState.countdownInterval); 
+                            gameState.countdownInterval = null; 
+                        } 
+                        const statusElement = document.getElementById("countdown-status-text"); 
+                        if (statusElement) statusElement.textContent = "Game starting..."; 
+                        getCompleteGameState(); 
+                    } 
+                } 
+                break;
+            case "fake_card_purchased": 
+                if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; 
+                if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; 
+                if (data.fake_players !== undefined) gameState.fakePlayers = data.fake_players; 
+                if (data.real_players !== undefined) gameState.realPlayers = data.real_players; 
+                updateGameStats(); 
+                if (data.card_index) instantCardUpdate(data.card_index, "sold"); 
+                break;
+            case "fake_users_added": 
+                if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; 
+                if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; 
+                if (data.total_fake_players !== undefined) gameState.fakePlayers = data.total_fake_players; 
+                if (data.real_players !== undefined) gameState.realPlayers = data.real_players; 
+                updateGameStats(); 
+                if (data.fake_card_indices && Array.isArray(data.fake_card_indices) && data.fake_card_indices.length > 0) { 
+                    if (!gameState.cardsLoaded && document.getElementById("cards-grid").children.length === 0) { 
+                        loadCardsGrid().then(() => { updateFakeCardsImmediately(data.fake_card_indices); }); 
+                    } else { 
+                        updateFakeCardsImmediately(data.fake_card_indices); 
+                    } 
+                } 
+                break;
+            case "early_state_update": 
+                if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool; 
+                if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; 
+                if (data.fake_players !== undefined) gameState.fakePlayers = data.fake_players; 
+                if (data.real_players !== undefined) gameState.realPlayers = data.real_players; 
+                if (data.countdown !== undefined) { 
+                    gameState.countdown = data.countdown; 
+                    updateCountdownDisplay(gameState.countdown); 
+                    updateCountdownStatusText(gameState.countdown); 
+                } 
+                updateGameStats(); 
+                if (data.fake_card_indices && Array.isArray(data.fake_card_indices) && data.fake_card_indices.length > 0) { 
+                    if (!gameState.cardsLoaded && document.getElementById("cards-grid").children.length === 0) { 
+                        loadCardsGrid().then(() => { updateFakeCardsImmediately(data.fake_card_indices); }); 
+                    } else { 
+                        updateFakeCardsImmediately(data.fake_card_indices); 
+                    } 
+                } 
+                break;
+            case "pong": 
+                break;
+            case "full_state_update": 
+                // CRITICAL FIX: Process full state update from server
+                if (data.game_state) {
+                    // Update game phase and status
+                    if (data.game_state.game_phase) {
+                        gameState.gamePhase = data.game_state.game_phase;
+                        gameState.gameStatus = data.game_state.game_phase;
+                        gameState.lastConfirmedPhase = data.game_state.game_phase;
+                        gameState.gameActive = data.game_state.game_phase === "active" || data.game_state.game_status === "active";
+                        gameState.purchasePhaseActive = data.game_state.game_phase === "card_purchase";
+                    }
+                    if (data.game_state.game_status) {
+                        gameState.gameStatus = data.game_state.game_status;
+                        gameState.gameActive = data.game_state.game_status === "active" || data.game_state.game_status === "game_play";
+                    }
+                    // Update called numbers
+                    if (data.game_state.called_numbers) {
+                        gameState.calledNumbers = data.game_state.called_numbers;
+                        updateCalledNumbersDisplay();
+                        updateBingoGrid();
+                        const calledStat = document.getElementById("called-numbers-stat");
+                        if (calledStat) calledStat.textContent = gameState.calledNumbers.length;
+                        if (gameState.calledNumbers.length > 0) {
+                            updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]);
+                        }
+                    }
+                    // Update prize pool and player counts
+                    if (data.game_state.prize_pool !== undefined) {
+                        gameState.prizePool = data.game_state.prize_pool;
+                    }
+                    if (data.game_state.real_players !== undefined) {
+                        gameState.realPlayers = data.game_state.real_players;
+                    }
+                    if (data.game_state.fake_players !== undefined) {
+                        gameState.fakePlayers = data.game_state.fake_players;
+                    }
+                    if (data.game_state.total_players !== undefined) {
+                        gameState.totalPlayers = data.game_state.total_players;
+                    }
+                    if (data.game_state.player_count !== undefined) {
+                        gameState.playerCount = data.game_state.player_count;
+                    }
+                    if (data.game_state.countdown_remaining !== undefined) {
+                        gameState.countdown = data.game_state.countdown_remaining;
+                        updateCountdownDisplay(gameState.countdown);
+                        updateCountdownStatusText(gameState.countdown);
+                    }
+                    updateGameStats();
+                    updateGameUI();
+                    
+                    // Force button update
+                    updateBingoButton();
+                }
+                break;
+            case "active_game_info":
+                // Handle active game info from server
+                if (data.status) {
+                    gameState.gamePhase = data.phase || data.status;
+                    gameState.gameStatus = data.status;
+                    gameState.gameActive = data.status === "active" || data.status === "game_play";
+                    gameState.purchasePhaseActive = data.status === "card_purchase";
+                    gameState.currentRound = data.round_number || gameState.currentRound;
+                    gameState.gameId = data.game_id || gameState.gameId;
+                    if (data.countdown_remaining !== undefined) {
+                        gameState.countdown = data.countdown_remaining;
+                        updateCountdownDisplay(gameState.countdown);
+                        updateCountdownStatusText(gameState.countdown);
+                    }
+                    updateGameUI();
+                    updateBingoButton();
+                }
+                break;
             case "player_disqualified":
                 if (data.user_id == gameState.userId) {
                     gameState.disqualified = true;
@@ -1865,13 +2177,13 @@
                     showDisqualifiedOverlay(data.refund_amount || 8);
                     updateBingoButton();
                     renderEmptyPlayerCard();
-                    // Refresh game state after a moment
                     setTimeout(() => getCompleteGameState(), 2000);
                 } else {
                     showNotification(`Player ${data.user_id || 'someone'} was disqualified for false bingo claim`, 'warning', 3000);
                 }
                 break;
-            default: console.log("Unknown WebSocket message type:", data.type, data);
+            default: 
+                console.log("Unknown WebSocket message type:", data.type, data);
         }
     }
 
@@ -1902,22 +2214,75 @@
     }
 
     function handleWinnerConfirmed(data) {
-        if (!data) return; stopAllAudio(); let winnerData = null; let winnersList = [];
-        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { winnersList = data.winners; winnerData = winnersList[winnersList.length - 1]; if (winnerData) { if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; } } else if (data.user_id) { winnersList = [data]; winnerData = data; }
+        if (!data) return; 
+        stopAllAudio(); 
+        let winnerData = null; 
+        let winnersList = [];
+        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { 
+            winnersList = data.winners; 
+            winnerData = winnersList[winnersList.length - 1]; 
+            if (winnerData) { 
+                if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; 
+                if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; 
+            } 
+        } else if (data.user_id) { 
+            winnersList = [data]; 
+            winnerData = data; 
+        }
         if (!winnerData || winnersList.length === 0) return;
-        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
+        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; 
+        if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
         if (typeof winningPattern === "string") { try { winningPattern = JSON.parse(winningPattern); } catch (e) { winningPattern = []; } }
         if (!Array.isArray(winningPattern)) winningPattern = [];
         let cardNumbers = [];
         if (winnerData.card_numbers && Array.isArray(winnerData.card_numbers) && winnerData.card_numbers.length > 0) cardNumbers = winnerData.card_numbers;
         else if (data.card_numbers && Array.isArray(data.card_numbers) && data.card_numbers.length > 0) cardNumbers = data.card_numbers;
-        else if (data.corner_details && data.corner_details.corner_indices) { cardNumbers = Array(25).fill("?"); const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; cornerIndices.forEach((index, i) => { if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; }); cardNumbers[12] = 0; }
-        const processedWinners = winnersList.map((winner) => { if (!winner.card_numbers || winner.card_numbers.length === 0) { if (data.card_numbers) winner.card_numbers = data.card_numbers; else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; } return winner; });
-        gameState.winners = processedWinners; gameState.winnersCount = processedWinners.length; gameState.maxWinners = data.max_winners || 2; gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
-        gameState.winnerData = { user_id: winnerData.user_id, full_name: winnerData.full_name || data.full_name || "Unknown Player", username: winnerData.username || data.username || `User ${winnerData.user_id}`, prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), card_index: winnerData.card_index || data.card_index || 0, card_numbers: cardNumbers, winning_pattern: winningPattern, pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", prize_pool: parseFloat(data.prize_pool || 0), game_id: data.game_id || winnerData.game_id, winner_number: winnerData.winner_number || data.winner_number || 1, total_winners: processedWinners.length, all_winners: processedWinners, is_final_winner: data.is_final_winner || false, corner_details: data.corner_details || winnerData.corner_details || null, column_details: data.column_details || winnerData.column_details || null };
-        clearInterval(gameState.numberCallInterval); gameState.numberCallInterval = null;
-        if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
-        gameState.winnerAnnounced = true; gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false;
+        else if (data.corner_details && data.corner_details.corner_indices) { 
+            cardNumbers = Array(25).fill("?"); 
+            const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; 
+            const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; 
+            cornerIndices.forEach((index, i) => { if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; }); 
+            cardNumbers[12] = 0; 
+        }
+        const processedWinners = winnersList.map((winner) => { 
+            if (!winner.card_numbers || winner.card_numbers.length === 0) { 
+                if (data.card_numbers) winner.card_numbers = data.card_numbers; 
+                else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; 
+            } 
+            return winner; 
+        });
+        gameState.winners = processedWinners; 
+        gameState.winnersCount = processedWinners.length; 
+        gameState.maxWinners = data.max_winners || 2; 
+        gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
+        gameState.winnerData = { 
+            user_id: winnerData.user_id, 
+            full_name: winnerData.full_name || data.full_name || "Unknown Player", 
+            username: winnerData.username || data.username || `User ${winnerData.user_id}`, 
+            prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), 
+            card_index: winnerData.card_index || data.card_index || 0, 
+            card_numbers: cardNumbers, 
+            winning_pattern: winningPattern, 
+            pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", 
+            prize_pool: parseFloat(data.prize_pool || 0), 
+            game_id: data.game_id || winnerData.game_id, 
+            winner_number: winnerData.winner_number || data.winner_number || 1, 
+            total_winners: processedWinners.length, 
+            all_winners: processedWinners, 
+            is_final_winner: data.is_final_winner || false, 
+            corner_details: data.corner_details || winnerData.corner_details || null, 
+            column_details: data.column_details || winnerData.column_details || null 
+        };
+        clearInterval(gameState.numberCallInterval); 
+        gameState.numberCallInterval = null;
+        if (gameState.countdownInterval) { 
+            clearInterval(gameState.countdownInterval); 
+            gameState.countdownInterval = null; 
+        }
+        gameState.winnerAnnounced = true; 
+        gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; 
+        gameState.bingoClaimInProgress = false; 
+        gameState.phaseChangeRequested = false;
         if (winnerData.user_id == gameState.userId) getUserBalance();
         if (gameState.audioEnabled && gameState.audioInitialized) playWinnerSound();
         showWinnerAnnouncementScreen(gameState.winnerData);
@@ -1937,43 +2302,45 @@
         const winner = winnerData.all_winners ? winnerData.all_winners[winnerData.all_winners.length - 1] : winnerData;
         
         const name = winner.full_name || winner.username || "Winner";
-        nameBadge.textContent = name.charAt(0).toUpperCase();
-        nameText.textContent = `has won the game.`;
-        boardNum.textContent = winner.card_index || 0;
+        if (nameBadge) nameBadge.textContent = name.charAt(0).toUpperCase();
+        if (nameText) nameText.textContent = `has won the game.`;
+        if (boardNum) boardNum.textContent = winner.card_index || 0;
 
-        gridContainer.innerHTML = "";
-        const cardNums = winner.card_numbers || winnerData.card_numbers || [];
-        const pattern = winner.winning_pattern || winnerData.winning_pattern || [];
-        const patternSet = new Set(pattern.map(n => n.toString()));
+        if (gridContainer) {
+            gridContainer.innerHTML = "";
+            const cardNums = winner.card_numbers || winnerData.card_numbers || [];
+            const pattern = winner.winning_pattern || winnerData.winning_pattern || [];
+            const patternSet = new Set(pattern.map(n => n.toString()));
 
-        const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners";
-        const cornerIndices = [0, 4, 20, 24];
+            const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners";
+            const cornerIndices = [0, 4, 20, 24];
 
-        for(let i=0; i < 25; i++) {
-            const cell = document.createElement("div");
-            cell.className = "winner-card-cell";
-            const num = cardNums[i];
-            const numStr = num ? num.toString() : "?";
+            for(let i=0; i < 25; i++) {
+                const cell = document.createElement("div");
+                cell.className = "winner-card-cell";
+                const num = cardNums[i];
+                const numStr = num ? num.toString() : "?";
 
-            if(i === 12 || num === 0 || num === "0" || num === "FREE") {
-                cell.classList.add("free");
-                cell.textContent = "*";
-            } else {
-                cell.textContent = num;
-                let isMarked = patternSet.has(numStr);
-                if(isFourCorners && cornerIndices.includes(i)) {
-                    isMarked = true;
+                if(i === 12 || num === 0 || num === "0" || num === "FREE") {
+                    cell.classList.add("free");
+                    cell.textContent = "*";
+                } else {
+                    cell.textContent = num;
+                    let isMarked = patternSet.has(numStr);
+                    if(isFourCorners && cornerIndices.includes(i)) {
+                        isMarked = true;
+                    }
+                    if(isMarked) {
+                        cell.classList.add("marked");
+                    }
                 }
-                if(isMarked) {
-                    cell.classList.add("marked");
-                }
+                gridContainer.appendChild(cell);
             }
-            gridContainer.appendChild(cell);
         }
 
         const DEFAULT_WINNER_DURATION = 10;
         startWinnerDisplayCountdown(winnerData.game_id, DEFAULT_WINNER_DURATION);
-        announcement.style.display = "flex";
+        if (announcement) announcement.style.display = "flex";
     }
 
     function startWinnerDisplayCountdown(gameId, durationSeconds = 10) {
@@ -1998,50 +2365,135 @@
         const winnerAnnouncement = document.getElementById("winner-announcement");
         if (winnerAnnouncement) winnerAnnouncement.style.display = "none";
         if (gameState.winnerDisplayInterval) { clearInterval(gameState.winnerDisplayInterval); gameState.winnerDisplayInterval = null; }
-        gameState.winnerAnnounced = false; gameState.winnerSoundPlayed = false; gameState.gameComplete = false; gameState.isWinnerDisplayActive = false; gameState.winnerData = null; gameState.winners = [];
-        gameState.gamePhase = "card_purchase"; gameState.gameStatus = "card_purchase"; gameState.lastConfirmedPhase = "card_purchase"; gameState.gameActive = false; gameState.purchasePhaseActive = true;
-        gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); gameState.calledNumbers = [];
-        gameState.prizePool = 0; gameState.playerCount = 0; gameState.hasClaimedBingo = false; gameState.bingoClaimInProgress = false; gameState.gameStartConfirmed = false;
-        gameState.countdown = 30; gameState.countdownTotal = 30; gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
+        gameState.winnerAnnounced = false; 
+        gameState.winnerSoundPlayed = false; 
+        gameState.gameComplete = false; 
+        gameState.isWinnerDisplayActive = false; 
+        gameState.winnerData = null; 
+        gameState.winners = [];
+        gameState.gamePhase = "card_purchase"; 
+        gameState.gameStatus = "card_purchase"; 
+        gameState.lastConfirmedPhase = "card_purchase"; 
+        gameState.gameActive = false; 
+        gameState.purchasePhaseActive = true;
+        gameState.hasCard = false; 
+        gameState.selectedCardIndex = null; 
+        gameState.selectedCardNumbers = []; 
+        gameState.markedNumbers.clear(); 
+        gameState.calledNumbers = [];
+        gameState.prizePool = 0; 
+        gameState.playerCount = 0; 
+        gameState.hasClaimedBingo = false; 
+        gameState.bingoClaimInProgress = false; 
+        gameState.gameStartConfirmed = false;
+        gameState.countdown = 30; 
+        gameState.countdownTotal = 30; 
+        gameState.cardsLoaded = false; 
+        gameState.cardsLoadAttempted = false;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
         // Clear preview
-        document.getElementById("selected-card-info").style.display = "none";
+        const preview = document.getElementById("selected-card-info");
+        if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
         updateBoardCountText();
         closeDisqualifiedOverlay();
-        showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
-        updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateGameStats();
+        showScreen("waiting-screen"); 
+        document.getElementById('game-bottom-actions').classList.remove('active');
+        updateCalledNumbersDisplay(); 
+        updateCurrentCalledDisplay("--"); 
+        updateBingoGrid(); 
+        renderEmptyPlayerCard(); 
+        updateGameStats();
         resetCardsForNewRound();
-        setTimeout(() => { fetchActiveGame().then((gameData) => { if (gameData && gameData.success) { gameState.gameId = gameData.game_id; gameState.currentRound = gameData.round_number || gameState.currentRound + 1; gameState.countdown = gameData.countdown_remaining || 0; gameState.countdownTotal = gameData.countdown_remaining || 30; document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown(); } }); }, 200);
+        setTimeout(() => { 
+            fetchActiveGame().then((gameData) => { 
+                if (gameData && gameData.success) { 
+                    gameState.gameId = gameData.game_id; 
+                    gameState.currentRound = gameData.round_number || gameState.currentRound + 1; 
+                    gameState.countdown = gameData.countdown_remaining || 0; 
+                    gameState.countdownTotal = gameData.countdown_remaining || 30; 
+                    const roundEl = document.getElementById("current-round-number");
+                    if (roundEl) roundEl.textContent = gameState.currentRound; 
+                    startServerCoordinatedCountdown(); 
+                } 
+            }); 
+        }, 200);
     }
 
     function handleNewRoundStarted(data) {
-        if (gameState.staggeredAnimationInterval) { clearInterval(gameState.staggeredAnimationInterval); gameState.staggeredAnimationInterval = null; } gameState.pendingFakeCardIndices = [];
+        if (gameState.staggeredAnimationInterval) { clearInterval(gameState.staggeredAnimationInterval); gameState.staggeredAnimationInterval = null; } 
+        gameState.pendingFakeCardIndices = [];
         const winnerAnnouncement = document.getElementById("winner-announcement");
         if (winnerAnnouncement) winnerAnnouncement.style.display = "none";
         if (gameState.winnerDisplayInterval) { clearInterval(gameState.winnerDisplayInterval); gameState.winnerDisplayInterval = null; }
         // Clear preview
-        document.getElementById("selected-card-info").style.display = "none";
+        const preview = document.getElementById("selected-card-info");
+        if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
-        if (gameState.gamePhase === "card_purchase" && gameState.cardsLoaded) { gameState.gameId = data.game_id; gameState.currentRound = data.round_number || gameState.currentRound + 1; gameState.countdown = data.countdown_seconds || 0; gameState.countdownTotal = data.countdown_seconds || 30; document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown(); return; }
-        gameState.gameId = data.game_id; gameState.gamePhase = data.phase || "card_purchase"; gameState.gameStatus = data.status || "card_purchase"; gameState.lastConfirmedPhase = data.phase || "card_purchase";
-        gameState.gameActive = false; gameState.purchasePhaseActive = true; gameState.currentRound = data.round_number || gameState.currentRound + 1; gameState.countdown = data.countdown_seconds || 0; gameState.countdownTotal = data.countdown_seconds || 30;
-        gameState.gameComplete = false; gameState.winnerAnnounced = false; gameState.isWinnerDisplayActive = false; gameState.winnerData = null; gameState.winners = []; gameState.gameStartConfirmed = false;
-        gameState.hasCard = false; gameState.selectedCardId = null; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); gameState.calledNumbers = [];
-        gameState.hasClaimedBingo = false; gameState.bingoClaimInProgress = false; gameState.isCardOperationInProgress = false; gameState.cardPurchaseComplete = false; gameState.uiSelectedCardIndex = null;
-        gameState.prizePool = 0; gameState.playerCount = 0; gameState.cardsSold = new Set(); gameState.cardsCache.soldCards = new Set(); gameState.cardsCache.ownedCardIndex = null;
-        gameState.cardsLoaded = false; gameState.cardsLoadAttempted = false;
+        if (gameState.gamePhase === "card_purchase" && gameState.cardsLoaded) { 
+            gameState.gameId = data.game_id; 
+            gameState.currentRound = data.round_number || gameState.currentRound + 1; 
+            gameState.countdown = data.countdown_seconds || 0; 
+            gameState.countdownTotal = data.countdown_seconds || 30; 
+            const roundEl = document.getElementById("current-round-number");
+            if (roundEl) roundEl.textContent = gameState.currentRound; 
+            startServerCoordinatedCountdown(); 
+            return; 
+        }
+        gameState.gameId = data.game_id; 
+        gameState.gamePhase = data.phase || "card_purchase"; 
+        gameState.gameStatus = data.status || "card_purchase"; 
+        gameState.lastConfirmedPhase = data.phase || "card_purchase";
+        gameState.gameActive = false; 
+        gameState.purchasePhaseActive = true; 
+        gameState.currentRound = data.round_number || gameState.currentRound + 1; 
+        gameState.countdown = data.countdown_seconds || 0; 
+        gameState.countdownTotal = data.countdown_seconds || 30;
+        gameState.gameComplete = false; 
+        gameState.winnerAnnounced = false; 
+        gameState.isWinnerDisplayActive = false; 
+        gameState.winnerData = null; 
+        gameState.winners = []; 
+        gameState.gameStartConfirmed = false;
+        gameState.hasCard = false; 
+        gameState.selectedCardId = null; 
+        gameState.selectedCardIndex = null; 
+        gameState.selectedCardNumbers = []; 
+        gameState.markedNumbers.clear(); 
+        gameState.calledNumbers = [];
+        gameState.hasClaimedBingo = false; 
+        gameState.bingoClaimInProgress = false; 
+        gameState.isCardOperationInProgress = false; 
+        gameState.cardPurchaseComplete = false; 
+        gameState.uiSelectedCardIndex = null;
+        gameState.prizePool = 0; 
+        gameState.playerCount = 0; 
+        gameState.cardsSold = new Set(); 
+        gameState.cardsCache.soldCards = new Set(); 
+        gameState.cardsCache.ownedCardIndex = null;
+        gameState.cardsLoaded = false; 
+        gameState.cardsLoadAttempted = false;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
         updateBoardCountText();
         closeDisqualifiedOverlay();
-        updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
-        showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
-        updateCalledNumbersDisplay(); updateCurrentCalledDisplay("--"); updateBingoGrid(); renderEmptyPlayerCard(); updateBingoButton(); updateGameStats(); resetCardsForNewRound();
-        document.getElementById("current-round-number").textContent = gameState.currentRound; startServerCoordinatedCountdown();
+        updateCountdownDisplay(gameState.countdown); 
+        updateCountdownStatusText(gameState.countdown);
+        showScreen("waiting-screen"); 
+        document.getElementById('game-bottom-actions').classList.remove('active');
+        updateCalledNumbersDisplay(); 
+        updateCurrentCalledDisplay("--"); 
+        updateBingoGrid(); 
+        renderEmptyPlayerCard(); 
+        updateBingoButton(); 
+        updateGameStats(); 
+        resetCardsForNewRound();
+        const roundEl = document.getElementById("current-round-number");
+        if (roundEl) roundEl.textContent = gameState.currentRound; 
+        startServerCoordinatedCountdown();
     }
 
     function handleExistingGameResumed(data) {
@@ -2049,51 +2501,143 @@
         if (data.real_players !== undefined) gameState.playerCount = data.real_players + (data.fake_players || 0);
         if (data.total_players !== undefined) gameState.playerCount = data.total_players;
         if (data.prize_pool !== undefined) gameState.prizePool = data.prize_pool;
-        if (data.phase) { gameState.gamePhase = data.phase; gameState.gameStatus = data.phase; gameState.lastConfirmedPhase = data.phase; } else { gameState.gamePhase = "card_purchase"; gameState.gameStatus = "card_purchase"; gameState.lastConfirmedPhase = "card_purchase"; }
-        gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase"; gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); gameState.calledNumbers = [];
-        gameState.cardsSold = new Set(); gameState.cardsCache.soldCards = new Set(); gameState.cardsCache.ownedCardIndex = null;
+        if (data.phase) { 
+            gameState.gamePhase = data.phase; 
+            gameState.gameStatus = data.phase; 
+            gameState.lastConfirmedPhase = data.phase; 
+            gameState.gameActive = data.phase === "active" || data.phase === "game_play";
+        } else { 
+            gameState.gamePhase = "card_purchase"; 
+            gameState.gameStatus = "card_purchase"; 
+            gameState.lastConfirmedPhase = "card_purchase";
+            gameState.gameActive = false;
+        }
+        gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase"; 
+        gameState.hasCard = false; 
+        gameState.selectedCardIndex = null; 
+        gameState.selectedCardNumbers = []; 
+        gameState.markedNumbers.clear(); 
+        gameState.calledNumbers = [];
+        gameState.cardsSold = new Set(); 
+        gameState.cardsCache.soldCards = new Set(); 
+        gameState.cardsCache.ownedCardIndex = null;
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
         // Clear preview
-        document.getElementById("selected-card-info").style.display = "none";
+        const preview = document.getElementById("selected-card-info");
+        if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
         updateBoardCountText();
         closeDisqualifiedOverlay();
-        showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
+        showScreen("waiting-screen"); 
+        document.getElementById('game-bottom-actions').classList.remove('active');
         updateGameStats();
         setTimeout(() => {
             if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid();
-            else { fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`).then((res) => res.json()).then((data) => { if (data.success) { const soldCards = new Set(data.sold_cards || []); for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { if (soldCards.has(i)) { cardElement.classList.remove("available", "owned", "selected"); cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.remove("sold", "owned", "selected"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); } } } gameState.cardsSold = soldCards; gameState.cardsCache.soldCards = soldCards; } }); }
+            else { fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`).then((res) => res.json()).then((data) => { 
+                if (data.success) { 
+                    const soldCards = new Set(data.sold_cards || []); 
+                    for (let i = 1; i <= 400; i++) { 
+                        const cardElement = gameState.cardsCache.cardElements[i]; 
+                        if (cardElement) { 
+                            if (soldCards.has(i)) { 
+                                cardElement.classList.remove("available", "owned", "selected"); 
+                                cardElement.classList.add("sold"); 
+                                cardElement.onclick = null; 
+                            } else { 
+                                cardElement.classList.remove("sold", "owned", "selected"); 
+                                cardElement.classList.add("available"); 
+                                cardElement.onclick = () => handleCardSelection(i, cardElement); 
+                            } 
+                        } 
+                    } 
+                    gameState.cardsSold = soldCards; 
+                    gameState.cardsCache.soldCards = soldCards; 
+                } 
+            }); }
         }, 500);
         setTimeout(() => { checkUserCardStatus(); }, 1000);
+        updateBingoButton();
     }
 
     function handlePhaseChangeConfirmed(data) {
         if (gameState.winnerAnnounced && (data.phase === "winner_display" || data.phase === "card_purchase")) return;
-        gameState.gamePhase = data.phase; gameState.gameStatus = data.phase; gameState.lastConfirmedPhase = data.phase; gameState.phaseChangeRequested = false; gameState.purchasePhaseActive = data.phase === "card_purchase";
-        if (data.phase === "active") { gameState.gameStartConfirmed = true; const bingoBtn = document.getElementById("claim-bingo-btn"); if (bingoBtn) { bingoBtn.innerHTML = `<div class="loading-spinner"></div> Loading card...`; bingoBtn.disabled = true; } setTimeout(async () => { await fetchUserCardForGame(gameState.gameId); await syncWithServer(); updateGameUI(); }, 500); }
-        if (data.phase === "card_purchase" && data.countdown_seconds) { gameState.countdown = data.countdown_seconds; gameState.countdownTotal = data.countdown_seconds; gameState.gameStartConfirmed = false; startServerCoordinatedCountdown(); setTimeout(() => { if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid(); else updateCardsGridInstant(); }, 500); }
+        gameState.gamePhase = data.phase; 
+        gameState.gameStatus = data.phase; 
+        gameState.lastConfirmedPhase = data.phase; 
+        gameState.phaseChangeRequested = false; 
+        gameState.purchasePhaseActive = data.phase === "card_purchase";
+        gameState.gameActive = data.phase === "active" || data.phase === "game_play";
+        if (data.phase === "active") { 
+            gameState.gameStartConfirmed = true; 
+            const bingoBtn = document.getElementById("claim-bingo-btn"); 
+            if (bingoBtn) { 
+                bingoBtn.innerHTML = `<div class="loading-spinner"></div> Loading card...`; 
+                bingoBtn.disabled = true; 
+            } 
+            setTimeout(async () => { 
+                await fetchUserCardForGame(gameState.gameId); 
+                await syncWithServer(); 
+                updateGameUI(); 
+            }, 500); 
+        }
+        if (data.phase === "card_purchase" && data.countdown_seconds) { 
+            gameState.countdown = data.countdown_seconds; 
+            gameState.countdownTotal = data.countdown_seconds; 
+            gameState.gameStartConfirmed = false; 
+            startServerCoordinatedCountdown(); 
+            setTimeout(() => { 
+                if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid(); 
+                else updateCardsGridInstant(); 
+            }, 500); 
+        }
         updateGameUI();
+        updateBingoButton();
     }
 
     function handleCriticalGameUpdate(data) {
-        if (data.prize_pool !== undefined) { gameState.prizePool = parseFloat(data.prize_pool); updateGameStats(); }
-        if (data.total_players !== undefined) { gameState.playerCount = data.total_players; updateGameStats(); }
+        if (data.prize_pool !== undefined) { 
+            gameState.prizePool = parseFloat(data.prize_pool); 
+            updateGameStats(); 
+        }
+        if (data.total_players !== undefined) { 
+            gameState.playerCount = data.total_players; 
+            updateGameStats(); 
+        }
         if (data.status && data.status !== gameState.gamePhase) {
             if (gameState.winnerAnnounced && data.status === "winner_display") return;
-            gameState.gamePhase = data.status; gameState.gameStatus = data.status; gameState.lastConfirmedPhase = data.status; gameState.purchasePhaseActive = data.status === "card_purchase";
-            if (data.status === "active") { gameState.gameStartConfirmed = true; setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); }
+            gameState.gamePhase = data.status; 
+            gameState.gameStatus = data.status; 
+            gameState.lastConfirmedPhase = data.status; 
+            gameState.purchasePhaseActive = data.status === "card_purchase";
+            gameState.gameActive = data.status === "active" || data.status === "game_play";
+            if (data.status === "active") { 
+                gameState.gameStartConfirmed = true; 
+                setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); 
+            }
             updateGameUI();
+            updateBingoButton();
         }
     }
 
     function updateFromServerState(serverState) {
         if (serverState.countdown_remaining !== undefined) {
             const diff = Math.abs(serverState.countdown_remaining - gameState.countdown);
-            if (diff > 2 && serverState.countdown_remaining > 5) { gameState.countdown = serverState.countdown_remaining; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); } else if (diff > 5) { gameState.countdown = serverState.countdown_remaining; updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown); }
+            if (diff > 2 && serverState.countdown_remaining > 5) { 
+                gameState.countdown = serverState.countdown_remaining; 
+                updateCountdownDisplay(gameState.countdown); 
+                updateCountdownStatusText(gameState.countdown); 
+            } else if (diff > 5) { 
+                gameState.countdown = serverState.countdown_remaining; 
+                updateCountdownDisplay(gameState.countdown); 
+                updateCountdownStatusText(gameState.countdown); 
+            }
             if (serverState.countdown_remaining <= 0 && gameState.gamePhase === "card_purchase") {
-                if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
+                if (gameState.countdownInterval) { 
+                    clearInterval(gameState.countdownInterval); 
+                    gameState.countdownInterval = null; 
+                }
                 const statusElement = document.getElementById("countdown-status-text");
                 if (statusElement) statusElement.textContent = "Game starting...";
                 getCompleteGameState();
@@ -2101,18 +2645,41 @@
         }
         if (serverState.game_phase && serverState.game_phase !== gameState.gamePhase) {
             if (gameState.winnerAnnounced && serverState.game_phase === "winner_display") return;
-            gameState.gamePhase = serverState.game_phase; gameState.gameStatus = serverState.game_phase; gameState.lastConfirmedPhase = serverState.game_phase; gameState.gameActive = serverState.game_active || false; gameState.purchasePhaseActive = serverState.game_phase === "card_purchase";
-            if (serverState.game_phase === "active") { gameState.gameStartConfirmed = true; setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); }
+            gameState.gamePhase = serverState.game_phase; 
+            gameState.gameStatus = serverState.game_phase; 
+            gameState.lastConfirmedPhase = serverState.game_phase; 
+            gameState.gameActive = serverState.game_active || serverState.game_phase === "active";
+            gameState.purchasePhaseActive = serverState.game_phase === "card_purchase";
+            if (serverState.game_phase === "active") { 
+                gameState.gameStartConfirmed = true; 
+                setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); 
+            }
             updateGameUI();
+            updateBingoButton();
         } else if (serverState.status && serverState.status !== gameState.gameStatus) {
-            gameState.gameStatus = serverState.status; gameState.gamePhase = serverState.status; gameState.lastConfirmedPhase = serverState.status; gameState.gameActive = serverState.status === "active" || serverState.status === "game_play"; gameState.purchasePhaseActive = serverState.status === "card_purchase";
-            if (serverState.status === "active") { gameState.gameStartConfirmed = true; setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); }
+            gameState.gameStatus = serverState.status; 
+            gameState.gamePhase = serverState.status; 
+            gameState.lastConfirmedPhase = serverState.status; 
+            gameState.gameActive = serverState.status === "active" || serverState.status === "game_play"; 
+            gameState.purchasePhaseActive = serverState.status === "card_purchase";
+            if (serverState.status === "active") { 
+                gameState.gameStartConfirmed = true; 
+                setTimeout(() => { fetchUserCardForGame(gameState.gameId); }, 500); 
+            }
             updateGameUI();
+            updateBingoButton();
         }
         if (serverState.called_numbers && Array.isArray(serverState.called_numbers)) {
             if (JSON.stringify(serverState.called_numbers) !== JSON.stringify(gameState.calledNumbers)) {
-                gameState.calledNumbers = serverState.called_numbers; updateCalledNumbersDisplay(); updateBingoGrid();
-                if (gameState.calledNumbers.length > 0) { const latestNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1]; updateCurrentCalledDisplay(latestNumber); }
+                gameState.calledNumbers = serverState.called_numbers; 
+                updateCalledNumbersDisplay(); 
+                updateBingoGrid();
+                const calledStat = document.getElementById("called-numbers-stat");
+                if (calledStat) calledStat.textContent = gameState.calledNumbers.length;
+                if (gameState.calledNumbers.length > 0) { 
+                    const latestNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1]; 
+                    updateCurrentCalledDisplay(latestNumber); 
+                }
             }
         }
         if (serverState.player_count !== undefined) gameState.playerCount = serverState.player_count;
@@ -2127,15 +2694,62 @@
             const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/sync`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    user_id: gameState.userId, called_numbers: gameState.calledNumbers, game_phase: gameState.gamePhase,
-                    countdown: gameState.countdown, has_card: gameState.hasCard, selected_card_index: gameState.selectedCardIndex,
-                    timestamp: Date.now(), need_full_sync: gameState.lastFullSyncTime === 0 || Date.now() - gameState.lastFullSyncTime > 60000
+                    user_id: gameState.userId, 
+                    called_numbers: gameState.calledNumbers, 
+                    game_phase: gameState.gamePhase,
+                    countdown: gameState.countdown, 
+                    has_card: gameState.hasCard, 
+                    selected_card_index: gameState.selectedCardIndex,
+                    timestamp: Date.now(), 
+                    need_full_sync: gameState.lastFullSyncTime === 0 || Date.now() - gameState.lastFullSyncTime > 60000
                 }),
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            if (data.recommend_full_sync) { setTimeout(() => getCompleteGameState(), 500); return; }
-            if (data.server_state) updateFromServerState(data.server_state);
+            if (data.recommend_full_sync) { 
+                setTimeout(() => getCompleteGameState(), 500); 
+                return; 
+            }
+            if (data.server_state) {
+                // Update called numbers from sync response
+                if (data.server_state.called_numbers && Array.isArray(data.server_state.called_numbers)) {
+                    if (data.server_state.called_numbers.length > gameState.calledNumbers.length) {
+                        gameState.calledNumbers = data.server_state.called_numbers;
+                        updateCalledNumbersDisplay();
+                        updateBingoGrid();
+                        const calledStat = document.getElementById("called-numbers-stat");
+                        if (calledStat) calledStat.textContent = gameState.calledNumbers.length;
+                        if (gameState.calledNumbers.length > 0) {
+                            updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]);
+                        }
+                        // Auto-mark numbers for any new called numbers
+                        if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
+                            data.server_state.called_numbers.forEach(num => autoMarkNumber(num));
+                        }
+                    }
+                }
+                // Update game phase from sync
+                if (data.server_state.game_phase) {
+                    gameState.gamePhase = data.server_state.game_phase;
+                    gameState.gameStatus = data.server_state.game_status || data.server_state.game_phase;
+                    gameState.gameActive = data.server_state.game_active || data.server_state.game_phase === "active";
+                    gameState.purchasePhaseActive = data.server_state.game_phase === "card_purchase";
+                    updateGameUI();
+                    updateBingoButton();
+                }
+                if (data.server_state.countdown_remaining !== undefined) {
+                    gameState.countdown = data.server_state.countdown_remaining;
+                    updateCountdownDisplay(gameState.countdown);
+                    updateCountdownStatusText(gameState.countdown);
+                }
+                if (data.server_state.prize_pool !== undefined) {
+                    gameState.prizePool = data.server_state.prize_pool;
+                }
+                if (data.server_state.player_count !== undefined) {
+                    gameState.playerCount = data.server_state.player_count;
+                }
+                updateGameStats();
+            }
             gameState.lastSyncTime = Date.now();
         } catch (error) {
             console.warn("Sync failed:", error.message);
@@ -2144,8 +2758,10 @@
     }
 
     function showScreen(screenId) {
-        document.getElementById("waiting-screen").classList.remove("active");
-        document.getElementById("game-screen").classList.remove("active");
+        const waiting = document.getElementById("waiting-screen");
+        const game = document.getElementById("game-screen");
+        if (waiting) waiting.classList.remove("active");
+        if (game) game.classList.remove("active");
         const screen = document.getElementById(screenId);
         if (screen) screen.classList.add("active");
     }
@@ -2153,22 +2769,35 @@
 
     function updateGameUI() {
         if (gameState.isWinnerDisplayActive) return;
-        if (gameState.gameComplete && !gameState.isWinnerDisplayActive) { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); return; }
+        if (gameState.gameComplete && !gameState.isWinnerDisplayActive) { 
+            showScreen("waiting-screen"); 
+            document.getElementById('game-bottom-actions').classList.remove('active'); 
+            return; 
+        }
         if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
         if (gameState.numberCallInterval) { clearInterval(gameState.numberCallInterval); gameState.numberCallInterval = null; }
-        const isGamePlayPhase = gameState.gamePhase === "game_play" || gameState.gameStatus === "active" || gameState.gameStatus === "game_play";
+        const isGamePlayPhase = gameState.gamePhase === "game_play" || gameState.gameStatus === "active" || gameState.gameStatus === "game_play" || gameState.gameActive;
         if (gameState.gamePhase === "card_purchase" || gameState.gameStatus === "card_purchase") {
-            showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active');
-            updateCountdownDisplay(gameState.countdown); updateCountdownStatusText(gameState.countdown);
+            showScreen("waiting-screen"); 
+            document.getElementById('game-bottom-actions').classList.remove('active');
+            updateCountdownDisplay(gameState.countdown); 
+            updateCountdownStatusText(gameState.countdown);
             if (gameState.purchasePhaseActive && !gameState.cardsLoaded && !gameState.cardsLoadAttempted) {
                 gameState.cardsLoadAttempted = true;
                 if (document.getElementById("cards-grid").children.length === 0) setTimeout(() => { loadCardsGrid().then(() => { gameState.cardsLoaded = true; }); }, 100);
                 else { updateCardsGridInstant(); gameState.cardsLoaded = true; }
             }
-            document.getElementById("current-round-number").textContent = gameState.currentRound; gameState.gameActive = false;
+            const roundEl = document.getElementById("current-round-number");
+            if (roundEl) roundEl.textContent = gameState.currentRound; 
+            gameState.gameActive = false;
         } else if (isGamePlayPhase) {
-            gameState.gameActive = true; gameState.purchasePhaseActive = false; showScreen("game-screen"); document.getElementById('game-bottom-actions').classList.add('active');
-            updateCalledNumbersDisplay(); updateCurrentCalledDisplay(); updateBingoGrid();
+            gameState.gameActive = true; 
+            gameState.purchasePhaseActive = false; 
+            showScreen("game-screen"); 
+            document.getElementById('game-bottom-actions').classList.add('active');
+            updateCalledNumbersDisplay(); 
+            updateCurrentCalledDisplay(); 
+            updateBingoGrid();
             if (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0 && !gameState.disqualified) {
                 renderPlayerCardsFromOwned();
             } else if (gameState.hasCard && !gameState.disqualified) {
@@ -2176,12 +2805,24 @@
             } else {
                 renderEmptyPlayerCard();
             }
-            setTimeout(() => { updateCalledNumbersDisplay(); if (gameState.calledNumbers.length > 0) { updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); updateBingoGrid(); } }, 100);
+            setTimeout(() => { 
+                updateCalledNumbersDisplay(); 
+                if (gameState.calledNumbers.length > 0) { 
+                    updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); 
+                    updateBingoGrid(); 
+                } 
+            }, 100);
         } else if (gameState.gamePhase === "winner_display" || gameState.gameStatus === "winner_display") {
-            gameState.gameActive = false; gameState.purchasePhaseActive = false; document.getElementById('game-bottom-actions').classList.remove('active');
+            gameState.gameActive = false; 
+            gameState.purchasePhaseActive = false; 
+            document.getElementById('game-bottom-actions').classList.remove('active');
             if (!gameState.isWinnerDisplayActive) showScreen("waiting-screen");
-        } else { showScreen("waiting-screen"); document.getElementById('game-bottom-actions').classList.remove('active'); }
+        } else { 
+            showScreen("waiting-screen"); 
+            document.getElementById('game-bottom-actions').classList.remove('active'); 
+        }
         updateGameStats();
+        updateBingoButton();
     }
 
     function updateCountdownDisplay(seconds) {
@@ -2245,7 +2886,8 @@
         previewGrid.innerHTML = "";
         if (gameState.selectedCardNumbers && Array.isArray(gameState.selectedCardNumbers)) {
             gameState.selectedCardNumbers.forEach((num, index) => {
-                const cell = document.createElement("div"); cell.className = "card-preview-cell";
+                const cell = document.createElement("div"); 
+                cell.className = "card-preview-cell";
                 if (num === 0 || num === "0") { cell.classList.add("free"); cell.textContent = "FREE"; } else { cell.textContent = num; }
                 previewGrid.appendChild(cell);
             });
@@ -2330,16 +2972,7 @@
         waitingBox.innerHTML = message;
         innerContainer.appendChild(waitingBox);
 
-        const bingoBtn = document.getElementById("claim-bingo-btn");
-        if (bingoBtn) { 
-            if (gameState.disqualified) {
-                bingoBtn.innerHTML = `<i class="fas fa-ban"></i> Disqualified`;
-                bingoBtn.disabled = true;
-            } else {
-                bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`;
-                bingoBtn.disabled = true;
-            }
-        }
+        updateBingoButton();
 
         const boardCountText = document.getElementById('boards-count-text');
         if (boardCountText) {
@@ -2347,7 +2980,7 @@
         }
     }
 
-    // ==================== UPDATED: renderPlayerCardsFromOwned with disqualification ====================
+    // ==================== RENDER PLAYER CARDS FROM OWNED - FIXED ====================
     function renderPlayerCardsFromOwned() {
         const innerContainer = document.getElementById("player-cards-inner");
         if(!innerContainer) return;
@@ -2365,7 +2998,6 @@
         }
 
         console.log(`🎴 Rendering ${gameState.ownedCardIndices.length} cards:`, gameState.ownedCardIndices);
-        console.log('Card data:', gameState.ownedCardsData);
 
         gameState.ownedCardIndices.forEach((index) => {
             const cardData = gameState.ownedCardsData ? gameState.ownedCardsData.find(c => c.card_index === index) : null;
@@ -2484,7 +3116,7 @@
             previewGrid.appendChild(cell);
         });
 
-        idSpan.textContent = `#${cardIndex}`;
+        if (idSpan) idSpan.textContent = `#${cardIndex}`;
         previewContainer.style.display = "block";
     }
 
@@ -2589,7 +3221,8 @@
                     renderPlayerCardsFromOwned();
                     
                     if (gameState.uiSelectedCardIndex === cardIndex) {
-                        document.getElementById("selected-card-info").style.display = "none";
+                        const preview = document.getElementById("selected-card-info");
+                        if (preview) preview.style.display = "none";
                         gameState.uiSelectedCardIndex = null;
                     }
                     
@@ -2751,7 +3384,7 @@
                     }));
                     gameState.hasCard = true;
                     updateBoardCountText();
-                    if (gameState.gamePhase === "active" || gameState.gameStatus === "active") {
+                    if (gameState.gameActive) {
                         renderPlayerCardsFromOwned();
                     }
                 } else if (!gameState.disqualified) {
@@ -2771,12 +3404,13 @@
                                 }
                             } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                         } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
-                        document.getElementById("selected-card-id").textContent = `#${data.user_card.card_index || "0"}`;
+                        const idEl = document.getElementById("selected-card-id");
+                        if (idEl) idEl.textContent = `#${data.user_card.card_index || "0"}`;
                         if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
                             gameState.ownedCardIndices = [data.user_card.card_index];
                             gameState.ownedCardsData = [{ card_index: data.user_card.card_index, numbers: gameState.selectedCardNumbers }];
                             updateBoardCountText();
-                            if (gameState.gamePhase === "active" || gameState.gameStatus === "active") {
+                            if (gameState.gameActive) {
                                 renderPlayerCardsFromOwned();
                             }
                         }
@@ -2797,7 +3431,8 @@
         updateBoardCountText();
         closeDisqualifiedOverlay();
         // Clear preview
-        document.getElementById("selected-card-info").style.display = "none";
+        const preview = document.getElementById("selected-card-info");
+        if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
         if (grid.children.length === 0) { loadCardsGrid(); return; }
         for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); cardElement.title = "Available to buy"; } }
@@ -2813,23 +3448,47 @@
         const gameData = await fetchActiveGame();
         if (gameData && gameData.success) {
             console.log("Active game found:", gameData.game_id);
-            gameState.gameId = gameData.game_id; gameState.gameType = gameData.game_type || "round_based"; gameState.gameStatus = gameData.status || "unknown"; gameState.gamePhase = gameData.status || "card_purchase"; gameState.lastConfirmedPhase = gameData.status || "card_purchase";
-            gameState.prizePool = parseFloat(gameData.prize_pool || 0); gameState.totalPlayers = gameData.total_players || 0; gameState.realPlayers = gameData.real_players || 0; gameState.fakePlayers = gameData.fake_players || 0; gameState.playerCount = gameData.total_players || 0; gameState.currentRound = gameData.round_number || 1;
-            gameState.countdown = gameData.countdown_remaining || 30; gameState.countdownTotal = gameData.countdown_remaining || 30; gameState.calledNumbers = gameData.numbers_called || [];
+            gameState.gameId = gameData.game_id; 
+            gameState.gameType = gameData.game_type || "round_based"; 
+            gameState.gameStatus = gameData.status || "unknown"; 
+            gameState.gamePhase = gameData.phase || gameData.status || "card_purchase"; 
+            gameState.lastConfirmedPhase = gameState.gamePhase;
+            gameState.gameActive = gameState.gamePhase === "active" || gameState.gameStatus === "active";
+            gameState.prizePool = parseFloat(gameData.prize_pool || 0); 
+            gameState.totalPlayers = gameData.total_players || 0; 
+            gameState.realPlayers = gameData.real_players || 0; 
+            gameState.fakePlayers = gameData.fake_players || 0; 
+            gameState.playerCount = gameData.total_players || 0; 
+            gameState.currentRound = gameData.round_number || 1;
+            gameState.countdown = gameData.countdown_remaining || 30; 
+            gameState.countdownTotal = gameData.countdown_remaining || 30; 
+            gameState.calledNumbers = gameData.numbers_called || [];
             gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
             console.log(`Initial countdown from server: ${gameState.countdown}s`);
-            document.getElementById("current-round-number").textContent = gameState.currentRound;
+            const roundEl = document.getElementById("current-round-number");
+            if (roundEl) roundEl.textContent = gameState.currentRound;
             startServerCoordinatedCountdown();
-            updateGameStats(); updateCalledNumbersDisplay(); updateCurrentCalledDisplay(); updateBingoGrid();
+            updateGameStats(); 
+            updateCalledNumbersDisplay(); 
+            updateCurrentCalledDisplay(); 
+            updateBingoGrid();
             if (!gameState.cardsLoaded && !gameState.cardsLoadAttempted) {
                 gameState.cardsLoadAttempted = true;
                 setTimeout(() => { if (document.getElementById("cards-grid").children.length === 0) { loadCardsGrid().then(() => { console.log("✅ Cards loaded at initialization"); }); } else { updateCardsGridInstant(); gameState.cardsLoaded = true; } }, 100);
             }
             document.getElementById('game-bottom-actions').classList.remove('active');
-        } else { console.log("No active game found"); setTimeout(() => { initGame(); }, 5000); return; }
-        await initWebSocket(); await checkUserCardStatus(); startSyncInterval();
+            updateBingoButton();
+        } else { 
+            console.log("No active game found"); 
+            setTimeout(() => { initGame(); }, 5000); 
+            return; 
+        }
+        await initWebSocket(); 
+        await checkUserCardStatus(); 
+        startSyncInterval();
         setInterval(() => { if (gameState.gameId && !gameState.fullSyncInProgress && !gameState.winnerAnnounced) getCompleteGameState(); }, 300000);
-        updateConnectionStatus("Connected", "green"); updateGameUI();
+        updateConnectionStatus("Connected", "green"); 
+        updateGameUI();
         setInterval(() => { if (gameState.gameActive && gameState.hasCard) updateBingoButton(); }, 500);
     }
 
