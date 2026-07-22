@@ -1333,7 +1333,7 @@ class Database:
         
         
         
-            @staticmethod
+    @staticmethod
     async def get_user_active_cards_in_game(user_id: int, game_id: str) -> List[dict]:
         """Get all active cards for a specific user in a specific game"""
         try:
@@ -1372,7 +1372,7 @@ class Database:
         
         
         
-         @staticmethod
+    @staticmethod
     async def decrement_prize_pool(game_id: str, amount: float):
         """Decrease the prize pool for a game"""
         try:
