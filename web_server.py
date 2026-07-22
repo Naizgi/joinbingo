@@ -5145,7 +5145,8 @@ async def toggle_card_purchase(request):
                     'message': f'Insufficient balance. Need {card_price} birr.'
                 })
             
-            # Use fixed cards from game_manager
+            # ========== FIXED: Use fixed cards from game_manager ==========
+            from utils.game_manager import game_manager
             card_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
             if not card_numbers:
                 logger.warning(f"Card index {card_index} not found in fixed cards, using fallback")
@@ -5169,6 +5170,19 @@ async def toggle_card_purchase(request):
                 price=card_price
             )
             
+            if not card_id:
+                # Refund if card creation failed
+                await Database.add_user_balance(
+                    user_id=user_id,
+                    amount=card_price,
+                    transaction_type='refund',
+                    notes=f'Refund for failed card purchase #{card_index}'
+                )
+                return web.json_response({
+                    'success': False,
+                    'message': 'Failed to create card. Please try again.'
+                })
+            
             # Update game stats
             with Database.get_cursor() as cursor:
                 cursor.execute("""
@@ -5176,6 +5190,7 @@ async def toggle_card_purchase(request):
                     SET total_cards_sold = total_cards_sold + 1,
                         prize_pool = prize_pool + ?,
                         total_sales = total_sales + ?,
+                        real_cards_sold = real_cards_sold + 1,
                         total_players = (
                             SELECT COUNT(DISTINCT user_id) 
                             FROM player_cards 
@@ -5184,13 +5199,22 @@ async def toggle_card_purchase(request):
                     WHERE game_id = ?
                 """, (card_price * 0.8, card_price, game_id, game_id))
             
-            # ========== CRITICAL FIX: Get ALL active cards for this user ==========
+            # ========== FIXED: Get ALL active cards for this user ==========
             updated_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
             
-            logger.info(f"✅ User {user_id} purchased Board #{card_index} in game {game_id}")
+            # Format user_cards for frontend
+            formatted_cards = []
+            for card in updated_cards:
+                formatted_cards.append({
+                    'card_index': card.get('card_index'),
+                    'card_numbers': card.get('card_data', {}).get('numbers', []) if isinstance(card.get('card_data'), dict) else card.get('card_data', [])
+                })
+            
+            logger.info(f"✅ User {user_id} purchased Board #{card_index} in game {game_id}. Now owns {len(updated_cards)} cards")
             
             return web.json_response({
                 'success': True,
+                'message': f'Board #{card_index} purchased successfully!',
                 'card_index': card_index,
                 'card_numbers': card_numbers,
                 'new_balance': new_balance,
@@ -5199,8 +5223,8 @@ async def toggle_card_purchase(request):
                 'real_players': existing_cards_count + 1,
                 'fake_players': 0,
                 'wallet_balance': new_balance,
-                'user_cards': updated_cards,  # <-- ADD THIS: All active cards
-                'message': f'Board #{card_index} purchased successfully!'
+                'user_cards': formatted_cards,  # <-- Formatted for frontend
+                'owned_count': len(formatted_cards)
             })
         
         # ======= ACTION: REFUND =======
@@ -5245,6 +5269,7 @@ async def toggle_card_purchase(request):
                     SET total_cards_sold = total_cards_sold - 1,
                         prize_pool = MAX(0, prize_pool - ?),
                         total_sales = total_sales - ?,
+                        real_cards_sold = real_cards_sold - 1,
                         total_players = (
                             SELECT COUNT(DISTINCT user_id) 
                             FROM player_cards 
@@ -5253,20 +5278,30 @@ async def toggle_card_purchase(request):
                     WHERE game_id = ?
                 """, (card_price * 0.8, card_price, game_id, game_id))
             
-            # ========== CRITICAL FIX: Get remaining active cards ==========
+            # ========== FIXED: Get remaining active cards ==========
             updated_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
             
-            logger.info(f"♻️ User {user_id} refunded Board #{card_index} in game {game_id}")
+            # Format user_cards for frontend
+            formatted_cards = []
+            for card in updated_cards:
+                formatted_cards.append({
+                    'card_index': card.get('card_index'),
+                    'card_numbers': card.get('card_data', {}).get('numbers', []) if isinstance(card.get('card_data'), dict) else card.get('card_data', [])
+                })
+            
+            logger.info(f"♻️ User {user_id} refunded Board #{card_index} in game {game_id}. Now owns {len(updated_cards)} cards")
             
             return web.json_response({
                 'success': True,
+                'message': f'Board #{card_index} refunded successfully.',
                 'card_index': card_index,
                 'new_balance': new_balance,
+                'refund_amount': refund_amount,
                 'prize_pool': max(0, float(game.get('prize_pool', 0)) - (card_price * 0.8)),
                 'total_players': existing_cards_count - 1,
                 'wallet_balance': new_balance,
-                'user_cards': updated_cards,  # <-- ADD THIS: Remaining active cards
-                'message': f'Board #{card_index} refunded successfully.'
+                'user_cards': formatted_cards,  # <-- Formatted for frontend
+                'owned_count': len(formatted_cards)
             })
             
         else:
@@ -5281,7 +5316,6 @@ async def toggle_card_purchase(request):
             'success': False, 
             'message': f'Server error: {str(e)}'
         }, status=500)
-
 
 # ==================== PLAYER HISTORY API ENDPOINT ====================
 @routes.get('/api/player/history/{user_id}')
