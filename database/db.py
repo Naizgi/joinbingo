@@ -2179,17 +2179,17 @@ class Database:
         return []
     
     @classmethod
-async def increment_cards_sold(cls, game_id: str):
-    """Increment the total cards sold for a game"""
-    try:
-        with cls.get_cursor() as cursor:
-            cursor.execute("""
-                UPDATE games 
-                SET total_cards_sold = total_cards_sold + 1 
-                WHERE game_id = ?
-            """, (game_id,))
-    except Exception as e:
-        logger.error(f"Error incrementing cards sold for {game_id}: {e}")
+    async def increment_cards_sold(cls, game_id: str):
+        """Increment the total cards sold for a game"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE games 
+                    SET total_cards_sold = total_cards_sold + 1 
+                    WHERE game_id = ?
+                """, (game_id,))
+        except Exception as e:
+            logger.error(f"Error incrementing cards sold for {game_id}: {e}")
 
     @classmethod
     async def increment_prize_pool(cls, game_id: str, amount: float):
