@@ -146,12 +146,13 @@
         /* ==================== GAME SCREEN (EXACT 50/50 SPLIT) ==================== */
         
            /* GAME TOP STATS ROW */
+                /* GAME TOP STATS ROW */
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
             background: transparent; 
-            padding: 3px; /* Small internal padding so the border doesn't touch the boxes */
-            border: 2px solid #FFFFFF; /* Added solid white border */
-            border-radius: 8px; /* Rounded corners */
+            padding: 8px 3px; /* ← Increased height here */
+            border: 2px solid #FFFFFF; /* Solid white border */
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
             margin-bottom: 8px;
         }
@@ -220,10 +221,10 @@
         }
         /* RIGHT: CARDS & CONTROLS */
         .right-panel { 
-            flex: 1; width: 68%; /* Increased to fill the remaining space */
+            flex: 1; width: 68%; 
             display: flex; 
             flex-direction: column; 
-            gap: 10px; 
+            gap: 8px; 
             min-width: 0; 
         }
         
@@ -246,12 +247,14 @@
             font-weight: 800; font-size: 14px;
         }
 
-        /* RECENT CALLS PILLS (BUBBLE CONTAINER) */
-               /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
+        /* RECENT CALLS (SMALL CIRCLE CONTAINER) */
         .recent-calls-box {
-            background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 6px 8px;
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; 
-            border: 1px solid rgba(255,255,255,0.8); min-height: 36px; /* Reduced height */
+            background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 4px 6px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; 
+            border: 1px solid rgba(255,255,255,0.8); min-height: 36px; 
+            width: 70%; /* ← Reduced width, leaving a gap on the right */
+            align-self: flex-end; /* Pushes it to the right side */
+            margin-top: 4px; /* Adds a tiny gap from the Current Call banner */
         }
         .call-bubble {
             border-radius: 50%; /* Make it a perfect circle */
@@ -288,8 +291,9 @@
 
         /* PLAYER CARDS (STACKED) */
         .player-cards-container-inner {
-            display: flex; flex-direction: column; gap: 12px;
-            max-height: 350px; overflow-y: auto; padding-right: 4px;
+            display: flex; flex-direction: column; gap: 6px; /* Tighter card spacing */
+            max-height: 420px; /* ← Increased height to match the bingo grid size */
+            overflow-y: auto; padding-right: 4px;
         }
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
