@@ -5162,8 +5162,12 @@ async def toggle_card_purchase(request):
                     'message': f'Insufficient balance. Need {card_price} birr.'
                 })
             
-            # Generate card numbers (5x5 grid)
-            card_numbers = game_manager._generate_card_numbers()
+            # ========== FIXED: Use fixed cards from game_manager ==========
+            # Use the 400 pre-generated fixed cards (same numbers every game)
+            card_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
+            if not card_numbers:
+                logger.warning(f"Card index {card_index} not found in fixed cards, using fallback")
+                card_numbers = game_manager._generate_bingo_card_numbers()
             
             # Deduct balance and create card
             new_balance = await Database.add_user_balance(
@@ -5173,18 +5177,22 @@ async def toggle_card_purchase(request):
                 notes=f'Purchased board #{card_index} in game {game_id}'
             )
             
-            await Database.add_player_card(
+            # Create the card using Database method
+            card_id = await Database.create_player_card(
                 user_id=user_id,
                 game_id=game_id,
                 card_index=card_index,
-                card_data=card_numbers,
-                is_fake=False
+                card_numbers=card_numbers,
+                price=card_price,
+                is_active=1,
+                is_fake=0
             )
             
             # Update game stats
             await Database.increment_cards_sold(game_id)
             await Database.increment_prize_pool(game_id, card_price * 0.8)
-            
+    
+    # ... rest of the code remains the same ...            
             # Update active game object in game_manager if it's currently active
             active_game = await game_manager.get_active_round_game()
             if active_game and active_game.get('game_id') == game_id:
