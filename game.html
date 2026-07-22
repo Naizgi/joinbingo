@@ -1096,7 +1096,10 @@
             cardsCache: { soldCards: new Set(), ownedCardIndex: null, lastUpdate: 0, cardElements: {} },
             lastCountdownSync: 0, countdownSyncThreshold: 5, cardsLoaded: false, cardsLoadAttempted: false,
             countdownStartTime: null, gameStartConfirmed: false, lastConfirmedPhase: "card_purchase",
-            phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false
+            phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false,
+            // NEW MULTI-CARD VARS:
+            ownedCardIndices: [],
+            ownedCardsData: [] 
         };
 
         const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
@@ -1485,7 +1488,6 @@
         window.getCompleteGameState = getCompleteGameState;
 
         // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
-                // ==================== UPDATE GAME STATS (SANITIZED TO PREVENT CRASH) ====================
         function updateGameStats() {
             const idElem = document.getElementById("stat-game-id");
             if (idElem && gameState.gameId) {
@@ -2022,75 +2024,281 @@
             } catch (error) { console.error("Error loading cards grid:", error); } finally { gameState.isLoadingCards = false; }
         }
 
+        // ==================== NEW MULTI-CARD LOGIC FUNCTIONS ====================
+
+        // 1. Handle clicking on a card
         async function handleCardSelection(cardIndex, element) {
             if (!validateGamePhase("card_purchase", "handleCardSelection")) return showNotification("Card purchase only during purchase phase", "error");
             if (gameState.isCardOperationInProgress) return;
             if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); await fetchActiveGame(); return; }
             if (!gameState.purchasePhaseActive) return showNotification("Card purchase is only available during card purchase phase", "error");
-            if (gameState.selectedCardIndex === cardIndex) { await toggleCardPurchase(cardIndex, element, "refund"); return; }
-            if (gameState.hasCard && gameState.selectedCardIndex !== cardIndex) {
-                gameState.isCardOperationInProgress = true;
-                try {
-                    const oldCardElement = gameState.cardsCache.cardElements[gameState.selectedCardIndex];
-                    if (oldCardElement) oldCardElement.classList.add("purchasing"); element.classList.add("purchasing");
-                    const refundResponse = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ user_id: gameState.userId, card_index: gameState.selectedCardIndex, action: "refund" }),
-                    });
-                    const refundData = await refundResponse.json();
-                    if (!refundData.success) throw new Error(refundData.message || "Failed to refund card");
-                    if (oldCardElement) instantCardUpdate(gameState.selectedCardIndex, "available");
-                    gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.uiSelectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear();
-                    gameState.walletBalance = refundData.new_balance || gameState.walletBalance;
-                    if (refundData.prize_pool !== undefined) gameState.prizePool = refundData.prize_pool; updateGameStats(); 
-                    if (gameState.walletBalance < CARD_PRICE) { showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error"); if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
-                    const buyResponse = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ user_id: gameState.userId, card_index: cardIndex, action: "buy" }),
-                    });
-                    const buyData = await buyResponse.json();
-                    if (!buyData.success) throw new Error(buyData.message || "Failed to buy card");
-                    instantCardUpdate(cardIndex, "owned", { numbers: buyData.card_numbers, prize_pool: buyData.prize_pool, total_players: buyData.total_players, real_players: buyData.real_players, fake_players: buyData.fake_players, wallet_balance: buyData.new_balance });
-                    if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing");
-                } catch (error) { console.error("Error during card replacement:", error); showNotification(error.message || "Failed to replace card", "error"); if (oldCardElement) oldCardElement.classList.remove("purchasing"); element.classList.remove("purchasing"); } finally { gameState.isCardOperationInProgress = false; }
+
+            // If clicking a card you already own -> UNBUY/REFUND IT
+            if (gameState.ownedCardIndices && gameState.ownedCardIndices.includes(cardIndex)) {
+                await toggleCardPurchase(cardIndex, element, "refund");
                 return;
             }
-            if (!gameState.hasCard) {
-                if (gameState.cardsSold.has(cardIndex)) return showNotification("This card is already sold to another player", "error");
-                if (gameState.walletBalance < CARD_PRICE) return showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error");
-                if (gameState.uiSelectedCardIndex && gameState.uiSelectedCardIndex !== cardIndex) {
-                    const prevCard = gameState.cardsCache.cardElements[gameState.uiSelectedCardIndex];
-                    if (prevCard && !prevCard.classList.contains("owned") && !prevCard.classList.contains("sold")) prevCard.classList.remove("selected");
-                }
-                gameState.uiSelectedCardIndex = cardIndex; element.classList.add("selected");
-                await toggleCardPurchase(cardIndex, element, "buy"); return;
+
+            // Check if we have reached the 2 card limit
+            if (gameState.ownedCardIndices && gameState.ownedCardIndices.length >= 2) {
+                showNotification("You can only buy up to 2 boards per round.", "error");
+                return;
             }
+
+            // If we are here, we are trying to buy a new card.
+            // Set this card as the selected preview
+            gameState.uiSelectedCardIndex = cardIndex;
+            element.classList.add("selected");
+            
+            // Show the preview box for this card immediately
+            // We pass cardIndex here so we can generate a preview
+            previewCardLocally(cardIndex);
+
+            // Attempt to buy the card
+            await toggleCardPurchase(cardIndex, element, "buy");
         }
         window.handleCardSelection = handleCardSelection;
 
+        // 2. Helper to show preview based on selected card
+        function previewCardLocally(cardIndex) {
+            const previewContainer = document.getElementById("selected-card-info");
+            const previewGrid = document.getElementById("card-preview-grid");
+            const idSpan = document.getElementById("selected-card-id");
+            if (!previewContainer || !previewGrid) return;
+
+            // Since we haven't bought the card yet, we must request its specific data from the server
+            // Or simply rely on the stored data after purchase. 
+            // NOTE: For instant preview BEFORE buy, we should ideally fetch the card layout from the server.
+            // For this implementation, we will trigger the preview *after* a successful buy.
+        }
+
+        // 3. Request Card Data & Process Buy/Refund actions
         async function toggleCardPurchase(cardIndex, element, action) {
             if (!validateGamePhase("card_purchase", "toggleCardPurchase")) { if (element) element.classList.remove("purchasing"); gameState.isCardOperationInProgress = false; return; }
             gameState.isCardOperationInProgress = true;
             if (!gameState.gameId) { showNotification("No active game. Please wait...", "error"); gameState.isCardOperationInProgress = false; await fetchActiveGame(); return; }
             if (!gameState.purchasePhaseActive) { showNotification("Card purchase is only available during card purchase phase", "error"); gameState.isCardOperationInProgress = false; return; }
-            if (action === "buy" && gameState.hasCard) { showNotification("You already have a card. Click on another card to replace it.", "error"); gameState.isCardOperationInProgress = false; return; }
-            if (action === "buy") { if (gameState.walletBalance < CARD_PRICE) { showNotification(`Insufficient balance. Need ${CARD_PRICE} birr`, "error"); gameState.isCardOperationInProgress = false; element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; return; } }
-            if (action === "refund" && (!gameState.hasCard || gameState.selectedCardIndex !== cardIndex)) { showNotification("You don't own this card to refund", "error"); gameState.isCardOperationInProgress = false; return; }
+
             try {
                 if (element) element.classList.add("purchasing");
+
+                // Call the API
                 const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ user_id: gameState.userId, card_index: cardIndex, action: action }),
                 });
                 const data = await response.json();
+
                 if (data.success) {
-                    if (action === "buy") { instantCardUpdate(cardIndex, "owned", { numbers: data.card_numbers, prize_pool: data.prize_pool, total_players: data.total_players, real_players: data.real_players, fake_players: data.fake_players, wallet_balance: data.new_balance }); } 
-                    else if (action === "refund") { instantCardUpdate(cardIndex, "available"); gameState.hasCard = false; gameState.selectedCardIndex = null; gameState.selectedCardNumbers = []; gameState.markedNumbers.clear(); renderEmptyPlayerCard(); if (data.new_balance !== undefined) gameState.walletBalance = data.new_balance; }
-                    gameState.prizePool = data.prize_pool || gameState.prizePool; if (data.total_players !== undefined) gameState.totalPlayers = data.total_players; updateGameStats();
-                } else { showNotification(data.message || "Failed to process card", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; }
-            } catch (error) { console.error("Error toggling card:", error); showNotification("Failed to process card. Please try again.", "error"); if (element) element.classList.remove("purchasing"); element.classList.remove("selected"); gameState.uiSelectedCardIndex = null; } finally { gameState.isCardOperationInProgress = false; }
+                    if (action === "buy") {
+                        // Add to owned list
+                        if (!gameState.ownedCardIndices) gameState.ownedCardIndices = [];
+                        if (!gameState.ownedCardIndices.includes(cardIndex)) {
+                            gameState.ownedCardIndices.push(cardIndex);
+                        }
+
+                        // Store the card data so we can re-render it later
+                        if (!gameState.ownedCardsData) gameState.ownedCardsData = [];
+                        const existing = gameState.ownedCardsData.find(c => c.card_index === cardIndex);
+                        if (!existing) {
+                            gameState.ownedCardsData.push({ card_index: cardIndex, numbers: data.card_numbers });
+                        }
+
+                        // Update the UI grid element
+                        instantCardUpdate(cardIndex, "owned", { 
+                            numbers: data.card_numbers, 
+                            prize_pool: data.prize_pool, 
+                            total_players: data.total_players, 
+                            real_players: data.real_players, 
+                            fake_players: data.fake_players, 
+                            wallet_balance: data.new_balance 
+                        });
+
+                        // Update game state flags
+                        gameState.hasCard = true; 
+                        gameState.walletBalance = data.new_balance || gameState.walletBalance;
+                        gameState.prizePool = data.prize_pool || gameState.prizePool;
+                        if (data.total_players !== undefined) gameState.totalPlayers = data.total_players;
+
+                        // Re-render player cards on the right side
+                        renderPlayerCardsFromOwned();
+
+                        // Show the preview for THIS card on the waiting screen
+                        showPreviewForIndex(cardIndex, data.card_numbers);
+                        
+                        showNotification(`Board #${cardIndex} purchased successfully!`, "success");
+
+                    } else if (action === "refund") {
+                        // Remove from owned list
+                        if (gameState.ownedCardIndices) {
+                            const idx = gameState.ownedCardIndices.indexOf(cardIndex);
+                            if (idx > -1) gameState.ownedCardIndices.splice(idx, 1);
+                        }
+                        // Remove from stored data
+                        if (gameState.ownedCardsData) {
+                            const idx = gameState.ownedCardsData.findIndex(c => c.card_index === cardIndex);
+                            if (idx > -1) gameState.ownedCardsData.splice(idx, 1);
+                        }
+                        // If no cards left, mark hasCard as false
+                        if (gameState.ownedCardIndices.length === 0) gameState.hasCard = false;
+
+                        // Update UI grid element
+                        instantCardUpdate(cardIndex, "available");
+                        
+                        // Update wallet
+                        gameState.walletBalance = data.new_balance || gameState.walletBalance;
+                        gameState.prizePool = data.prize_pool || gameState.prizePool;
+                        
+                        // Re-render player cards
+                        renderPlayerCardsFromOwned();
+                        
+                        // Hide preview if we refunded the selected card
+                        if (gameState.uiSelectedCardIndex === cardIndex) {
+                            document.getElementById("selected-card-info").style.display = "none";
+                            gameState.uiSelectedCardIndex = null;
+                        }
+                        
+                        showNotification(`Board #${cardIndex} refunded.`, "info");
+                    }
+
+                    updateGameStats();
+                    
+                } else {
+                    showNotification(data.message || "Failed to process card", "error");
+                    // Remove visual selection if buy failed
+                    if (element) {
+                        element.classList.remove("purchasing");
+                        element.classList.remove("selected");
+                    }
+                    gameState.uiSelectedCardIndex = null;
+                }
+
+            } catch (error) {
+                console.error("Error toggling card:", error);
+                showNotification("Failed to process card. Please try again.", "error");
+                if (element) {
+                    element.classList.remove("purchasing");
+                    element.classList.remove("selected");
+                }
+                gameState.uiSelectedCardIndex = null;
+            } finally {
+                gameState.isCardOperationInProgress = false;
+            }
         }
         window.toggleCardPurchase = toggleCardPurchase;
+
+
+        // 4. Preview renderer
+        function showPreviewForIndex(cardIndex, numbers) {
+            const previewContainer = document.getElementById("selected-card-info");
+            const previewGrid = document.getElementById("card-preview-grid");
+            const idSpan = document.getElementById("selected-card-id");
+
+            if (!previewContainer || !previewGrid || !numbers) return;
+
+            previewGrid.innerHTML = "";
+            numbers.forEach((num) => {
+                const cell = document.createElement("div"); 
+                cell.className = "card-preview-cell";
+                cell.style.cssText = "background: #fff; border-radius: 4px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; border:1px solid #e0e0e0;";
+                if (num === 0 || num === "0") { 
+                    cell.textContent = "FREE"; 
+                    cell.style.background = "#4CAF50"; 
+                    cell.style.color = "white";
+                } else { 
+                    cell.textContent = num; 
+                }
+                previewGrid.appendChild(cell);
+            });
+
+            idSpan.textContent = `#${cardIndex}`;
+            previewContainer.style.display = "block";
+        }
+
+        // 5. Render Multiple owned cards on Right Panel
+        function renderPlayerCardsFromOwned() {
+            const innerContainer = document.getElementById("player-cards-inner");
+            if(!innerContainer) return;
+            innerContainer.innerHTML = '';
+
+            if (!gameState.ownedCardIndices || gameState.ownedCardIndices.length === 0) {
+                renderEmptyPlayerCard();
+                return;
+            }
+
+            // Loop through all owned cards and render them
+            gameState.ownedCardIndices.forEach((index) => {
+                const cardData = gameState.ownedCardsData ? gameState.ownedCardsData.find(c => c.card_index === index) : null;
+                if (!cardData) return; 
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'p-card-wrapper';
+                
+                // Title
+                const title = document.createElement('div');
+                title.className = 'p-card-title';
+                title.innerHTML = `Cartela #${index}`;
+                wrapper.appendChild(title);
+
+                // B-I-N-G-O Header
+                const headerRow = document.createElement('div');
+                headerRow.className = 'p-card-header-row';
+                const letters = ['B', 'I', 'N', 'G', 'O'];
+                const colors = ['b', 'i', 'n', 'g', 'o'];
+                letters.forEach((l, i) => {
+                    const box = document.createElement('div');
+                    box.className = `p-card-header-cell ${colors[i]}`;
+                    box.textContent = l;
+                    headerRow.appendChild(box);
+                });
+                wrapper.appendChild(headerRow);
+
+                // Grid
+                const grid = document.createElement('div');
+                grid.className = 'p-card-grid';
+                grid.id = `player-card-grid-${index}`;
+                
+                cardData.numbers.forEach((num, i) => {
+                    const cell = document.createElement("div"); 
+                    cell.className = 'p-card-cell';
+                    if(num === 0 || num === '0') { 
+                        cell.classList.add('free'); 
+                        cell.textContent = '★'; 
+                    } else {
+                        cell.textContent = num;
+                        if(gameState.markedNumbers.has(num)) cell.classList.add('marked');
+                    }
+                    if(i === 12) cell.classList.add('star');
+                    // Reuse the click handler
+                    cell.onclick = () => handlePlayerCardClick(cell, num);
+                    grid.appendChild(cell);
+                });
+                wrapper.appendChild(grid);
+
+                innerContainer.appendChild(wrapper);
+            });
+
+            updateBingoButton();
+        }
+        window.renderPlayerCardsFromOwned = renderPlayerCardsFromOwned;
+        
+        // 6. Override the `renderEmptyPlayerCard` to use the transparent box if no cards exist
+        function renderEmptyPlayerCard() {
+            const innerContainer = document.getElementById("player-cards-inner");
+            if(!innerContainer) return;
+            innerContainer.innerHTML = '';
+
+            // Always use the transparent custom box when there are no cards on the active screen
+            const waitingBox = document.createElement('div');
+            waitingBox.className = 'no-card-waiting';
+            waitingBox.innerHTML = 'እባክዎ ይህ ጨዋታ<br>እስከሚጨርስ ይጠብቁ';
+            innerContainer.appendChild(waitingBox);
+
+            const bingoBtn = document.getElementById("claim-bingo-btn");
+            if (bingoBtn) { bingoBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; bingoBtn.disabled = true; }
+        }
+
+        // ==================== END NEW MULTI-CARD LOGIC ====================
 
         function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
         function startSyncInterval() {
