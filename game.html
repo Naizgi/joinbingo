@@ -92,7 +92,7 @@
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
-            height: 70px;
+            height: 60px;
             background: var(--bg-main);
             display: flex;
             justify-content: space-around;
@@ -487,18 +487,14 @@
 </head>
 <body>
 
-    <!-- Offline Banner -->
-    <div id="offline-banner">
-        <span>⚠️ Connection lost - Reconnecting...</span>
-        <button class="retry-btn" onclick="forceReconnect()">Retry Now</button>
-    </div>
+
 
     <!-- Server Error Overlay -->
     <div class="server-error-overlay" id="server-error-overlay">
         <div class="server-error-content">
             <div class="icon">🌐</div>
             <h2>Cannot Connect to Server</h2>
-            <p>Unable to reach the game server. Please check your internet connection and try again.</p>
+            <p>Please check your internet connection and try again.</p>
             <p style="font-size:11px; color:#999;" id="error-detail">Connection failed</p>
             <button class="retry-btn" onclick="forceReconnect()">🔄 Retry Connection</button>
         </div>
