@@ -949,13 +949,11 @@
         if (page) page.classList.add('active');
         
         if(tabName === 'game') {
-            // Check both gamePhase and gameStatus for active state
-            if(gameState.gamePhase === "active" || gameState.gameStatus === "active" || gameState.gameActive) {
+            if(gameState.gameActive || gameState.gamePhase === "active" || gameState.gameStatus === "active") {
                 document.getElementById('game-bottom-actions').classList.add('active');
             } else {
                 document.getElementById('game-bottom-actions').classList.remove('active');
             }
-            // Update button state
             updateBingoButton();
         } else {
             document.getElementById('game-bottom-actions').classList.remove('active');
@@ -1142,7 +1140,7 @@
             if (toggle) { toggle.className = 'profile-toggle'; toggle.textContent = 'OFF'; }
             if (gameToggleText) gameToggleText.textContent = 'OFF';
             if (gameToggle) { gameToggle.classList.remove('green'); gameToggle.classList.add('orange'); }
-            showNotification('Auto-Play Disabled', 'info', 1500);
+            showNotification('Auto-Play Disabled - Mark manually', 'info', 1500);
         }
     }
     window.toggleAuto = toggleAuto;
@@ -1208,7 +1206,6 @@
     // ==================== SHOW NOTIFICATION ====================
     function showNotification(message, type = "info", duration = 3000) {
         if (message && message.includes("Sound enabled")) return;
-        // Create toast if it doesn't exist
         let toast = document.getElementById("notification-toast");
         if (!toast) {
             toast = document.createElement("div");
@@ -1354,17 +1351,30 @@
         }
     }
 
-    // ==================== CLAIM BINGO ====================
+    // ==================== CLAIM BINGO - FIXED ====================
     async function claimBingo() {
         if (gameState.disqualified) {
             showNotification("You have been disqualified from this game!", "error", 3000);
             return;
         }
-        if (!gameState.gameId || !gameState.hasCard) return showNotification("No active game or card", "error");
+        if (!gameState.gameId) return showNotification("No active game", "error");
         if (!gameState.gameActive && gameState.gamePhase !== "active" && gameState.gameStatus !== "active") {
             return showNotification("Can only claim bingo during active game", "error");
         }
+        // Check if user has any card
+        const hasActiveCard = gameState.hasCard || (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0);
+        if (!hasActiveCard) {
+            return showNotification("You don't have a card in this game", "error");
+        }
         if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
+        
+        // Check if all called numbers are marked (or enough for bingo)
+        // For now, just check if there's a valid bingo pattern
+        const hasBingo = checkForBingo();
+        if (!hasBingo) {
+            showNotification("No valid BINGO pattern found on your cards!", "warning", 3000);
+            return;
+        }
         
         const btn = document.getElementById("claim-bingo-btn");
         if (btn) { 
@@ -1386,13 +1396,21 @@
         }, 10000);
         
         try {
+            // Get the card numbers to claim
+            let cardNumbers = [];
+            if (gameState.selectedCardNumbers && gameState.selectedCardNumbers.length === 25) {
+                cardNumbers = gameState.selectedCardNumbers;
+            } else if (gameState.ownedCardsData && gameState.ownedCardsData.length > 0) {
+                cardNumbers = gameState.ownedCardsData[0].numbers || [];
+            }
+            
             const success = sendWebSocketMessage({
                 type: "player_bingo_claim", 
                 game_id: gameState.gameId, 
                 user_id: gameState.userId,
                 timestamp: Date.now(), 
                 called_numbers: gameState.calledNumbers,
-                card_numbers: gameState.selectedCardNumbers, 
+                card_numbers: cardNumbers, 
                 marked_numbers: Array.from(gameState.markedNumbers),
             });
             
@@ -1404,7 +1422,7 @@
                         user_id: gameState.userId, 
                         game_type: gameState.gameType,
                         called_numbers: gameState.calledNumbers, 
-                        card_numbers: gameState.selectedCardNumbers,
+                        card_numbers: cardNumbers,
                         marked_numbers: Array.from(gameState.markedNumbers),
                     }),
                 });
@@ -1415,6 +1433,7 @@
                 if (data.success) { 
                     gameState.winnerAnnounced = true; 
                     gameState.hasClaimedBingo = true; 
+                    showNotification('🎉 BINGO verified! You won!', 'success', 5000);
                     setTimeout(() => getUserBalance(), 1000); 
                 } else { 
                     gameState.bingoClaimInProgress = false; 
@@ -1453,18 +1472,109 @@
     }
     window.claimBingo = claimBingo;
 
+    // ==================== CHECK FOR BINGO - FIXED FOR MULTI-CARD ====================
     function checkForBingo() {
         try {
-            if (!gameState.hasCard || !Array.isArray(gameState.selectedCardNumbers) || gameState.selectedCardNumbers.length !== 25) return false;
-            const grid = []; for (let i = 0; i < 25; i += 5) grid.push(gameState.selectedCardNumbers.slice(i, i + 5));
+            // Check each owned card for bingo
+            if (gameState.ownedCardsData && gameState.ownedCardsData.length > 0) {
+                for (const cardData of gameState.ownedCardsData) {
+                    const numbers = cardData.numbers || [];
+                    if (numbers.length !== 25) continue;
+                    
+                    const grid = [];
+                    for (let i = 0; i < 25; i += 5) {
+                        grid.push(numbers.slice(i, i + 5));
+                    }
+                    const markedSet = gameState.markedNumbers;
+                    
+                    // Check rows
+                    for (let row = 0; row < 5; row++) {
+                        let complete = true;
+                        for (let col = 0; col < 5; col++) {
+                            if (row === 2 && col === 2) continue;
+                            if (!markedSet.has(grid[row][col])) { complete = false; break; }
+                        }
+                        if (complete) return true;
+                    }
+                    
+                    // Check columns
+                    for (let col = 0; col < 5; col++) {
+                        let complete = true;
+                        for (let row = 0; row < 5; row++) {
+                            if (row === 2 && col === 2) continue;
+                            if (!markedSet.has(grid[row][col])) { complete = false; break; }
+                        }
+                        if (complete) return true;
+                    }
+                    
+                    // Check diagonals
+                    let diag1Complete = true;
+                    for (let i = 0; i < 5; i++) {
+                        if (i === 2) continue;
+                        if (!markedSet.has(grid[i][i])) { diag1Complete = false; break; }
+                    }
+                    if (diag1Complete) return true;
+                    
+                    let diag2Complete = true;
+                    for (let i = 0; i < 5; i++) {
+                        if (i === 2) continue;
+                        if (!markedSet.has(grid[i][4 - i])) { diag2Complete = false; break; }
+                    }
+                    if (diag2Complete) return true;
+                    
+                    // Check 4 corners
+                    if (markedSet.has(grid[0][0]) && markedSet.has(grid[0][4]) && 
+                        markedSet.has(grid[4][0]) && markedSet.has(grid[4][4])) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Fallback: check selected card if available
+            if (!gameState.selectedCardNumbers || gameState.selectedCardNumbers.length !== 25) return false;
+            
+            const grid = [];
+            for (let i = 0; i < 25; i += 5) {
+                grid.push(gameState.selectedCardNumbers.slice(i, i + 5));
+            }
             const markedSet = gameState.markedNumbers;
-            for (let row = 0; row < 5; row++) { let complete = true; for (let col = 0; col < 5; col++) { if (row === 2 && col === 2) continue; if (!markedSet.has(grid[row][col])) { complete = false; break; } } if (complete) return true; }
-            for (let col = 0; col < 5; col++) { let complete = true; for (let row = 0; row < 5; row++) { if (row === 2 && col === 2) continue; if (!markedSet.has(grid[row][col])) { complete = false; break; } } if (complete) return true; }
-            let diag1Complete = true; for (let i = 0; i < 5; i++) { if (i === 2) continue; const num = grid[i][i]; if (!num || num === 0 || !markedSet.has(num)) { diag1Complete = false; break; } } if (diag1Complete) return true;
-            let diag2Complete = true; for (let i = 0; i < 5; i++) { if (i === 2) continue; const num = grid[i][4 - i]; if (!num || num === 0 || !markedSet.has(num)) { diag2Complete = false; break; } } if (diag2Complete) return true;
-            if (markedSet.has(grid[0][0]) && markedSet.has(grid[0][4]) && markedSet.has(grid[4][0]) && markedSet.has(grid[4][4])) return true;
+            
+            for (let row = 0; row < 5; row++) {
+                let complete = true;
+                for (let col = 0; col < 5; col++) {
+                    if (row === 2 && col === 2) continue;
+                    if (!markedSet.has(grid[row][col])) { complete = false; break; }
+                }
+                if (complete) return true;
+            }
+            for (let col = 0; col < 5; col++) {
+                let complete = true;
+                for (let row = 0; row < 5; row++) {
+                    if (row === 2 && col === 2) continue;
+                    if (!markedSet.has(grid[row][col])) { complete = false; break; }
+                }
+                if (complete) return true;
+            }
+            let diag1Complete = true;
+            for (let i = 0; i < 5; i++) {
+                if (i === 2) continue;
+                if (!markedSet.has(grid[i][i])) { diag1Complete = false; break; }
+            }
+            if (diag1Complete) return true;
+            let diag2Complete = true;
+            for (let i = 0; i < 5; i++) {
+                if (i === 2) continue;
+                if (!markedSet.has(grid[i][4 - i])) { diag2Complete = false; break; }
+            }
+            if (diag2Complete) return true;
+            if (markedSet.has(grid[0][0]) && markedSet.has(grid[0][4]) && 
+                markedSet.has(grid[4][0]) && markedSet.has(grid[4][4])) return true;
+            
             return false;
-        } catch (error) { console.error("Error checking bingo:", error); return false; }
+        } catch (error) {
+            console.error("Error checking bingo:", error);
+            return false;
+        }
     }
 
     // ==================== UPDATE BINGO BUTTON - FIXED ====================
@@ -1490,7 +1600,6 @@
             return; 
         }
         
-        // Check if game is active - use both phase and gameActive flag
         const isActive = gameState.gameActive || gameState.gamePhase === "active" || gameState.gameStatus === "active";
         
         if (!isActive) { 
@@ -1499,24 +1608,26 @@
             return; 
         }
         
-        if (!gameState.hasCard && gameState.ownedCardIndices.length === 0) { 
+        const hasCard = gameState.hasCard || (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0);
+        if (!hasCard) { 
             btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
             btn.disabled = true; 
             return; 
         }
         
-        // Check if user has any active card
-        const hasCard = gameState.hasCard || gameState.ownedCardIndices.length > 0;
-        if (!hasCard) {
-            btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy Card to Play`; 
-            btn.disabled = true; 
-            return;
+        // Check if there's a bingo pattern
+        const hasBingo = checkForBingo();
+        if (hasBingo) {
+            btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
+            btn.className = "action-btn orange"; 
+            btn.disabled = false;
+            btn.onclick = claimBingo;
+        } else {
+            btn.innerHTML = `<i class="fas fa-search"></i> Check BINGO`;
+            btn.className = "action-btn blue"; 
+            btn.disabled = false;
+            btn.onclick = claimBingo;
         }
-        
-        btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
-        btn.className = "action-btn orange"; 
-        btn.disabled = false;
-        btn.onclick = claimBingo;
     }
 
     // ==================== AUTO-PLAY FUNCTIONS ====================
@@ -1525,22 +1636,29 @@
         updateCalledNumbersDisplay(); 
         updateCurrentCalledDisplay(number); 
         updateBingoGrid();
-        // Update the called numbers stat
         const calledStat = document.getElementById("called-numbers-stat");
         if (calledStat) calledStat.textContent = allCalled.length;
         
-        if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
+        // Auto-mark in auto mode
+        if (gameState.autoMode && (gameState.hasCard || gameState.ownedCardIndices.length > 0) && !gameState.disqualified) {
             autoMarkNumber(number);
         }
         
-        if (gameState.audioEnabled && gameState.audioPreloaded && gameState.audioInitialized && !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) playNumberAudio(number);
-        if (checkForBingo() && !gameState.hasClaimedBingo) updateBingoButton();
+        if (gameState.audioEnabled && gameState.audioPreloaded && gameState.audioInitialized && 
+            !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) {
+            playNumberAudio(number);
+        }
+        
+        // Update button state
+        updateBingoButton();
     }
 
     function autoMarkNumber(number) {
-        if (!gameState.autoMode || !gameState.hasCard || gameState.disqualified) return;
+        if (!gameState.autoMode || (!gameState.hasCard && gameState.ownedCardIndices.length === 0) || gameState.disqualified) return;
         
+        // Mark on all visible cards
         const allCards = document.querySelectorAll('.p-card-cell');
+        let marked = false;
         allCards.forEach(cell => {
             const cellNumber = parseInt(cell.textContent);
             if (cellNumber === number && !cell.classList.contains('marked') && !cell.classList.contains('free')) {
@@ -1549,26 +1667,22 @@
                 cell.style.color = 'white';
                 if (!gameState.markedNumbers) gameState.markedNumbers = new Set();
                 gameState.markedNumbers.add(number);
-                
-                if (checkForBingo() && !gameState.hasClaimedBingo) {
-                    updateBingoButton();
-                    if (gameState.autoMode) {
-                        setTimeout(() => {
-                            if (checkForBingo() && !gameState.hasClaimedBingo) {
-                                claimBingo();
-                            }
-                        }, 500);
-                    }
-                }
+                marked = true;
             }
         });
+        
+        if (marked) {
+            updateBingoButton();
+        }
     }
 
     function updateCurrentCalledDisplay(number) {
         const display = document.getElementById("current-called-number");
         if (display) {
-            if (number) { const letter = getBingoLetter(number); display.textContent = `${letter}-${number}`; }
-            else if (gameState.calledNumbers.length > 0) {
+            if (number) { 
+                const letter = getBingoLetter(number); 
+                display.textContent = `${letter}-${number}`; 
+            } else if (gameState.calledNumbers.length > 0) {
                 const lastNumber = gameState.calledNumbers[gameState.calledNumbers.length - 1];
                 const letter = getBingoLetter(lastNumber);
                 display.textContent = `${letter}-${lastNumber}`;
@@ -1576,19 +1690,69 @@
         }
     }
 
+    // ==================== HANDLE PLAYER CARD CLICK - FIXED FOR MULTI-CARD ====================
     function handlePlayerCardClick(cell, number) {
-        if (!gameState.gameActive || !gameState.hasCard || gameState.disqualified) return showNotification("Game not active or disqualified", "error");
+        // Check if game is active
+        if (!gameState.gameActive && gameState.gamePhase !== "active" && gameState.gameStatus !== "active") {
+            showNotification("Game not active", "error");
+            return;
+        }
+        // Check if user has cards
+        if (!gameState.hasCard && gameState.ownedCardIndices.length === 0) {
+            showNotification("You don't have a card", "error");
+            return;
+        }
+        if (gameState.disqualified) {
+            showNotification("You have been disqualified", "error");
+            return;
+        }
+        // Don't allow marking in auto mode
+        if (gameState.autoMode) {
+            showNotification("Auto mode is ON - numbers marked automatically", "info", 1500);
+            return;
+        }
         if (number === 0 || number === "0") return;
-        if (gameState.markedNumbers.has(number)) { gameState.markedNumbers.delete(number); cell.classList.remove("marked"); }
-        else { gameState.markedNumbers.add(number); cell.classList.add("marked"); }
+        
+        // Toggle mark
+        if (gameState.markedNumbers.has(number)) {
+            gameState.markedNumbers.delete(number);
+            cell.classList.remove("marked");
+            cell.style.background = '#f5f5f5';
+            cell.style.color = '#212121';
+        } else {
+            // Check if this number has been called
+            if (!gameState.calledNumbers.includes(number)) {
+                showNotification("This number hasn't been called yet!", "warning", 1500);
+                return;
+            }
+            gameState.markedNumbers.add(number);
+            cell.classList.add("marked");
+            cell.style.background = '#4CAF50';
+            cell.style.color = 'white';
+        }
         updateBingoButton();
     }
     window.handlePlayerCardClick = handlePlayerCardClick;
 
     function getUserId() {
-        let userId = null; const urlParams = new URLSearchParams(window.location.search); const userIdFromUrl = urlParams.get("user_id"); if (userIdFromUrl) userId = userIdFromUrl;
-        if (!userId && window.Telegram && Telegram.WebApp) { try { const user = Telegram.WebApp.initDataUnsafe?.user; if (user && user.id) userId = user.id.toString(); } catch (error) {} }
-        if (!userId) { let storedUserId = localStorage.getItem("haset_bingo_user_id"); if (!storedUserId) { storedUserId = Math.floor(Math.random() * 1000000) + 1; localStorage.setItem("haset_bingo_user_id", storedUserId); } userId = storedUserId; }
+        let userId = null; 
+        const urlParams = new URLSearchParams(window.location.search); 
+        const userIdFromUrl = urlParams.get("user_id"); 
+        if (userIdFromUrl) userId = userIdFromUrl;
+        if (!userId && window.Telegram && Telegram.WebApp) { 
+            try { 
+                const user = Telegram.WebApp.initDataUnsafe?.user; 
+                if (user && user.id) userId = user.id.toString(); 
+            } catch (error) {} 
+        }
+        if (!userId) { 
+            let storedUserId = localStorage.getItem("haset_bingo_user_id"); 
+            if (!storedUserId) { 
+                storedUserId = Math.floor(Math.random() * 1000000) + 1; 
+                localStorage.setItem("haset_bingo_user_id", storedUserId); 
+            } 
+            userId = storedUserId; 
+        }
         return userId;
     }
 
@@ -1598,34 +1762,55 @@
             if (!response.ok) { if (response.status === 404) { gameState.hasCard = false; return false; } throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success && data.has_card && data.user_card) {
-                gameState.hasCard = true; gameState.selectedCardId = data.user_card.card_id; gameState.selectedCardIndex = data.user_card.card_index;
+                gameState.hasCard = true; 
+                gameState.selectedCardId = data.user_card.card_id; 
+                gameState.selectedCardIndex = data.user_card.card_index;
                 if (data.user_card.card_data) {
                     try {
-                        let cardData = data.user_card.card_data; if (typeof cardData === "string") cardData = JSON.parse(cardData);
+                        let cardData = data.user_card.card_data; 
+                        if (typeof cardData === "string") cardData = JSON.parse(cardData);
                         if (Array.isArray(cardData)) gameState.selectedCardNumbers = cardData;
-                        else if (cardData && typeof cardData === "object") { if (cardData.numbers && Array.isArray(cardData.numbers)) gameState.selectedCardNumbers = cardData.numbers; else if (cardData.grid && Array.isArray(cardData.grid)) { const flattened = []; for (const row of cardData.grid) { if (Array.isArray(row)) flattened.push(...row); } gameState.selectedCardNumbers = flattened; } else if (Array.isArray(cardData.cells)) gameState.selectedCardNumbers = cardData.cells.map((cell) => cell.number || cell); }
+                        else if (cardData && typeof cardData === "object") { 
+                            if (cardData.numbers && Array.isArray(cardData.numbers)) gameState.selectedCardNumbers = cardData.numbers; 
+                            else if (cardData.grid && Array.isArray(cardData.grid)) { 
+                                const flattened = []; 
+                                for (const row of cardData.grid) { 
+                                    if (Array.isArray(row)) flattened.push(...row); 
+                                } 
+                                gameState.selectedCardNumbers = flattened; 
+                            } else if (Array.isArray(cardData.cells)) gameState.selectedCardNumbers = cardData.cells.map((cell) => cell.number || cell); 
+                        }
                     } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = generateFallbackCardNumbers(); }
                 } else gameState.selectedCardNumbers = generateFallbackCardNumbers();
                 gameState.markedNumbers.clear();
                 const idEl = document.getElementById("selected-card-id");
                 if (idEl) idEl.textContent = `#${data.user_card.card_index || "0"}`;
-                if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard();
+                if (gameState.gameActive) renderPlayerCard();
                 return true;
             } else { gameState.hasCard = false; return false; }
         } catch (error) { console.error("Error fetching user card:", error); gameState.hasCard = false; return false; }
     }
 
     function generateFallbackCardNumbers() {
-        const numbers = []; for (let i = 0; i < 25; i++) { if (i === 12) numbers.push(0); else numbers.push(Math.floor(Math.random() * 75) + 1); } return numbers;
+        const numbers = []; 
+        for (let i = 0; i < 25; i++) { 
+            if (i === 12) numbers.push(0); 
+            else numbers.push(Math.floor(Math.random() * 75) + 1); 
+        } 
+        return numbers;
     }
 
     function sendWebSocketMessage(message) {
         if (!message.timestamp) message.timestamp = Date.now();
         if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) {
-            try { gameState.websocket.send(JSON.stringify(message)); return true; } catch (error) { console.error("Error sending WebSocket message:", error); gameState.pendingMessages.push(message); return false; }
+            try { gameState.websocket.send(JSON.stringify(message)); return true; } 
+            catch (error) { console.error("Error sending WebSocket message:", error); gameState.pendingMessages.push(message); return false; }
         } else {
             gameState.pendingMessages.push(message);
-            if (!gameState.isReconnecting && gameState.reconnectAttempts < gameState.maxReconnectAttempts) { gameState.isReconnecting = true; initWebSocket(); }
+            if (!gameState.isReconnecting && gameState.reconnectAttempts < gameState.maxReconnectAttempts) { 
+                gameState.isReconnecting = true; 
+                initWebSocket(); 
+            }
             return false;
         }
     }
@@ -1633,52 +1818,138 @@
     async function initWebSocket() {
         try {
             const wsUrl = `${WS_BASE_URL}/ws`;
-            gameState.reconnectAttempts++; gameState.connectionRetryCount++;
-            if (gameState.reconnectAttempts > 1) { console.log(`WebSocket reconnection attempt #${gameState.reconnectAttempts}`); updateConnectionStatus(`Reconnecting (${gameState.reconnectAttempts})...`, "orange"); }
-            if (gameState.reconnectAttempts > gameState.maxReconnectAttempts) { console.error("Max WebSocket reconnection attempts reached"); updateConnectionStatus("Connection failed - please refresh", "red"); return; }
-            if (gameState.websocket) { try { gameState.websocket.onclose = null; gameState.websocket.close(); } catch (e) {} }
+            gameState.reconnectAttempts++; 
+            gameState.connectionRetryCount++;
+            if (gameState.reconnectAttempts > 1) { 
+                console.log(`WebSocket reconnection attempt #${gameState.reconnectAttempts}`); 
+                updateConnectionStatus(`Reconnecting (${gameState.reconnectAttempts})...`, "orange"); 
+            }
+            if (gameState.reconnectAttempts > gameState.maxReconnectAttempts) { 
+                console.error("Max WebSocket reconnection attempts reached"); 
+                updateConnectionStatus("Connection failed - please refresh", "red"); 
+                return; 
+            }
+            if (gameState.websocket) { 
+                try { gameState.websocket.onclose = null; gameState.websocket.close(); } 
+                catch (e) {} 
+            }
             console.log(`Connecting to WebSocket (attempt ${gameState.connectionRetryCount}/${gameState.maxConnectionRetries}): ${wsUrl}`);
             gameState.websocket = new WebSocket(wsUrl);
             gameState.websocket.onopen = function () {
-                console.log("WebSocket connected successfully"); gameState.isConnected = true; gameState.connectionRetryCount = 0; gameState.reconnectAttempts = 0; gameState.isReconnecting = false; updateConnectionStatus("Connected", "green");
+                console.log("WebSocket connected successfully"); 
+                gameState.isConnected = true; 
+                gameState.connectionRetryCount = 0; 
+                gameState.reconnectAttempts = 0; 
+                gameState.isReconnecting = false; 
+                updateConnectionStatus("Connected", "green");
                 sendWebSocketMessage({ type: "auth", userId: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
                 setTimeout(() => { if (gameState.gameId) { console.log("Requesting full game state after reconnect"); getCompleteGameState(); } }, 500);
-                if (gameState.pendingMessages.length > 0) { gameState.pendingMessages.forEach((msg) => { try { gameState.websocket.send(JSON.stringify(msg)); } catch (e) { console.error("Failed to send pending message:", e); } }); gameState.pendingMessages = []; }
+                if (gameState.pendingMessages.length > 0) { 
+                    gameState.pendingMessages.forEach((msg) => { 
+                        try { gameState.websocket.send(JSON.stringify(msg)); } 
+                        catch (e) { console.error("Failed to send pending message:", e); } 
+                    }); 
+                    gameState.pendingMessages = []; 
+                }
                 if (gameState.pingInterval) clearInterval(gameState.pingInterval);
-                gameState.pingInterval = setInterval(() => { if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) sendWebSocketMessage({ type: "ping", timestamp: Date.now() }); }, 30000);
+                gameState.pingInterval = setInterval(() => { 
+                    if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) 
+                        sendWebSocketMessage({ type: "ping", timestamp: Date.now() }); 
+                }, 30000);
             };
-            gameState.websocket.onmessage = function (event) { try { const data = JSON.parse(event.data); handleWebSocketMessage(data); } catch (error) { console.error("Error parsing WebSocket message:", error); } };
+            gameState.websocket.onmessage = function (event) { 
+                try { const data = JSON.parse(event.data); handleWebSocketMessage(data); } 
+                catch (error) { console.error("Error parsing WebSocket message:", error); } 
+            };
             gameState.websocket.onclose = function (event) {
-                console.log("WebSocket disconnected:", event.code, event.reason); gameState.isConnected = false;
+                console.log("WebSocket disconnected:", event.code, event.reason); 
+                gameState.isConnected = false;
                 if (gameState.pingInterval) { clearInterval(gameState.pingInterval); gameState.pingInterval = null; }
-                if (!gameState.isWinnerDisplayActive && !gameState.gameComplete) updateConnectionStatus("Disconnected - reconnecting...", "orange");
+                if (!gameState.isWinnerDisplayActive && !gameState.gameComplete) 
+                    updateConnectionStatus("Disconnected - reconnecting...", "orange");
                 const delay = Math.min(1000 * Math.pow(1.5, gameState.reconnectAttempts), 30000);
                 console.log(`Reconnecting in ${delay}ms...`);
-                setTimeout(() => { if (!gameState.isConnected && !gameState.isReconnecting) { gameState.isReconnecting = true; initWebSocket(); } }, delay);
+                setTimeout(() => { 
+                    if (!gameState.isConnected && !gameState.isReconnecting) { 
+                        gameState.isReconnecting = true; 
+                        initWebSocket(); 
+                    } 
+                }, delay);
             };
             gameState.websocket.onerror = function (error) { console.error("WebSocket error:", error); };
         } catch (error) {
-            console.error("Failed to connect WebSocket:", error); gameState.isConnected = false; updateConnectionStatus("Failed to connect", "red");
+            console.error("Failed to connect WebSocket:", error); 
+            gameState.isConnected = false; 
+            updateConnectionStatus("Failed to connect", "red");
             const delay = Math.min(1000 * Math.pow(1.5, gameState.reconnectAttempts), 30000);
-            setTimeout(() => { if (!gameState.isConnected && !gameState.isReconnecting) { gameState.isReconnecting = true; initWebSocket(); } }, delay);
+            setTimeout(() => { 
+                if (!gameState.isConnected && !gameState.isReconnecting) { 
+                    gameState.isReconnecting = true; 
+                    initWebSocket(); 
+                } 
+            }, delay);
         }
     }
 
     // ==================== INSTANT CARD UPDATE ====================
     function instantCardUpdate(cardIndex, newStatus, cardData = null) {
-        const cardElement = gameState.cardsCache.cardElements[cardIndex]; if (!cardElement) return;
+        const cardElement = gameState.cardsCache.cardElements[cardIndex]; 
+        if (!cardElement) return;
         cardElement.classList.remove("available", "sold", "owned", "selected", "purchasing", "disqualified");
         switch (newStatus) {
-            case "sold": cardElement.classList.add("sold"); cardElement.onclick = null; cardElement.title = "Sold to another player"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); break;
-            case "owned": cardElement.classList.add("owned"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Your card"; gameState.cardsSold.add(cardIndex); gameState.cardsCache.soldCards.add(cardIndex); gameState.cardsCache.ownedCardIndex = cardIndex; if (cardData && cardData.numbers) { gameState.selectedCardNumbers = cardData.numbers; gameState.selectedCardIndex = cardIndex; gameState.hasCard = true; const idEl = document.getElementById("selected-card-id"); if (idEl) idEl.textContent = `#${cardIndex}`; if (gameState.gamePhase === "active" || gameState.gameStatus === "active") renderPlayerCard(); } break;
-            case "available": cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Available to buy"; gameState.cardsSold.delete(cardIndex); gameState.cardsCache.soldCards.delete(cardIndex); break;
-            case "selected": cardElement.classList.add("selected"); cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); cardElement.title = "Selected"; gameState.uiSelectedCardIndex = cardIndex; break;
-            case "disqualified": cardElement.classList.add("disqualified"); cardElement.onclick = null; cardElement.title = "Disqualified - False claim"; break;
+            case "sold": 
+                cardElement.classList.add("sold"); 
+                cardElement.onclick = null; 
+                cardElement.title = "Sold to another player"; 
+                gameState.cardsSold.add(cardIndex); 
+                gameState.cardsCache.soldCards.add(cardIndex); 
+                break;
+            case "owned": 
+                cardElement.classList.add("owned"); 
+                cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); 
+                cardElement.title = "Your card"; 
+                gameState.cardsSold.add(cardIndex); 
+                gameState.cardsCache.soldCards.add(cardIndex); 
+                gameState.cardsCache.ownedCardIndex = cardIndex; 
+                if (cardData && cardData.numbers) { 
+                    gameState.selectedCardNumbers = cardData.numbers; 
+                    gameState.selectedCardIndex = cardIndex; 
+                    gameState.hasCard = true; 
+                    const idEl = document.getElementById("selected-card-id"); 
+                    if (idEl) idEl.textContent = `#${cardIndex}`; 
+                    if (gameState.gameActive) renderPlayerCard(); 
+                } 
+                break;
+            case "available": 
+                cardElement.classList.add("available"); 
+                cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); 
+                cardElement.title = "Available to buy"; 
+                gameState.cardsSold.delete(cardIndex); 
+                gameState.cardsCache.soldCards.delete(cardIndex); 
+                break;
+            case "selected": 
+                cardElement.classList.add("selected"); 
+                cardElement.onclick = () => handleCardSelection(cardIndex, cardElement); 
+                cardElement.title = "Selected"; 
+                gameState.uiSelectedCardIndex = cardIndex; 
+                break;
+            case "disqualified": 
+                cardElement.classList.add("disqualified"); 
+                cardElement.onclick = null; 
+                cardElement.title = "Disqualified - False claim"; 
+                break;
         }
-        if (cardData) { if (cardData.prize_pool !== undefined) gameState.prizePool = cardData.prize_pool; if (cardData.total_players !== undefined) gameState.totalPlayers = cardData.total_players; if (cardData.wallet_balance !== undefined) gameState.walletBalance = cardData.wallet_balance; if (cardData.real_players !== undefined) gameState.realPlayers = cardData.real_players; if (cardData.fake_players !== undefined) gameState.fakePlayers = cardData.fake_players; updateGameStats(); }
+        if (cardData) { 
+            if (cardData.prize_pool !== undefined) gameState.prizePool = cardData.prize_pool; 
+            if (cardData.total_players !== undefined) gameState.totalPlayers = cardData.total_players; 
+            if (cardData.wallet_balance !== undefined) gameState.walletBalance = cardData.wallet_balance; 
+            if (cardData.real_players !== undefined) gameState.realPlayers = cardData.real_players; 
+            if (cardData.fake_players !== undefined) gameState.fakePlayers = cardData.fake_players; 
+            updateGameStats(); 
+        }
     }
 
-    // ==================== GET COMPLETE GAME STATE - FIXED ====================
+    // ==================== GET COMPLETE GAME STATE ====================
     async function getCompleteGameState() {
         if (!gameState.gameId) return false;
         if (gameState.fullSyncInProgress) return false;
@@ -1689,7 +1960,6 @@
             if (!response.ok) { if (response.status === 404) return false; throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success) {
-                // Update all game state from server
                 gameState.gameId = data.game_id;
                 gameState.gamePhase = data.game_phase;
                 gameState.gameStatus = data.game_status;
@@ -1702,7 +1972,6 @@
                 gameState.gameActive = data.game_phase === "active" || data.game_status === "active";
                 gameState.purchasePhaseActive = data.game_phase === "card_purchase";
                 
-                // Check if user is disqualified
                 if (data.disqualified) {
                     gameState.disqualified = true;
                     gameState.hasCard = false;
@@ -1713,22 +1982,21 @@
                     updateBingoButton();
                 }
                 
-                // Update called numbers
                 if (data.called_numbers && Array.isArray(data.called_numbers)) { 
                     gameState.calledNumbers = data.called_numbers; 
-                    if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
+                    const calledStat = document.getElementById("called-numbers-stat");
+                    if (calledStat) calledStat.textContent = data.called_numbers.length;
+                    if (gameState.autoMode && (gameState.hasCard || gameState.ownedCardIndices.length > 0) && !gameState.disqualified) {
                         data.called_numbers.forEach(num => autoMarkNumber(num));
                     }
                 }
                 
-                // Update countdown
                 if (data.countdown_remaining !== undefined) {
                     gameState.countdown = data.countdown_remaining;
                     updateCountdownDisplay(gameState.countdown);
                     updateCountdownStatusText(gameState.countdown);
                 }
                 
-                // Update user cards
                 if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0 && !gameState.disqualified) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
                     gameState.ownedCardsData = data.user_cards.map(c => ({ 
@@ -1780,14 +2048,12 @@
                     }
                 }
                 
-                // Clear preview on card purchase phase
                 if (gameState.gamePhase === "card_purchase") {
                     const preview = document.getElementById("selected-card-info");
                     if (preview) preview.style.display = "none";
                     gameState.uiSelectedCardIndex = null;
                 }
                 
-                // Handle winners
                 if (data.winners && data.winners.length > 0) {
                     gameState.winners = data.winners;
                     gameState.winnersCount = data.winners_count || data.winners.length;
@@ -1822,7 +2088,6 @@
                     gameState.gameComplete = false; 
                 }
                 
-                // Update UI
                 updateCalledNumbersDisplay(); 
                 if (gameState.calledNumbers.length > 0) {
                     updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]); 
@@ -1833,7 +2098,6 @@
                 updateGameStats();
                 gameState.purchasePhaseActive = gameState.gamePhase === "card_purchase";
                 
-                // Show correct screen
                 if (gameState.gamePhase === "card_purchase") { 
                     showScreen("waiting-screen"); 
                     document.getElementById('game-bottom-actions').classList.remove('active'); 
@@ -1850,7 +2114,7 @@
                     gameState.gameStartConfirmed = true; 
                     showScreen("game-screen"); 
                     document.getElementById('game-bottom-actions').classList.add('active'); 
-                    if (gameState.hasCard && !gameState.disqualified) {
+                    if ((gameState.hasCard || gameState.ownedCardIndices.length > 0) && !gameState.disqualified) {
                         renderPlayerCardsFromOwned(); 
                     } else {
                         renderEmptyPlayerCard(); 
@@ -1921,7 +2185,7 @@
         gameState.countdownInterval = setInterval(() => {}, 10000);
     }
 
-    // ==================== HANDLE WEBSOCKET MESSAGE - FIXED ====================
+    // ==================== HANDLE WEBSOCKET MESSAGE ====================
     async function handleWebSocketMessage(data) {
         console.log("WebSocket message received:", data.type, data); 
         gameState.lastUpdateTime = Date.now();
@@ -2097,9 +2361,7 @@
             case "pong": 
                 break;
             case "full_state_update": 
-                // CRITICAL FIX: Process full state update from server
                 if (data.game_state) {
-                    // Update game phase and status
                     if (data.game_state.game_phase) {
                         gameState.gamePhase = data.game_state.game_phase;
                         gameState.gameStatus = data.game_state.game_phase;
@@ -2111,7 +2373,6 @@
                         gameState.gameStatus = data.game_state.game_status;
                         gameState.gameActive = data.game_state.game_status === "active" || data.game_state.game_status === "game_play";
                     }
-                    // Update called numbers
                     if (data.game_state.called_numbers) {
                         gameState.calledNumbers = data.game_state.called_numbers;
                         updateCalledNumbersDisplay();
@@ -2122,7 +2383,6 @@
                             updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]);
                         }
                     }
-                    // Update prize pool and player counts
                     if (data.game_state.prize_pool !== undefined) {
                         gameState.prizePool = data.game_state.prize_pool;
                     }
@@ -2145,13 +2405,10 @@
                     }
                     updateGameStats();
                     updateGameUI();
-                    
-                    // Force button update
                     updateBingoButton();
                 }
                 break;
             case "active_game_info":
-                // Handle active game info from server
                 if (data.status) {
                     gameState.gamePhase = data.phase || data.status;
                     gameState.gameStatus = data.status;
@@ -2192,7 +2449,7 @@
         gameState.phaseChangeRequested = false;
         gameState.winnerAnnounced = true;
         gameState.hasClaimedBingo = true;
-        showNotification('BINGO verified! You won!', 'success', 5000);
+        showNotification('🎉 BINGO verified! You won!', 'success', 5000);
         updateBingoButton();
         setTimeout(() => getUserBalance(), 1000);
     }
@@ -2393,7 +2650,6 @@
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
-        // Clear preview
         const preview = document.getElementById("selected-card-info");
         if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
@@ -2428,7 +2684,6 @@
         const winnerAnnouncement = document.getElementById("winner-announcement");
         if (winnerAnnouncement) winnerAnnouncement.style.display = "none";
         if (gameState.winnerDisplayInterval) { clearInterval(gameState.winnerDisplayInterval); gameState.winnerDisplayInterval = null; }
-        // Clear preview
         const preview = document.getElementById("selected-card-info");
         if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
@@ -2524,7 +2779,6 @@
         gameState.ownedCardIndices = [];
         gameState.ownedCardsData = [];
         gameState.disqualified = false;
-        // Clear preview
         const preview = document.getElementById("selected-card-info");
         if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
@@ -2711,7 +2965,6 @@
                 return; 
             }
             if (data.server_state) {
-                // Update called numbers from sync response
                 if (data.server_state.called_numbers && Array.isArray(data.server_state.called_numbers)) {
                     if (data.server_state.called_numbers.length > gameState.calledNumbers.length) {
                         gameState.calledNumbers = data.server_state.called_numbers;
@@ -2722,13 +2975,11 @@
                         if (gameState.calledNumbers.length > 0) {
                             updateCurrentCalledDisplay(gameState.calledNumbers[gameState.calledNumbers.length - 1]);
                         }
-                        // Auto-mark numbers for any new called numbers
-                        if (gameState.autoMode && gameState.hasCard && !gameState.disqualified) {
+                        if (gameState.autoMode && (gameState.hasCard || gameState.ownedCardIndices.length > 0) && !gameState.disqualified) {
                             data.server_state.called_numbers.forEach(num => autoMarkNumber(num));
                         }
                     }
                 }
-                // Update game phase from sync
                 if (data.server_state.game_phase) {
                     gameState.gamePhase = data.server_state.game_phase;
                     gameState.gameStatus = data.server_state.game_status || data.server_state.game_phase;
@@ -3430,7 +3681,6 @@
         gameState.disqualified = false;
         updateBoardCountText();
         closeDisqualifiedOverlay();
-        // Clear preview
         const preview = document.getElementById("selected-card-info");
         if (preview) preview.style.display = "none";
         gameState.uiSelectedCardIndex = null;
@@ -3489,7 +3739,7 @@
         setInterval(() => { if (gameState.gameId && !gameState.fullSyncInProgress && !gameState.winnerAnnounced) getCompleteGameState(); }, 300000);
         updateConnectionStatus("Connected", "green"); 
         updateGameUI();
-        setInterval(() => { if (gameState.gameActive && gameState.hasCard) updateBingoButton(); }, 500);
+        setInterval(() => { if (gameState.gameActive && (gameState.hasCard || gameState.ownedCardIndices.length > 0)) updateBingoButton(); }, 500);
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
@@ -3500,7 +3750,7 @@
             document.addEventListener("touchstart", function initializeAudioOnTouch() { if (!gameState.audioInitialized) initializeAudio(); document.removeEventListener("touchstart", initializeAudioOnTouch); });
             await initGame();
             setInterval(async () => { if (gameState.gameId && !gameState.winnerAnnounced && !gameState.fullSyncInProgress) await fetchActiveGame(); }, 30000);
-            setInterval(async () => { if (gameState.gameId && gameState.hasCard) await checkUserCardStatus(); }, 15000);
+            setInterval(async () => { if (gameState.gameId && (gameState.hasCard || gameState.ownedCardIndices.length > 0)) await checkUserCardStatus(); }, 15000);
             setInterval(() => {
                 if (!gameState.isConnected && !gameState.isReconnecting && gameState.reconnectAttempts < gameState.maxReconnectAttempts) { gameState.isReconnecting = true; initWebSocket(); }
                 if (gameState.isConnected && Date.now() - gameState.lastUpdateTime > 30000) { getCompleteGameState(); }
