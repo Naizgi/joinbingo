@@ -181,7 +181,7 @@
         .board-header-row { display: flex; gap: 1px; margin-bottom: 2px; }
         .board-header-cell {
             flex: 1; text-align: center; border-radius: 4px; padding: 2px 0;
-            font-weight: 800; font-size: 11px; color: var(--text-white);
+            font-weight: 800; font-size: 12px; color: var(--text-white);
             border: 1px solid rgba(0,0,0,0.05);
         }
         .board-header-cell.b { background: var(--letter-b); }
@@ -189,11 +189,11 @@
         .board-header-cell.n { background: var(--letter-n); }
         .board-header-cell.g { background: var(--letter-g); }
         .board-header-cell.o { background: var(--letter-o); }
-        .board-columns { display: flex; gap: 2px; }
+        .board-columns { display: flex; gap: 3px; }
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
-            background: var(--grey-card); border-radius: 4px; aspect-ratio: 1;
+            background: var(--grey-card); border-radius: 8px; aspect-ratio: 1;
             font-weight: 800; font-size: 12px; color: #fff;
             border: 1px solid rgba(255,255,255,0.8); transition: all 0.2s ease;
             min-height: 20px;
@@ -364,7 +364,7 @@
             backdrop-filter: blur(2px);
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            min-height: 120px;
+            min-height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -402,7 +402,7 @@
         }
         .card-item {
             aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 10px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
+            font-weight: 600; font-size: 12px; position: relative; transition: background-color 0.08s ease, transform 0.08s ease;
         }
         .card-item.available { background: var(--grey-card); color: #000000; cursor: pointer; }
         .card-item.sold { background: var(--red-accent); color: #888; cursor: not-allowed; }
