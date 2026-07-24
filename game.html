@@ -369,6 +369,8 @@
         .action-btn:disabled { opacity: 0.6; cursor: default; }
 
         #access-denied { display: none; position: fixed; inset: 0; background: #1a1a2e; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        #connection-status { position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0, 0, 0, 0.7); padding: 5px 10px; border-radius: 5px; font-size: 12px; display: none; }
+        #status-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
@@ -427,9 +429,80 @@
         .profile-stat-value { font-weight: 700; color: var(--purple-dark); }
         .profile-toggle { background: #d32f2f; color: white; padding: 2px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .profile-toggle.on { background: var(--btn-green); }
+        
+        /* Offline/Connection Status Banner */
+        #offline-banner {
+            display: none;
+            background: #F44336;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+        }
+        #offline-banner .retry-btn {
+            background: white;
+            color: #F44336;
+            border: none;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        #offline-banner .retry-btn:hover { background: #eee; }
+        .server-error-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            padding: 20px;
+        }
+        .server-error-overlay.active { display: flex; }
+        .server-error-content {
+            background: #d9ade9;
+            border-radius: 20px;
+            padding: 30px 25px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .server-error-content .icon { font-size: 50px; color: #F44336; margin-bottom: 10px; }
+        .server-error-content h2 { color: #6A1B9A; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .server-error-content p { color: #333; font-size: 13px; line-height: 1.6; margin-bottom: 12px; }
+        .server-error-content .retry-btn { background: #6A1B9A; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+        .server-error-content .retry-btn:hover { background: #4A148C; }
     </style>
 </head>
 <body>
+
+    <!-- Offline Banner -->
+    <div id="offline-banner">
+        <span>⚠️ Connection lost - Reconnecting...</span>
+        <button class="retry-btn" onclick="forceReconnect()">Retry Now</button>
+    </div>
+
+    <!-- Server Error Overlay -->
+    <div class="server-error-overlay" id="server-error-overlay">
+        <div class="server-error-content">
+            <div class="icon">🌐</div>
+            <h2>Cannot Connect to Server</h2>
+            <p>Unable to reach the game server. Please check your internet connection and try again.</p>
+            <p style="font-size:11px; color:#999;" id="error-detail">Connection failed</p>
+            <button class="retry-btn" onclick="forceReconnect()">🔄 Retry Connection</button>
+        </div>
+    </div>
 
     <div class="disqualified-overlay" id="disqualified-overlay">
         <div class="disqualified-content">
@@ -669,7 +742,87 @@
     // - Players can mark any number (called or not)
     // - BINGO button is yellow
     // - BINGO can be clicked anytime
+    // - Robust error handling for server connection issues
     // ================================================================
+
+    // ==================== CONFIGURATION ====================
+    const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
+    const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+    const CARD_PRICE = 10.0;
+    const SOUNDS_BASE_URL = `${window.location.protocol}//${window.location.host}/sounds`;
+    const MAX_RECONNECT_ATTEMPTS = 50;
+    const RECONNECT_DELAY_BASE = 1000;
+
+    // ==================== DOM REFERENCES ====================
+    const $ = id => document.getElementById(id);
+
+    // ==================== OFFLINE HANDLING ====================
+    let isOnline = navigator.onLine;
+    let reconnectTimeout = null;
+    let reconnectAttempts = 0;
+    let isReconnecting = false;
+
+    function updateConnectionStatus(text, color) {
+        const statusDiv = $('connection-status');
+        const indicator = $('status-indicator');
+        const textSpan = $('status-text');
+        if (statusDiv && indicator && textSpan) {
+            statusDiv.style.display = 'block';
+            indicator.style.backgroundColor = color;
+            textSpan.textContent = text;
+            if (color === 'green') {
+                setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+            }
+        }
+        // Update offline banner
+        const banner = $('offline-banner');
+        if (banner) {
+            if (color === 'red' || color === 'orange') {
+                banner.style.display = 'block';
+                banner.querySelector('span').textContent = color === 'red' ? '⚠️ Connection lost - Reconnecting...' : '⚠️ Connecting...';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+        // Update server error overlay
+        const errorOverlay = $('server-error-overlay');
+        if (errorOverlay) {
+            if (color === 'red' && reconnectAttempts > 3) {
+                errorOverlay.classList.add('active');
+                $('error-detail').textContent = `Failed to connect after ${reconnectAttempts} attempts`;
+            } else {
+                errorOverlay.classList.remove('active');
+            }
+        }
+    }
+
+    function forceReconnect() {
+        const errorOverlay = $('server-error-overlay');
+        if (errorOverlay) errorOverlay.classList.remove('active');
+        reconnectAttempts = 0;
+        isReconnecting = false;
+        if (gameState.websocket) {
+            try { gameState.websocket.close(); } catch(e) {}
+        }
+        gameState.websocket = null;
+        gameState.isConnected = false;
+        updateConnectionStatus('Reconnecting...', 'orange');
+        setTimeout(() => { initWebSocket(); }, 500);
+    }
+    window.forceReconnect = forceReconnect;
+
+    // Network status listeners
+    window.addEventListener('online', () => {
+        isOnline = true;
+        updateConnectionStatus('Online - Reconnecting...', 'orange');
+        if (!gameState.isConnected) {
+            setTimeout(() => { initWebSocket(); }, 500);
+        }
+    });
+    window.addEventListener('offline', () => {
+        isOnline = false;
+        updateConnectionStatus('Offline - Check your connection', 'red');
+    });
 
     // ==================== TAB SWITCHING ====================
     function switchTab(tabName) {
@@ -744,7 +897,7 @@
         listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>';
         try {
             const userId = getUserId();
-            const response = await fetch(`/api/player/history/${userId}?page=${page}&limit=10`);
+            const response = await fetchWithTimeout(`/api/player/history/${userId}?page=${page}&limit=10`, 5000);
             if (!response.ok) throw new Error('Failed to fetch history');
             const data = await response.json();
             if (data.success) {
@@ -792,7 +945,7 @@
     async function loadPlayerProfile() {
         try {
             const userId = getUserId();
-            const response = await fetch(`/api/player/profile/${userId}`);
+            const response = await fetchWithTimeout(`/api/player/profile/${userId}`, 5000);
             if (!response.ok) throw new Error('Failed to fetch profile');
             const data = await response.json();
             if (data.success) {
@@ -818,7 +971,7 @@
     async function updateWalletUI() {
         try {
             const userId = getUserId();
-            const response = await fetch(`/api/user/balance/${userId}`);
+            const response = await fetchWithTimeout(`/api/user/balance/${userId}`, 5000);
             if(response.ok) {
                 const data = await response.json();
                 const formatted = data.balance.toFixed(2);
@@ -829,6 +982,20 @@
             }
         } catch(e) {
             console.error("Error loading wallet", e);
+        }
+    }
+
+    // ==================== FETCH WITH TIMEOUT ====================
+    async function fetchWithTimeout(url, timeout = 5000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
         }
     }
 
@@ -880,11 +1047,6 @@
     }
 
     // ==================== CONFIGURATION ====================
-    const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
-    const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
-    const CARD_PRICE = 10.0;
-    const SOUNDS_BASE_URL = `${window.location.protocol}//${window.location.host}/sounds`;
-
     const gameState = {
         userId: null, gameId: null, gamePhase: "card_purchase", gameStatus: "card_purchase",
         gameType: "round_based", selectedCardId: null, selectedCardIndex: null,
@@ -896,7 +1058,7 @@
         isCountdownComplete: false, cardsSold: new Set(), cardOwnership: {}, lastUpdateTime: 0,
         hasClaimedBingo: false, lastBingoCheck: 0, numberCallInterval: null, localCountdownActive: false,
         syncInterval: null, lastSyncTime: 0, phaseChangeRequested: false, serverControlledCountdown: true,
-        connectionRetryCount: 0, maxConnectionRetries: 50, reconnectAttempts: 0, maxReconnectAttempts: 100,
+        connectionRetryCount: 0, maxConnectionRetries: 50, reconnectAttempts: 0, maxReconnectAttempts: 50,
         audioEnabled: true, audioCache: {}, audioPreloaded: false, currentAudio: null, audioQueue: [],
         isPlayingAudio: false, audioLoadProgress: 0, totalAudioFiles: 75, audioInitialized: false,
         audioInitializationAttempted: false, lastInsufficientPlayersNotification: 0, winnerData: null,
@@ -912,7 +1074,6 @@
         ownedCardsData: [],
         disqualified: false,
         disqualifiedCards: [],
-        // NEW: Flag to allow marking any number
         allowAnyMark: true
     };
 
@@ -1061,16 +1222,6 @@
         updateGameStats();
     }
 
-    function updateConnectionStatus(text, color) {
-        const statusDiv = document.getElementById("connection-status");
-        const indicator = document.getElementById("status-indicator");
-        const textSpan = document.getElementById("status-text");
-        if (statusDiv && indicator && textSpan) {
-            statusDiv.style.display = "block"; indicator.style.backgroundColor = color; textSpan.textContent = text;
-            if (color === "green") setTimeout(() => { statusDiv.style.display = "none"; }, 3000);
-        }
-    }
-
     // ==================== CLAIM BINGO - ALWAYS ENABLED ====================
     async function claimBingo() {
         if (gameState.disqualified) {
@@ -1134,18 +1285,8 @@
             });
             
             if (!success) {
-                const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, {
-                    method: "POST", 
-                    headers: { "Content-Type": "application/json", Accept: "application/json" },
-                    body: JSON.stringify({
-                        user_id: gameState.userId, 
-                        game_type: gameState.gameType,
-                        called_numbers: gameState.calledNumbers, 
-                        card_numbers: cardNumbers,
-                        marked_numbers: Array.from(gameState.markedNumbers),
-                    }),
-                });
-                
+                const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, 8000);
+                if (!response) throw new Error('Network error');
                 const data = await response.json();
                 clearTimeout(timeoutId);
                 
@@ -1183,7 +1324,11 @@
         } catch (apiError) { 
             clearTimeout(timeoutId);
             console.error("Bingo claim API error:", apiError); 
-            showNotification("Failed to connect. Please try again.", "error", 4000); 
+            if (apiError.name === 'AbortError' || apiError.message.includes('Network')) {
+                showNotification("Network error. Please check your connection.", "error", 4000);
+            } else {
+                showNotification("Failed to connect. Please try again.", "error", 4000);
+            }
             gameState.bingoClaimInProgress = false; 
             gameState.phaseChangeRequested = false; 
             updateBingoButton(); 
@@ -1437,7 +1582,7 @@
 
     async function fetchUserCardForGame(gameId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/game/${gameId}/user-state/${gameState.userId}`);
+            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameId}/user-state/${gameState.userId}`, 5000);
             if (!response.ok) { if (response.status === 404) { gameState.hasCard = false; return false; } throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success && data.has_card && data.user_card) {
@@ -1477,39 +1622,60 @@
             catch (error) { console.error("Error sending WebSocket message:", error); gameState.pendingMessages.push(message); return false; }
         } else {
             gameState.pendingMessages.push(message);
-            if (!gameState.isReconnecting && gameState.reconnectAttempts < gameState.maxReconnectAttempts) { 
+            if (!gameState.isReconnecting && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { 
                 gameState.isReconnecting = true; 
-                initWebSocket(); 
+                setTimeout(() => { initWebSocket(); }, 500);
             }
             return false;
         }
     }
 
+    // ==================== WEBSOCKET - IMPROVED ====================
     async function initWebSocket() {
+        if (gameState.isReconnecting) {
+            console.log('Already reconnecting...');
+            return;
+        }
+        
+        if (!isOnline) {
+            updateConnectionStatus('Offline - waiting for network', 'red');
+            setTimeout(() => { if (isOnline) initWebSocket(); }, 3000);
+            return;
+        }
+
         try {
             const wsUrl = `${WS_BASE_URL}/ws`;
-            gameState.reconnectAttempts++; 
+            reconnectAttempts++;
             gameState.connectionRetryCount++;
-            if (gameState.reconnectAttempts > 1) { 
-                console.log(`WebSocket reconnection attempt #${gameState.reconnectAttempts}`); 
-                updateConnectionStatus(`Reconnecting (${gameState.reconnectAttempts})...`, "orange"); 
+            
+            if (reconnectAttempts > 1) { 
+                console.log(`WebSocket reconnection attempt #${reconnectAttempts}`); 
+                updateConnectionStatus(`Reconnecting (${reconnectAttempts})...`, "orange"); 
             }
-            if (gameState.reconnectAttempts > gameState.maxReconnectAttempts) { 
+            
+            if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) { 
                 console.error("Max WebSocket reconnection attempts reached"); 
-                updateConnectionStatus("Connection failed - please refresh", "red"); 
+                updateConnectionStatus("Connection failed - please refresh", "red");
+                const errorOverlay = $('server-error-overlay');
+                if (errorOverlay) {
+                    errorOverlay.classList.add('active');
+                    $('error-detail').textContent = 'Maximum reconnection attempts reached. Please refresh the page.';
+                }
                 return; 
             }
+            
             if (gameState.websocket) { 
                 try { gameState.websocket.onclose = null; gameState.websocket.close(); } 
                 catch (e) {} 
             }
+            
             console.log(`Connecting to WebSocket (attempt ${gameState.connectionRetryCount}/${gameState.maxConnectionRetries}): ${wsUrl}`);
             gameState.websocket = new WebSocket(wsUrl);
             gameState.websocket.onopen = function () {
                 console.log("WebSocket connected successfully"); 
                 gameState.isConnected = true; 
                 gameState.connectionRetryCount = 0; 
-                gameState.reconnectAttempts = 0; 
+                reconnectAttempts = 0; 
                 gameState.isReconnecting = false; 
                 updateConnectionStatus("Connected", "green");
                 sendWebSocketMessage({ type: "auth", userId: gameState.userId, gameId: gameState.gameId, timestamp: Date.now() });
@@ -1526,6 +1692,10 @@
                     if (gameState.websocket && gameState.websocket.readyState === WebSocket.OPEN) 
                         sendWebSocketMessage({ type: "ping", timestamp: Date.now() }); 
                 }, 30000);
+                
+                // Hide error overlay if shown
+                const errorOverlay = $('server-error-overlay');
+                if (errorOverlay) errorOverlay.classList.remove('active');
             };
             gameState.websocket.onmessage = function (event) { 
                 try { const data = JSON.parse(event.data); handleWebSocketMessage(data); } 
@@ -1537,24 +1707,27 @@
                 if (gameState.pingInterval) { clearInterval(gameState.pingInterval); gameState.pingInterval = null; }
                 if (!gameState.isWinnerDisplayActive && !gameState.gameComplete) 
                     updateConnectionStatus("Disconnected - reconnecting...", "orange");
-                const delay = Math.min(1000 * Math.pow(1.5, gameState.reconnectAttempts), 30000);
+                const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 30000);
                 console.log(`Reconnecting in ${delay}ms...`);
+                gameState.isReconnecting = false;
                 setTimeout(() => { 
                     if (!gameState.isConnected && !gameState.isReconnecting) { 
-                        gameState.isReconnecting = true; 
                         initWebSocket(); 
                     } 
                 }, delay);
             };
-            gameState.websocket.onerror = function (error) { console.error("WebSocket error:", error); };
+            gameState.websocket.onerror = function (error) { 
+                console.error("WebSocket error:", error);
+                updateConnectionStatus("Connection error", "red");
+            };
         } catch (error) {
             console.error("Failed to connect WebSocket:", error); 
             gameState.isConnected = false; 
             updateConnectionStatus("Failed to connect", "red");
-            const delay = Math.min(1000 * Math.pow(1.5, gameState.reconnectAttempts), 30000);
+            const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 30000);
+            gameState.isReconnecting = false;
             setTimeout(() => { 
                 if (!gameState.isConnected && !gameState.isReconnecting) { 
-                    gameState.isReconnecting = true; 
                     initWebSocket(); 
                 } 
             }, delay);
@@ -1622,10 +1795,12 @@
     async function getCompleteGameState() {
         if (!gameState.gameId) return false;
         if (gameState.fullSyncInProgress) return false;
+        if (!isOnline) return false;
+        
         gameState.fullSyncInProgress = true;
         try {
             console.log(`Fetching complete game state for game ${gameState.gameId}, user ${gameState.userId}`);
-            const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/complete-state/${gameState.userId}`);
+            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/complete-state/${gameState.userId}`, 8000);
             if (!response.ok) { if (response.status === 404) return false; throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success) {
@@ -1812,7 +1987,13 @@
                 gameState.lastFullSyncTime = Date.now(); 
                 return true;
             } else { return false; }
-        } catch (error) { console.error("Error fetching complete game state:", error); return false; } finally { gameState.fullSyncInProgress = false; }
+        } catch (error) { 
+            console.error("Error fetching complete game state:", error);
+            if (error.name === 'AbortError' || error.message.includes('Network') || error.message.includes('fetch')) {
+                updateConnectionStatus('Network error - retrying...', 'orange');
+            }
+            return false; 
+        } finally { gameState.fullSyncInProgress = false; }
     }
     window.getCompleteGameState = getCompleteGameState;
 
@@ -2086,7 +2267,7 @@
         updateGameStats();
         setTimeout(() => {
             if (document.getElementById("cards-grid").children.length === 0) loadCardsGrid();
-            else { fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`).then((res) => res.json()).then((data) => { if (data.success) { const soldCards = new Set(data.sold_cards || []); for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { if (soldCards.has(i)) { cardElement.classList.remove("available", "owned", "selected"); cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.remove("sold", "owned", "selected"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); } } } gameState.cardsSold = soldCards; gameState.cardsCache.soldCards = soldCards; } }); }
+            else { fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`, 5000).then((res) => res.json()).then((data) => { if (data.success) { const soldCards = new Set(data.sold_cards || []); for (let i = 1; i <= 400; i++) { const cardElement = gameState.cardsCache.cardElements[i]; if (cardElement) { if (soldCards.has(i)) { cardElement.classList.remove("available", "owned", "selected"); cardElement.classList.add("sold"); cardElement.onclick = null; } else { cardElement.classList.remove("sold", "owned", "selected"); cardElement.classList.add("available"); cardElement.onclick = () => handleCardSelection(i, cardElement); } } } gameState.cardsSold = soldCards; gameState.cardsCache.soldCards = soldCards; } }); }
         }, 500);
         setTimeout(() => { checkUserCardStatus(); }, 1000);
         updateBingoButton();
@@ -2150,8 +2331,10 @@
     async function syncWithServer() {
         if (!gameState.gameId) return;
         if (gameState.isWinnerDisplayActive) return;
+        if (!isOnline) return;
+        
         try {
-            const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/sync`, {
+            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/sync`, 5000, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     user_id: gameState.userId, called_numbers: gameState.calledNumbers, game_phase: gameState.gamePhase,
@@ -2190,6 +2373,9 @@
             gameState.lastSyncTime = Date.now();
         } catch (error) {
             console.warn("Sync failed:", error.message);
+            if (error.name === 'AbortError' || error.message.includes('Network') || error.message.includes('fetch')) {
+                updateConnectionStatus('Sync failed - retrying...', 'orange');
+            }
             if (Date.now() - gameState.lastFullSyncTime > 30000) setTimeout(() => getCompleteGameState(), 2000);
         }
     }
@@ -2529,7 +2715,7 @@
         if (!gameState.purchasePhaseActive) { showNotification("Card purchase is only available during card purchase phase", "error"); gameState.isCardOperationInProgress = false; return; }
         try {
             if (element) element.classList.add("purchasing");
-            const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, {
+            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/toggle-card`, 8000, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_id: gameState.userId, card_index: cardIndex, action: action }),
             });
@@ -2569,7 +2755,11 @@
             }
         } catch (error) {
             console.error("Error toggling card:", error);
-            showNotification("Failed to process card. Please try again.", "error");
+            if (error.name === 'AbortError' || error.message.includes('Network')) {
+                showNotification("Network error. Please check your connection.", "error", 3000);
+            } else {
+                showNotification("Failed to process card. Please try again.", "error");
+            }
             if (element) { element.classList.remove("purchasing"); element.classList.remove("selected"); }
             gameState.uiSelectedCardIndex = null;
         } finally { gameState.isCardOperationInProgress = false; }
@@ -2629,7 +2819,7 @@
             grid.innerHTML = ""; gameState.cardsCache.cardElements = {};
             let soldCards = [];
             try {
-                const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`);
+                const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/sold-cards`, 5000);
                 if (response.ok) { const data = await response.json(); if (data.success) { soldCards = data.sold_cards || []; gameState.cardsSold = new Set(soldCards); gameState.cardsCache.soldCards = new Set(soldCards); } }
             } catch (error) { console.error("Error fetching sold cards:", error); }
             gameState.cardsCache.ownedCardIndex = gameState.selectedCardIndex;
@@ -2670,15 +2860,21 @@
 
     async function fetchActiveGame() {
         try {
-            const response = await fetch("/api/game/active");
+            const response = await fetchWithTimeout("/api/game/active", 5000);
             if (!response.ok) { if (response.status === 404) return null; throw new Error(`HTTP ${response.status}`); }
             const data = await response.json(); return data.success ? data : null;
-        } catch (error) { console.error("Error fetching active game:", error); return null; }
+        } catch (error) { 
+            console.error("Error fetching active game:", error);
+            if (error.name === 'AbortError' || error.message.includes('Network') || error.message.includes('fetch')) {
+                updateConnectionStatus('Network error - retrying...', 'orange');
+            }
+            return null; 
+        }
     }
 
     async function getUserBalance() {
         try {
-            const response = await fetch(`/api/user/balance/${gameState.userId}`);
+            const response = await fetchWithTimeout(`/api/user/balance/${gameState.userId}`, 5000);
             if (!response.ok) { gameState.walletBalance = 0.0; updateGameStats(); return; }
             const data = await response.json();
             gameState.walletBalance = data.success ? (parseFloat(data.balance) || 0.0) : 0.0;
@@ -2689,7 +2885,7 @@
     async function checkUserCardStatus() {
         try {
             if (!gameState.gameId) return;
-            const response = await fetch(`${API_BASE_URL}/game/${gameState.gameId}/user-state/${gameState.userId}`);
+            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/user-state/${gameState.userId}`, 5000);
             if (!response.ok) { if (response.status === 404) { gameState.hasCard = false; return; } throw new Error(`HTTP ${response.status}`); }
             const data = await response.json();
             if (data.success) {
@@ -2782,10 +2978,16 @@
             }
             document.getElementById('game-bottom-actions').classList.remove('active');
             updateBingoButton();
-        } else { console.log("No active game found"); setTimeout(() => { initGame(); }, 5000); return; }
-        await initWebSocket(); await checkUserCardStatus(); startSyncInterval();
-        setInterval(() => { if (gameState.gameId && !gameState.fullSyncInProgress && !gameState.winnerAnnounced) getCompleteGameState(); }, 300000);
-        updateConnectionStatus("Connected", "green"); updateGameUI();
+        } else { 
+            console.log("No active game found - will retry"); 
+            // Don't immediately retry, wait for WebSocket connection
+        }
+        await initWebSocket(); 
+        await checkUserCardStatus(); 
+        startSyncInterval();
+        setInterval(() => { if (gameState.gameId && !gameState.fullSyncInProgress && !gameState.winnerAnnounced) getCompleteGameState(); }, 30000);
+        updateConnectionStatus("Connected", "green"); 
+        updateGameUI();
         setInterval(() => { if (gameState.gameActive && (gameState.hasCard || gameState.ownedCardIndices.length > 0)) updateBingoButton(); }, 500);
     }
 
@@ -2799,12 +3001,25 @@
             setInterval(async () => { if (gameState.gameId && !gameState.winnerAnnounced && !gameState.fullSyncInProgress) await fetchActiveGame(); }, 30000);
             setInterval(async () => { if (gameState.gameId && (gameState.hasCard || gameState.ownedCardIndices.length > 0)) await checkUserCardStatus(); }, 15000);
             setInterval(() => {
-                if (!gameState.isConnected && !gameState.isReconnecting && gameState.reconnectAttempts < gameState.maxReconnectAttempts) { gameState.isReconnecting = true; initWebSocket(); }
+                if (!gameState.isConnected && !gameState.isReconnecting && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) { 
+                    gameState.isReconnecting = true; 
+                    setTimeout(() => { initWebSocket(); }, 500);
+                }
                 if (gameState.isConnected && Date.now() - gameState.lastUpdateTime > 30000) { getCompleteGameState(); }
             }, 10000);
             document.addEventListener("visibilitychange", function () { if (!document.hidden && gameState.gameId) { getCompleteGameState(); } });
-            window.addEventListener("online", function () { if (!gameState.isConnected) { gameState.isReconnecting = true; initWebSocket(); } if (gameState.gameId) { setTimeout(() => getCompleteGameState(), 1000); } });
-            window.addEventListener("offline", function () { updateConnectionStatus("Offline - waiting for network...", "red"); });
+            window.addEventListener("online", function () { 
+                isOnline = true;
+                if (!gameState.isConnected) { 
+                    gameState.isReconnecting = true; 
+                    setTimeout(() => { initWebSocket(); }, 500);
+                } 
+                if (gameState.gameId) { setTimeout(() => getCompleteGameState(), 1000); } 
+            });
+            window.addEventListener("offline", function () { 
+                isOnline = false;
+                updateConnectionStatus("Offline - waiting for network...", "red"); 
+            });
         } catch (error) { console.error("Failed to initialize game:", error); showNotification("Failed to initialize game. Please refresh the page.", "error"); setTimeout(() => { window.location.reload(); }, 10000); }
     });
     </script>
