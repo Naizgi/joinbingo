@@ -4509,7 +4509,7 @@ async def sync_game_state(request):
 # ==================== FIXED COMPLETE STATE ENDPOINT ====================
 @routes.get('/api/game/{game_id}/complete-state/{user_id}')
 async def get_complete_game_state(request):
-    """Get complete game state for a client (for reconnection) - FIXED: Shows correct prize pool"""
+    """Get complete game state for a client (for reconnection) - FIXED: Shows correct prize pool with card numbers"""
     try:
         game_id = request.match_info['game_id']
         user_id_str = request.match_info['user_id']
@@ -4583,21 +4583,27 @@ async def get_complete_game_state(request):
                 if winner_display_end > datetime.now():
                     countdown = (winner_display_end - datetime.now()).total_seconds()
         
-     # Get ALL active cards (supports up to 2 boards) — keep in sync with
-        # user-state and toggle-card endpoints so the client never loses a board on resync
+        # ========== FIXED: Get ALL active cards with proper card numbers ==========
         user_cards_list = []
         if user_id:
             active_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
             for c in active_cards:
-                numbers = c.get('card_numbers') or c.get('card_data') or []
-                if isinstance(numbers, str):
+                numbers = c.get('card_numbers', [])
+                
+                # If still no numbers, try to get from fixed cards
+                if not numbers or len(numbers) != 25:
                     try:
-                        numbers = json.loads(numbers)
-                    except Exception:
+                        card_index = c.get('card_index')
+                        fixed_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
+                        if fixed_numbers and len(fixed_numbers) == 25:
+                            numbers = fixed_numbers
+                    except:
                         numbers = []
-                elif isinstance(numbers, dict):
-                    numbers = numbers.get('numbers', [])
-                user_cards_list.append({'card_index': c.get('card_index'), 'card_numbers': numbers})
+                
+                user_cards_list.append({
+                    'card_index': c.get('card_index'), 
+                    'card_numbers': numbers
+                })
 
         # Format user card data
         user_card_data = None
@@ -4658,7 +4664,7 @@ async def get_complete_game_state(request):
             'total_players': total_players,  # FIXED: Show total players
             'user_has_card': user_card is not None,
             'user_card': user_card_data,
-            'user_cards': user_cards_list,
+            'user_cards': user_cards_list,  # <-- FIXED: Now has proper card numbers
             'winners': formatted_winners,
             'winners_count': winners_count,
             'max_winners': max_winners,
@@ -4680,7 +4686,6 @@ async def get_complete_game_state(request):
             'success': False,
             'message': str(e)
         }, status=500)
-
 
 async def calculate_server_countdown(game: dict) -> int:
     """Calculate countdown based on game timestamps - FIXED"""
@@ -4938,7 +4943,7 @@ async def get_active_game(request):
 # ==================== FIXED USER GAME STATE ENDPOINT ====================
 @routes.get('/api/game/{game_id}/user-state/{user_id}')
 async def get_user_game_state(request):
-    """Get user's state in game - FIXED: Returns ALL active cards"""
+    """Get user's state in game - FIXED: Returns ALL active cards with proper numbers"""
     try:
         game_id = request.match_info['game_id']
         user_id_str = request.match_info['user_id']
@@ -4959,8 +4964,32 @@ async def get_user_game_state(request):
         
         balance = float(user_data.get('balance', 10.00)) if user_data else 10.00
         
-        # ========== FIXED: Get ALL active cards for this user ==========
-        user_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
+        # ========== FIXED: Get ALL active cards with proper numbers ==========
+        user_cards_raw = await Database.get_user_active_cards_in_game(user_id, game_id)
+        
+        # Format cards with proper numbers
+        formatted_cards = []
+        for card in user_cards_raw:
+            numbers = card.get('card_numbers', [])
+            
+            # If still no numbers, try to get from fixed cards
+            if not numbers or len(numbers) != 25:
+                try:
+                    card_index = card.get('card_index')
+                    fixed_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
+                    if fixed_numbers and len(fixed_numbers) == 25:
+                        numbers = fixed_numbers
+                except:
+                    numbers = []
+            
+            formatted_cards.append({
+                'card_index': card.get('card_index'),
+                'card_numbers': numbers,
+                'card_id': card.get('id'),
+                'purchase_time': card.get('purchase_time'),
+                'is_fake': card.get('is_fake', False),
+                'purchase_price': card.get('purchase_price', 10.00)
+            })
         
         # Get game status via game_manager
         game_status = await game_manager.get_game_status(game_id)
@@ -4984,8 +5013,8 @@ async def get_user_game_state(request):
         # Build response with ALL cards
         response_data = {
             'success': True,
-            'has_card': len(user_cards) > 0,
-            'user_cards': user_cards,  # <-- Send ALL cards
+            'has_card': len(formatted_cards) > 0,
+            'user_cards': formatted_cards,  # <-- FIXED: Now has proper card numbers
             'game_status': game_status.get('status', 'unknown'),
             'game_type': 'round_based',
             'phase': game_status.get('phase', 'unknown'),
@@ -5018,7 +5047,6 @@ async def get_user_game_state(request):
             'success': False,
             'message': f'Error getting user game state: {str(e)}'
         }, status=500)
-
 # ==================== CARD PURCHASE API ====================
 @routes.post('/api/game/{game_id}/toggle-card')
 async def toggle_card_purchase(request):
@@ -5502,6 +5530,20 @@ async def get_sold_cards(request):
         
         logger.info(f"   Real cards: {real_cards}, Fake cards: {fake_cards}")
         
+        # Get user cards with proper numbers (for debugging)
+        # This helps verify the data is correct
+        user_cards_with_numbers = []
+        for card in cards:
+            user_id = card.get('user_id')
+            if user_id:
+                user_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
+                for uc in user_cards:
+                    user_cards_with_numbers.append({
+                        'user_id': user_id,
+                        'card_index': uc.get('card_index'),
+                        'card_numbers_count': len(uc.get('card_numbers', []))
+                    })
+        
         # If no cards found, check if game has any players at all
         if len(cards) == 0:
             # Check if there are any records at all (even inactive)
@@ -5524,7 +5566,8 @@ async def get_sold_cards(request):
             'sold_cards': sold_cards,
             'total_cards': len(cards),
             'game_id': game_id,
-            'game_status': game.get('status', 'unknown')
+            'game_status': game.get('status', 'unknown'),
+            'user_cards_debug': user_cards_with_numbers[:10]  # First 10 for debugging
         }, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
                 
     except Exception as e:
@@ -5533,7 +5576,83 @@ async def get_sold_cards(request):
             'success': False,
             'message': f'Failed to get sold cards: {str(e)}'
         }, status=500)
-
+        
+        
+        
+        
+        
+@routes.get('/api/user/{user_id}/transactions')
+async def get_user_transactions(request):
+    """Get paginated transactions for a specific user"""
+    try:
+        user_id_str = request.match_info['user_id']
+        user_id = parse_user_id(user_id_str)
+        
+        # Get pagination parameters
+        page = int(request.query.get('page', 1))
+        limit = int(request.query.get('limit', 20))
+        offset = (page - 1) * limit
+        
+        from database.db import Database
+        
+        with Database.get_cursor() as cursor:
+            # Get total count for pagination
+            cursor.execute("""
+                SELECT COUNT(*) as total 
+                FROM transactions 
+                WHERE user_id = ?
+            """, (user_id,))
+            total_row = cursor.fetchone()
+            total = total_row[0] if total_row else 0
+            
+            # Get paginated transactions
+            cursor.execute("""
+                SELECT id, user_id, amount, balance_after, transaction_type, 
+                       description, game_id, created_at
+                FROM transactions 
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            """, (user_id, limit, offset))
+            
+            rows = cursor.fetchall()
+            transactions = []
+            
+            for row in rows:
+                tx = {
+                    'id': row[0],
+                    'user_id': row[1],
+                    'amount': float(row[2]) if row[2] else 0,
+                    'balance_after': float(row[3]) if row[3] else None,
+                    'transaction_type': row[4],
+                    'description': row[5],
+                    'game_id': row[6],
+                    'created_at': row[7].isoformat() if row[7] else None
+                }
+                transactions.append(tx)
+            
+            total_pages = (total + limit - 1) // limit if total > 0 else 0
+            
+            return web.json_response({
+                'success': True,
+                'transactions': transactions,
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total,
+                    'pages': total_pages
+                },
+                'timestamp': datetime.now().isoformat()
+            }, dumps=lambda obj: json.dumps(obj, cls=CustomJSONEncoder))
+            
+    except Exception as e:
+        logger.error(f"Error getting user transactions: {e}", exc_info=True)
+        return web.json_response({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+        
+        
 
 # ==================== LIGHTNING-FAST BINGO CLAIM API ====================
 @routes.post('/api/game/{game_id}/claim-bingo')

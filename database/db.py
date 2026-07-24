@@ -1339,7 +1339,8 @@ class Database:
         try:
             with Database.get_cursor() as cursor:
                 cursor.execute("""
-                    SELECT id, user_id, game_id, card_index, card_data, is_fake, is_active, purchase_time
+                    SELECT id, user_id, game_id, card_index, card_numbers, card_data, 
+                        is_fake, is_active, purchase_time, purchase_price
                     FROM player_cards 
                     WHERE user_id = ? AND game_id = ? AND is_active = 1
                 """, (user_id, game_id))
@@ -1347,23 +1348,65 @@ class Database:
                 rows = cursor.fetchall()
                 cards = []
                 for row in rows:
-                    # Parse card_data if it's JSON
-                    card_data = row[4]
-                    if isinstance(card_data, str):
+                    card_numbers_raw = row[4]  # card_numbers column
+                    card_data_raw = row[5]     # card_data column
+                    
+                    # Try to get numbers from card_numbers first
+                    numbers = []
+                    if card_numbers_raw:
+                        if isinstance(card_numbers_raw, str):
+                            try:
+                                numbers = json.loads(card_numbers_raw)
+                            except:
+                                numbers = []
+                        elif isinstance(card_numbers_raw, list):
+                            numbers = card_numbers_raw
+                    
+                    # If no numbers from card_numbers, try card_data
+                    if not numbers or len(numbers) != 25:
+                        if card_data_raw:
+                            if isinstance(card_data_raw, str):
+                                try:
+                                    card_data = json.loads(card_data_raw)
+                                    if isinstance(card_data, dict):
+                                        numbers = card_data.get('numbers', [])
+                                    elif isinstance(card_data, list):
+                                        numbers = card_data
+                                except:
+                                    numbers = []
+                            elif isinstance(card_data_raw, dict):
+                                numbers = card_data_raw.get('numbers', [])
+                            elif isinstance(card_data_raw, list):
+                                numbers = card_data_raw
+                    
+                    # Final fallback - get from fixed cards
+                    if not numbers or len(numbers) != 25:
                         try:
-                            card_data = json.loads(card_data)
+                            from utils.game_manager import game_manager
+                            card_index = row[3]  # card_index
+                            fixed_numbers = game_manager.fixed_cards.get(f"card_{card_index}")
+                            if fixed_numbers and len(fixed_numbers) == 25:
+                                numbers = fixed_numbers
+                                # Update the database with correct numbers
+                                cursor.execute("""
+                                    UPDATE player_cards 
+                                    SET card_numbers = ? 
+                                    WHERE id = ?
+                                """, (json.dumps(numbers), row[0]))
                         except:
-                            card_data = {}
+                            numbers = []
                     
                     cards.append({
                         'id': row[0],
                         'user_id': row[1],
                         'game_id': row[2],
                         'card_index': row[3],
-                        'card_data': card_data,
-                        'is_fake': row[5],
-                        'is_active': row[6],
-                        'purchase_time': row[7]
+                        'card_numbers': numbers,  # <-- THIS IS WHAT THE FRONTEND NEEDS
+                        'card_data': json.loads(card_data_raw) if isinstance(card_data_raw, str) and card_data_raw else (card_data_raw or {}),
+                        'is_fake': row[6],
+                        'is_active': row[7],
+                        'purchase_time': row[8],
+                        'purchase_price': float(row[9]) if row[9] else 10.00
                     })
                 return cards
         except Exception as e:

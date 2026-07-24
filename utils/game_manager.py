@@ -4291,7 +4291,7 @@ class GameManager:
     async def _disqualify_player(self, game_id: str, user_id: int) -> dict:
         """
         Disqualify a player for false bingo claim.
-        Returns: dict with refund_amount and success status
+        NO REFUND - player loses their card and money.
         """
         try:
             from database.db import Database
@@ -4308,35 +4308,16 @@ class GameManager:
             card_index = user_card.get('card_index')
             purchase_price = float(user_card.get('purchase_price', 10.00))
             
-            # Refund 80% of purchase price (punishment for false claim)
-            refund_amount = purchase_price * 0.8
+            # ========== FIXED: NO REFUND - player loses their money ==========
+            # The player's money stays in the prize pool and with the house
+            # No balance update - they lose their card and money
             
-            # Update user balance with refund
-            new_balance = await Database.add_user_balance(
-                user_id=user_id,
-                amount=refund_amount,
-                transaction_type='false_bingo_penalty',
-                notes=f'False bingo claim penalty - refunded {refund_amount} birr'
-            )
-            
-            # Deactivate the card
+            # Deactivate the card (player loses access)
             await Database.deactivate_player_card(card_id)
             
-            # Update game stats (remove player's contribution)
-            with Database.get_cursor() as cursor:
-                cursor.execute("""
-                    UPDATE games 
-                    SET total_cards_sold = total_cards_sold - 1,
-                        prize_pool = MAX(0, prize_pool - ?),
-                        total_sales = total_sales - ?,
-                        real_cards_sold = real_cards_sold - 1,
-                        total_players = (
-                            SELECT COUNT(DISTINCT user_id) 
-                            FROM player_cards 
-                            WHERE game_id = ? AND is_active = 1
-                        )
-                    WHERE game_id = ?
-                """, (purchase_price * 0.8, purchase_price, game_id, game_id))
+            # ========== FIXED: DO NOT reduce prize pool or total_cards_sold ==========
+            # The player's contribution stays in the prize pool
+            # Only mark the card as inactive - everything else stays the same
             
             # Remove from owned cards tracking
             if game_id in self.game_winners:
@@ -4353,19 +4334,20 @@ class GameManager:
             # Update fake players count
             self._fake_players_finalized[game_id] = False
             
-            logger.info(f"✅ Player {user_id} disqualified from game {game_id} for false bingo claim")
+            logger.info(f"✅ Player {user_id} disqualified from game {game_id} for false bingo claim - NO REFUND")
             
             return {
                 'success': True,
-                'refund_amount': refund_amount,
+                'refund_amount': 0,  # No refund
                 'card_id': card_id,
-                'card_index': card_index
+                'card_index': card_index,
+                'message': 'Player disqualified - no refund'
             }
             
         except Exception as e:
             logger.error(f"Error disqualifying player {user_id}: {e}", exc_info=True)
             return {'success': False, 'refund_amount': 0}
-    
+        
     # NEW: Manual game recovery API method
     async def recover_stuck_game(self, game_id: str, admin_id: int):
         """Manually recover a stuck game (for admin API)"""

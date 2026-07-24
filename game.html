@@ -1021,6 +1021,84 @@
             margin-top: 4px;
         }
 
+
+        /* Wallet History Styles */
+.wallet-history-card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+}
+
+.wallet-history-card:active {
+    transform: scale(0.98);
+}
+
+.wallet-tx-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.wallet-tx-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wallet-tx-type .in {
+    color: #4CAF50;
+}
+
+.wallet-tx-type .out {
+    color: #F44336;
+}
+
+.wallet-tx-amount.positive {
+    color: #4CAF50;
+}
+
+.wallet-tx-amount.negative {
+    color: #F44336;
+}
+
+.wallet-tx-amount.neutral {
+    color: #FF9800;
+}
+
+.wallet-tx-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.wallet-tx-ref {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 2px;
+    font-family: monospace;
+}
+
+#wallet-transactions-container {
+    padding: 0 4px;
+}
+
+.wallet-transactions-loading {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+}
+
+
+
+
         /* ===== PROFILE PAGE - ORIGINAL ===== */
         .profile-avatar {
             width: 60px;
@@ -1510,45 +1588,176 @@
     window.switchTab = switchTab;
 
     // ==================== WALLET TAB SWITCHING ====================
-    function switchWalletTab(tab) {
-        document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
-        const tabs = document.querySelectorAll('.wallet-tab');
-        if(tab === 'balances') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
-
-        const balancesView = document.getElementById('wallet-balances-view');
-        const historyView = document.getElementById('wallet-history-view');
-        if (balancesView) balancesView.style.display = tab === 'balances' ? 'block' : 'none';
-        if (historyView) historyView.classList.toggle('active', tab === 'history');
-        
-        if(tab === 'history') { loadWalletHistory(); }
+function switchWalletTab(tab) {
+    document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
+    const tabs = document.querySelectorAll('.wallet-tab');
+    if(tab === 'balances') { 
+        tabs[0].classList.add('active'); 
+    } else { 
+        tabs[1].classList.add('active'); 
     }
-    window.switchWalletTab = switchWalletTab;
+
+    const balancesView = document.getElementById('wallet-balances-view');
+    const historyView = document.getElementById('wallet-history-view');
+    if (balancesView) balancesView.style.display = tab === 'balances' ? 'block' : 'none';
+    if (historyView) historyView.classList.toggle('active', tab === 'history');
+    
+    if(tab === 'history') { 
+        walletHistoryPage = 1;
+        loadWalletHistory(); 
+    }
+}
 
     async function loadWalletHistory() {
-        const container = document.getElementById('wallet-transactions-container');
-        if (!container) return;
-        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-        setTimeout(() => {
-            container.innerHTML = `
-                <div class="wallet-history-card">
-                    <div class="wallet-tx-row"><div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div><div class="wallet-tx-amount positive">+Br 30.00</div></div>
-                    <div class="wallet-tx-meta">15/07/2026, 13:04:40</div>
-                    <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
-                    <div class="wallet-tx-ref">Ref DGF7URQ5EP • Seid -> Unknown</div>
-                </div>
-                <div class="wallet-history-card">
-                    <div class="wallet-tx-row"><div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div><div class="wallet-tx-amount positive">+Br 20.00</div></div>
-                    <div class="wallet-tx-meta">15/07/2026, 12:50:27</div>
-                    <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
-                    <div class="wallet-tx-ref">Ref DGF7UNFTAF • Seid -> Unknown</div>
-                </div>
-                <div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 12px;">Showing recent 20 transactions</div>
-            `;
-        }, 500);
-    }
-
-    let currentHistoryPage = 1;
+    const container = document.getElementById('wallet-transactions-container');
+    if (!container) return;
     
+    container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading transactions...</div>';
+    
+    try {
+        const userId = getUserId();
+        const response = await fetchWithTimeout(`${API_BASE_URL}/user/${userId}/transactions`, 8000);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load transactions');
+        }
+        
+        const transactions = data.transactions || [];
+        
+        if (transactions.length === 0) {
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 30px 20px; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 30px; display: block; margin-bottom: 10px; color: var(--purple-light);"></i>
+                    <p style="font-size: 14px;">No transactions yet</p>
+                    <p style="font-size: 12px; color: #999;">Your transaction history will appear here</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        transactions.forEach(tx => {
+            const isCredit = tx.amount > 0;
+            const isDebit = tx.amount < 0;
+            const typeIcon = isCredit ? 'fa-arrow-circle-down' : (isDebit ? 'fa-arrow-circle-up' : 'fa-circle');
+            const typeColor = isCredit ? '#4CAF50' : (isDebit ? '#F44336' : '#FF9800');
+            const amountClass = isCredit ? 'positive' : (isDebit ? 'negative' : 'neutral');
+            const amountSign = isCredit ? '+' : '';
+            const formattedAmount = Math.abs(tx.amount).toFixed(2);
+            
+            // Format transaction type display name
+            let typeDisplay = tx.transaction_type || 'Unknown';
+            const typeMap = {
+                'deposit': 'Deposit',
+                'withdrawal': 'Withdrawal',
+                'withdrawal_approved': 'Withdrawal Approved',
+                'withdrawal_rejected': 'Withdrawal Rejected',
+                'withdrawal_requested': 'Withdrawal Requested',
+                'withdrawal_refund': 'Withdrawal Refund',
+                'card_purchase': 'Card Purchase',
+                'card_refund': 'Card Refund',
+                'winning': 'BINGO Win! 🎉',
+                'bingo_win': 'BINGO Win! 🎉',
+                'admin_add': 'Admin Added',
+                'admin_deduct': 'Admin Deducted',
+                'system_refund': 'System Refund',
+                'initial_deposit': 'Signup Bonus',
+                'refund': 'Refund'
+            };
+            typeDisplay = typeMap[tx.transaction_type] || tx.transaction_type;
+            
+            // Format date
+            let dateStr = 'Unknown date';
+            if (tx.created_at) {
+                try {
+                    const date = new Date(tx.created_at);
+                    dateStr = date.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch(e) {
+                    dateStr = tx.created_at;
+                }
+            }
+            
+            // Game ID if available
+            const gameInfo = tx.game_id ? `<span style="font-size: 10px; color: var(--text-muted);">Game: ${tx.game_id.substring(0, 12)}</span>` : '';
+            
+            html += `
+                <div class="wallet-history-card" style="
+                    background: white;
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                    margin-bottom: 8px;
+                    border: 1px solid #e8e8e8;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                ">
+                    <div class="wallet-tx-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div class="wallet-tx-type" style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas ${typeIcon}" style="color: ${typeColor}; font-size: 16px;"></i>
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text-main);">${typeDisplay}</span>
+                        </div>
+                        <div class="wallet-tx-amount ${amountClass}" style="font-weight: 700; font-size: 15px; color: ${typeColor};">
+                            ${amountSign}Br ${formattedAmount}
+                        </div>
+                    </div>
+                    <div class="wallet-tx-meta" style="font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        <span><i class="far fa-calendar-alt" style="margin-right: 3px;"></i> ${dateStr}</span>
+                        ${gameInfo ? `<span style="color: #999;">• ${gameInfo}</span>` : ''}
+                    </div>
+                    ${tx.description ? `<div style="font-size: 11px; color: #888; margin-top: 4px; font-style: italic;">${tx.description}</div>` : ''}
+                    ${tx.balance_after !== null && tx.balance_after !== undefined ? 
+                        `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Balance after: Br ${tx.balance_after.toFixed(2)}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        // Add pagination if more transactions
+        if (data.pagination && data.pagination.total > data.pagination.limit) {
+            const totalPages = data.pagination.pages || 1;
+            const currentPage = data.pagination.page || 1;
+            
+            html += `
+                <div style="display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding: 8px;">
+                    ${currentPage > 1 ? `<button onclick="loadWalletHistoryPage(${currentPage - 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Previous</button>` : ''}
+                    <span style="font-size: 12px; color: var(--text-muted); padding: 6px 10px;">Page ${currentPage} of ${totalPages}</span>
+                    ${currentPage < totalPages ? `<button onclick="loadWalletHistoryPage(${currentPage + 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Next</button>` : ''}
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error("Error loading wallet history:", error);
+        container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 30px 20px; color: var(--red-accent);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 30px; display: block; margin-bottom: 10px;"></i>
+                <p style="font-size: 14px; font-weight: 600;">Failed to load transactions</p>
+                <p style="font-size: 12px; color: #999; margin-top: 4px;">${error.message}</p>
+                <button onclick="loadWalletHistory()" style="margin-top: 12px; background: var(--purple-dark); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Add pagination support
+let walletHistoryPage = 1;
+async function loadWalletHistoryPage(page = 1) {
+    walletHistoryPage = page;
+    await loadWalletHistory();
+}    
     async function loadPlayerHistory(page = 1) {
         const listContainer = document.getElementById('history-list-container');
         const statsContainer = document.getElementById('history-stats-container');
