@@ -119,7 +119,7 @@
         }
         .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
 
-        /* ===== PAGE CONTAINER - RESTORED ===== */
+        /* ===== PAGE CONTAINER - RESTORED ORIGINAL ===== */
         .page-container { 
             display: none; 
             padding: 16px; 
@@ -131,7 +131,7 @@
         .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
 
-        /* ===== CARD COMPONENT ===== */
+        /* ===== CARD COMPONENT - RESTORED ORIGINAL ===== */
         .card { 
             background: var(--surface-white); 
             border-radius: 20px; 
@@ -140,7 +140,7 @@
             margin-bottom: 12px; 
         }
 
-        /* ==================== GAME SCREEN - NO GAPS (KEPT AS IS) ==================== */
+        /* ==================== GAME SCREEN - KEPT AS IS (NO GAPS) ==================== */
         #game-screen {
             padding: 0 !important;
             margin: 0 !important;
@@ -317,7 +317,7 @@
             border-radius: 8px; 
             padding: 4px; 
             border: 1px solid rgba(255,255,255,0.5); 
-            min-height: 280px; 
+            min-height: 80px; 
             max-height: 320px; 
             overflow-y: auto;
         }
@@ -385,26 +385,26 @@
             justify-content: center;
         }
 
-        /* ==================== WAITING SCREEN (KEPT AS IS) ==================== */
+        /* ==================== WAITING SCREEN - KEPT AS IS ==================== */
         #waiting-screen {
             padding: 4px !important;
         }
 
         .game-stats {
             background: var(--surface-white);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 2px 2px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
+            gap: 4px;
             border: 2px solid #FFFFFF;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .stat-item { text-align: center; border-right: 1px solid rgba(0,0,0,0.05); padding: 3px 0; }
+        .stat-item { text-align: center; border-right: 1px solid rgba(0,0,0,0.05); padding: 2px 0; }
         .stat-item:last-child { border-right: none; }
-        .stat-label { font-size: 8px; color: var(--text-muted); display: block; font-weight: 600; margin-bottom: 1px; }
-        .stat-value { font-size: 14px; font-weight: 700; color: var(--text-main); display: block; }
+        .stat-label { font-size: 7px; color: var(--text-muted); display: block; font-weight: 600; margin-bottom: 1px; }
+        .stat-value { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; }
         .stat-value.orange { color: var(--orange-accent) !important; }
 
         .cards-grid {
