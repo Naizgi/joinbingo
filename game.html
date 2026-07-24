@@ -1644,11 +1644,11 @@
         }
     }
 
-    async function fetchWithTimeout(url, timeout = 5000) {
+    async function fetchWithTimeout(url, timeout = 5000, options = {}) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         try {
-            const response = await fetch(url, { signal: controller.signal });
+            const response = await fetch(url, { ...options, signal: controller.signal });
             clearTimeout(timeoutId);
             return response;
         } catch (error) {
@@ -1656,7 +1656,6 @@
             throw error;
         }
     }
-
     // ==================== TOGGLES ====================
     function toggleAudio() {
         if (!gameState.audioInitialized) { initializeAudio(); return; }
@@ -1943,7 +1942,11 @@
             });
             
             if (!success) {
-                const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, 8000);
+                const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameState.gameId}/claim-bingo`, 8000, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: gameState.userId })
+                });
                 if (!response) throw new Error('Network error');
                 const data = await response.json();
                 clearTimeout(timeoutId);
@@ -2237,39 +2240,37 @@
     }
 
     async function fetchUserCardForGame(gameId) {
-        try {
-            const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameId}/user-state/${gameState.userId}`, 5000);
-            if (!response.ok) { if (response.status === 404) { gameState.hasCard = false; return false; } throw new Error(`HTTP ${response.status}`); }
-            const data = await response.json();
-            if (data.success && data.has_card && data.user_card) {
-                gameState.hasCard = true; 
-                gameState.selectedCardId = data.user_card.card_id; 
-                gameState.selectedCardIndex = data.user_card.card_index;
-                if (data.user_card.card_data) {
-                    try {
-                        let cardData = data.user_card.card_data; 
-                        if (typeof cardData === "string") cardData = JSON.parse(cardData);
-                        if (Array.isArray(cardData)) gameState.selectedCardNumbers = cardData;
-                        else if (cardData && typeof cardData === "object") { 
-                            if (cardData.numbers && Array.isArray(cardData.numbers)) gameState.selectedCardNumbers = cardData.numbers; 
-                            else if (cardData.grid && Array.isArray(cardData.grid)) { 
-                                const flattened = []; 
-                                for (const row of cardData.grid) { 
-                                    if (Array.isArray(row)) flattened.push(...row); 
-                                } 
-                                gameState.selectedCardNumbers = flattened; 
-                            } else if (Array.isArray(cardData.cells)) gameState.selectedCardNumbers = cardData.cells.map((cell) => cell.number || cell); 
-                        }
-                    } catch (e) { console.error("Error parsing card data:", e); gameState.selectedCardNumbers = []; }
-                } else gameState.selectedCardNumbers = [];
-                gameState.markedNumbers.clear();
-                const idEl = document.getElementById("selected-card-id");
-                if (idEl) idEl.textContent = `#${data.user_card.card_index || "0"}`;
-                if (gameState.gameActive) renderPlayerCard();
-                return true;
-            } else { gameState.hasCard = false; return false; }
-        } catch (error) { console.error("Error fetching user card:", error); gameState.hasCard = false; return false; }
+    try {
+        const response = await fetchWithTimeout(`${API_BASE_URL}/game/${gameId}/user-state/${gameState.userId}`, 5000);
+        if (!response.ok) {
+            if (response.status === 404) { gameState.hasCard = false; return false; }
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.success && data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0) {
+            gameState.hasCard = true;
+            gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
+            gameState.ownedCardsData = data.user_cards.map(c => ({
+                card_index: c.card_index,
+                numbers: c.card_numbers || []
+            }));
+            gameState.selectedCardIndex = gameState.ownedCardIndices[0];
+            gameState.selectedCardNumbers = gameState.ownedCardsData[0].numbers;
+            gameState.markedNumbers.clear();
+            const idEl = document.getElementById("selected-card-id");
+            if (idEl) idEl.textContent = `#${gameState.selectedCardIndex}`;
+            updateBoardCountText();
+            if (gameState.gameActive) renderPlayerCardsFromOwned();
+            return true;
+        }
+        gameState.hasCard = false;
+        return false;
+    } catch (error) {
+        console.error("Error fetching user card:", error);
+        gameState.hasCard = false;
+        return false;
     }
+}
 
     function sendWebSocketMessage(message) {
         if (!message.timestamp) message.timestamp = Date.now();

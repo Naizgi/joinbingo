@@ -359,113 +359,35 @@ class ValidationWebSocketServer:
             logger.error(f"Error handling client sync: {e}")
     
     # FIXED: New immediate bingo claim handler with 4 corners priority
+    # In web_server.py, replace the body of _handle_immediate_player_bingo_claim with:
     async def _handle_immediate_player_bingo_claim(self, data: dict):
-        """Handle immediate bingo claim with priority for 4 corners"""
+        """Handle immediate bingo claim - delegates to game_manager for consistent
+        verification + disqualification behavior across WS and HTTP paths"""
         game_id = data.get('game_id')
         user_id = data.get('user_id')
-        
+
         if not game_id or not user_id:
             return
-        
-        # Use dedicated bingo claim lock to prevent race conditions
+
         async with self._bingo_claim_lock:
             try:
-                
                 from utils.game_manager import game_manager
-                
-                logger.info(f"🚨 IMMEDIATE BINGO CLAIM from user {user_id} in game {game_id}")
-                
-                # Get game status immediately using game_manager
-                game = await Database.get_game(game_id)
-                if not game or game.get('status') != 'active':
-                    logger.warning(f"Game {game_id} not active for bingo claim")
+                logger.info(f"🚨 IMMEDIATE BINGO CLAIM (WS) from user {user_id} in game {game_id}")
+
+                winner_data = await game_manager.handle_immediate_bingo_claim(game_id, int(user_id))
+
+                if winner_data:
                     await self.send_to_user(str(user_id), {
-                        'type': 'bingo_rejected',
-                        'reason': 'Game not active',
+                        'type': 'bingo_claim_verified',
+                        'message': 'BINGO verified! You won!',
+                        'prize_amount': winner_data.get('prize_amount', 0),
+                        'pattern_type': winner_data.get('pattern_type'),
+                        'winning_pattern': winner_data.get('winning_pattern', []),
                         'timestamp': datetime.now().isoformat()
                     })
-                    return
-                
-                # Get user card
-                user_card = await Database.get_user_card_in_game(int(user_id), game_id)
-                if not user_card:
-                    logger.warning(f"User {user_id} has no card in game {game_id}")
-                    await self.send_to_user(str(user_id), {
-                        'type': 'bingo_rejected',
-                        'reason': 'No active card found',
-                        'timestamp': datetime.now().isoformat()
-                    })
-                    return
-                
-                # Get called numbers
-                called_numbers = await Database.get_drawn_numbers(game_id)
-                
-                # Use game_manager's fast verification with 4 corners priority
-                has_bingo, winning_pattern, pattern_type = await game_manager._fast_verify_bingo_with_pattern(user_card, called_numbers)
-                
-                logger.info(f"⚡ BINGO VERIFICATION RESULT: User {user_id} - HasBingo: {has_bingo}, Pattern: {pattern_type}")
-                
-                if has_bingo:
-                    logger.info(f"✅ IMMEDIATE BINGO VERIFIED: User {user_id}, Pattern: {pattern_type}")
-                    
-                    # Double-check game is still active
-                    current_game = await Database.get_game(game_id)
-                    if current_game and current_game.get('status') == 'active':
-                        # Process winner through game_manager
-                        winner_data = await game_manager.process_winner(game_id, int(user_id))
-                        
-                        if winner_data:
-                            # Send confirmation to claimant
-                            await self.send_to_user(str(user_id), {
-                                'type': 'bingo_claim_verified',
-                                'message': 'BINGO verified! You won!',
-                                'prize_amount': winner_data.get('prize_amount', 0),
-                                'pattern_type': pattern_type,
-                                'winning_pattern': winning_pattern,
-                                'timestamp': datetime.now().isoformat()
-                            })
-                            
-                            # BROADCAST WINNER DISPLAY TO ALL PLAYERS
-                            # Get full card data for broadcast
-                            card_numbers = []
-                            if user_card.get('card_numbers'):
-                                card_data = user_card['card_numbers']
-                                if isinstance(card_data, str):
-                                    try:
-                                        card_numbers = json.loads(card_data)
-                                    except:
-                                        card_numbers = []
-                                elif isinstance(card_data, list):
-                                    card_numbers = card_data
-                            
-                            # Add card numbers to winner data
-                            winner_data['card_numbers'] = card_numbers
-                            winner_data['winning_pattern'] = winning_pattern
-                            winner_data['pattern_type'] = pattern_type
-                                                        
-                            logger.info(f"🎉 BINGO WINNER PROCESSED: User {user_id} won with pattern {pattern_type}")
-                        else:
-                            logger.error(f"❌ Failed to process winner for user {user_id}")
-                            await self.send_to_user(str(user_id), {
-                                'type': 'bingo_rejected',
-                                'reason': 'Failed to process winner',
-                                'timestamp': datetime.now().isoformat()
-                            })
-                    else:
-                        logger.warning(f"Game {game_id} no longer active during processing")
-                        await self.send_to_user(str(user_id), {
-                            'type': 'bingo_rejected',
-                            'reason': 'Game no longer active',
-                            'timestamp': datetime.now().isoformat()
-                        })
-                else:
-                    logger.info(f"❌ No bingo found for user {user_id}")
-                    await self.send_to_user(str(user_id), {
-                        'type': 'bingo_rejected',
-                        'reason': 'No valid bingo pattern found',
-                        'timestamp': datetime.now().isoformat()
-                    })
-                        
+                # If winner_data is None, game_manager.handle_immediate_bingo_claim already
+                # sent bingo_rejected (and any disqualification broadcast) internally.
+
             except Exception as e:
                 logger.error(f"Error in immediate bingo claim: {e}", exc_info=True)
                 await self.send_to_user(str(user_id), {
@@ -473,7 +395,8 @@ class ValidationWebSocketServer:
                     'reason': f'Server error: {str(e)[:100]}',
                     'timestamp': datetime.now().isoformat()
                 })
-    
+                
+                    
     # FIXED: Updated original bingo claim handler to use immediate version
     async def _handle_player_bingo_claim(self, data: dict):
         """Validate bingo claim from frontend - uses immediate handler"""
@@ -4660,6 +4583,22 @@ async def get_complete_game_state(request):
                 if winner_display_end > datetime.now():
                     countdown = (winner_display_end - datetime.now()).total_seconds()
         
+     # Get ALL active cards (supports up to 2 boards) — keep in sync with
+        # user-state and toggle-card endpoints so the client never loses a board on resync
+        user_cards_list = []
+        if user_id:
+            active_cards = await Database.get_user_active_cards_in_game(user_id, game_id)
+            for c in active_cards:
+                numbers = c.get('card_numbers') or c.get('card_data') or []
+                if isinstance(numbers, str):
+                    try:
+                        numbers = json.loads(numbers)
+                    except Exception:
+                        numbers = []
+                elif isinstance(numbers, dict):
+                    numbers = numbers.get('numbers', [])
+                user_cards_list.append({'card_index': c.get('card_index'), 'card_numbers': numbers})
+
         # Format user card data
         user_card_data = None
         if user_card:
@@ -4719,6 +4658,7 @@ async def get_complete_game_state(request):
             'total_players': total_players,  # FIXED: Show total players
             'user_has_card': user_card is not None,
             'user_card': user_card_data,
+            'user_cards': user_cards_list,
             'winners': formatted_winners,
             'winners_count': winners_count,
             'max_winners': max_winners,
@@ -5637,8 +5577,7 @@ async def claim_bingo_lightning_fast(request):
             # Add card numbers to winner data for broadcast
             winner_data['card_numbers'] = card_numbers
             
-            # Broadcast winner display to all clients
-            await websocket_server.broadcast_winner_display(game_id, winner_data)
+           
             
             return web.json_response({
                 'success': True,

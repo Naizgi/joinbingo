@@ -569,7 +569,7 @@ class GameManager:
             winners_count = await self.get_winners_count(game_id)
             
             #changed to self.max_winners to 1
-            max_winners = 1
+            max_winners = self.max_winners
             if winners_count >= max_winners:
                 logger.info(f"🏆 Game {game_id} reached max winners ({max_winners})")
                 game_active = False
