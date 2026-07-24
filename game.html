@@ -9,9 +9,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        /* =========================================================
-           EXACT UI DESIGN SYSTEM (From Your Images)
-           ========================================================= */
         :root {
             --bg-main: #d9ade9;
             --surface-white: #FFFFFF;
@@ -26,13 +23,11 @@
             --border-light: #e0e0e0;
             --grey-card: #D1C4E9;
             --red-accent: #f2702f;
-            
             --letter-b: #FF9800;
             --letter-i: green;
             --letter-n: #1976D2;
             --letter-g: #F44336;
             --letter-o: #9C27B0;
-            
             --winner-highlight: #FFEB3B;
             --winner-free: #4CAF50;
         }
@@ -48,7 +43,6 @@
             overflow-x: hidden;
         }
 
-        /* === DISQUALIFIED OVERLAY === */
         .disqualified-overlay {
             position: fixed;
             inset: 0;
@@ -60,9 +54,7 @@
             padding: 20px;
             animation: fadeIn 0.3s ease;
         }
-        .disqualified-overlay.active {
-            display: flex;
-        }
+        .disqualified-overlay.active { display: flex; }
         .disqualified-content {
             background: #d9ade9;
             border-radius: 20px;
@@ -73,49 +65,13 @@
             border: 3px solid #FFFFFF;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        .disqualified-content .icon {
-            font-size: 60px;
-            color: #F44336;
-            margin-bottom: 10px;
-        }
-        .disqualified-content h2 {
-            color: #6A1B9A;
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        .disqualified-content p {
-            color: #333;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 6px;
-        }
-        .disqualified-content .refund-amount {
-            background: rgba(255,255,255,0.3);
-            border-radius: 10px;
-            padding: 10px;
-            margin: 12px 0;
-            font-weight: 700;
-            color: #2E7D32;
-            font-size: 18px;
-        }
-        .disqualified-content .continue-btn {
-            background: #6A1B9A;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
-        .disqualified-content .continue-btn:hover {
-            background: #4A148C;
-        }
+        .disqualified-content .icon { font-size: 60px; color: #F44336; margin-bottom: 10px; }
+        .disqualified-content h2 { color: #6A1B9A; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .disqualified-content p { color: #333; font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+        .disqualified-content .refund-amount { background: rgba(255,255,255,0.3); border-radius: 10px; padding: 10px; margin: 12px 0; font-weight: 700; color: #2E7D32; font-size: 18px; }
+        .disqualified-content .continue-btn { background: #6A1B9A; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+        .disqualified-content .continue-btn:hover { background: #4A148C; }
 
-        /* === APP HEADER === */
         .app-header {
             background: var(--surface-white);
             display: flex;
@@ -132,7 +88,6 @@
         .app-header .subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; }
         .app-header .menu-btn { color: var(--btn-blue); font-size: 22px; cursor: pointer; }
 
-        /* === BOTTOM NAV === */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
@@ -163,17 +118,14 @@
         }
         .nav-btn.active i, .nav-btn.active span { color: var(--text-white); }
 
-        /* === PAGES === */
         .page-container { display: none; padding: 16px; padding-bottom: 90px; animation: fadeIn 0.2s ease; }
         .page-container.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
 
-        /* === COMPONENTS === */
         .card { background: var(--surface-white); border-radius: 20px; padding: 16px; box-shadow: 0px 3px 10px rgba(106, 13, 173, 0.08); margin-bottom: 12px; }
 
-        /* === WAITING SCREEN === */
         .game-stats {
             background: var(--surface-white);
             border-radius: 8px;
@@ -206,55 +158,33 @@
         .card-item.available { background: var(--grey-card); color: #000000; cursor: pointer; }
         .card-item.sold { background: var(--red-accent); color: #888; cursor: not-allowed; }
         .card-item.owned { background: var(--btn-green); color: white; border: 2px solid #2e7d32; }
-        .card-item.disqualified { 
-            background: #F44336 !important; 
-            color: white !important; 
-            border: 2px solid #B71C1C !important;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+        .card-item.disqualified { background: #F44336 !important; color: white !important; border: 2px solid #B71C1C !important; cursor: not-allowed; opacity: 0.7; }
 
-        /* === GAME SCREEN === */
         .stats-row {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
-            background: transparent; 
-            padding: 4px 0;
-            border: 2px solid #FFFFFF;
-            border-radius: 8px;
+            background: transparent; padding: 4px 0;
+            border: 2px solid #FFFFFF; border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            margin-bottom: 8px;
-            width: 100%;
-            box-sizing: border-box;
+            margin-bottom: 8px; width: 100%; box-sizing: border-box;
         }
         .stat-box {
             background: var(--surface-white);
             border: 1px solid rgba(0,0,0,0.05); border-radius: 6px;
             text-align: center; padding: 2px 2px;
-            width: 100%;
-            box-sizing: border-box;
+            width: 100%; box-sizing: border-box;
         }
         .stat-box .label { font-size: 10px; color: var(--text-muted); display: block; line-height: 1.3; font-weight: 600; }
         .stat-box .value { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; line-height: 1.4; }
 
         .game-layout { 
-            display: flex; 
-            flex-direction: row; 
-            gap: 14px; 
-            align-items: stretch;
-            justify-content: space-between;
-            width: 100%;
-            flex-wrap: nowrap;
+            display: flex; flex-direction: row; gap: 14px; align-items: stretch;
+            justify-content: space-between; width: 100%; flex-wrap: nowrap;
         }
 
         .board-container {
-            background: transparent; 
-            border-radius: 8px; padding: 6px;
-            border: 2px solid #FFFFFF;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            width: 32%; 
-            height: inherit;
-            flex-shrink: 0; 
-            flex-grow: 0;
+            background: transparent; border-radius: 8px; padding: 6px;
+            border: 2px solid #FFFFFF; box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            width: 32%; height: inherit; flex-shrink: 0; flex-grow: 0;
         }
         .board-header-row { display: flex; gap: 1px; margin-bottom: 4px; }
         .board-header-cell {
@@ -267,7 +197,6 @@
         .board-header-cell.n { background: var(--letter-n); }
         .board-header-cell.g { background: var(--letter-g); }
         .board-header-cell.o { background: var(--letter-o); }
-        
         .board-columns { display: flex; gap: 3px; }
         .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
         .board-cell {
@@ -289,13 +218,7 @@
             animation: winningBlink 0.8s infinite ease-in-out !important;
         }
 
-        .right-panel { 
-            flex: 1; width: 68%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            min-width: 0; 
-        }
+        .right-panel { flex: 1; width: 68%; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
         .current-call-card {
             background: var(--purple-dark);
@@ -306,12 +229,9 @@
         .current-call-label { font-weight: 700; font-size: 10px; }
         .current-call-badge {
             background: var(--orange-accent); color: var(--text-white);
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 14px;
         }
 
@@ -319,18 +239,12 @@
             background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 4px 6px;
             display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; 
             border: 1px solid rgba(255,255,255,0.8); min-height: 36px; 
-            width: 85%;
-            align-self: center;
-            margin: 4px auto;
+            width: 85%; align-self: center; margin: 4px auto;
         }
         .call-bubble {
-            border-radius: 50%;
-            padding: 0; 
-            width: 28px;
-            height: 28px;
+            border-radius: 50%; padding: 0; width: 28px; height: 28px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 11px;
-            color: white;
+            font-weight: 700; font-size: 11px; color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .call-bubble.b { background: var(--letter-b); }
@@ -365,31 +279,19 @@
             scrollbar-width: thin;
             scrollbar-color: var(--purple-dark) transparent;
         }
-        .player-cards-container-inner::-webkit-scrollbar {
-            width: 4px;
-        }
-        .player-cards-container-inner::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .player-cards-container-inner::-webkit-scrollbar-thumb {
-            background: var(--purple-dark);
-            border-radius: 4px;
-        }
+        .player-cards-container-inner::-webkit-scrollbar { width: 4px; }
+        .player-cards-container-inner::-webkit-scrollbar-track { background: transparent; }
+        .player-cards-container-inner::-webkit-scrollbar-thumb { background: var(--purple-dark); border-radius: 4px; }
 
         .p-card-wrapper {
             background: var(--surface-white); border-radius: 12px; padding: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-light);
         }
-        .p-card-wrapper.disqualified {
-            opacity: 0.5;
-            border: 2px solid #F44336 !important;
-            position: relative;
-        }
+        .p-card-wrapper.disqualified { opacity: 0.5; border: 2px solid #F44336 !important; position: relative; }
         .p-card-wrapper.disqualified::after {
             content: '❌ DISQUALIFIED';
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(244, 67, 54, 0.9);
             color: white;
@@ -400,10 +302,7 @@
             letter-spacing: 1px;
             z-index: 10;
         }
-        .p-card-title { 
-            font-size: 11px; font-weight: 700; 
-            color: var(--orange-accent); text-align: center; margin-bottom: 4px; 
-        }
+        .p-card-title { font-size: 11px; font-weight: 700; color: var(--orange-accent); text-align: center; margin-bottom: 4px; }
         .p-card-header-row { display: flex; gap: 2px; margin-bottom: 4px; }
         .p-card-header-cell {
             flex: 1; text-align: center; border-radius: 4px; padding: 4px 0;
@@ -415,26 +314,17 @@
         .p-card-header-cell.g { background: var(--letter-g); }
         .p-card-header-cell.o { background: var(--letter-o); }
 
-        .p-card-grid { 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; 
-            width: 100%;
-        }
+        .p-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; width: 100%; }
         .p-card-cell {
             aspect-ratio: 1; background: #f5f5f5; border-radius: 4px; 
             display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 12px; color: var(--text-main);
             border: 1px solid var(--border-light); cursor: pointer;
         }
-        .p-card-cell.marked { 
-            background: var(--btn-green) !important; color: white !important; 
-            border-color: #2e7d32 !important; 
-        }
+        .p-card-cell.marked { background: var(--btn-green) !important; color: white !important; border-color: #2e7d32 !important; }
         .p-card-cell.free { background: #CFD8DC; border-color: #90A4AE; font-size: 9px; }
         .p-card-cell.star { position: relative; }
-        .p-card-cell.star::after { 
-            content: '★'; position: absolute; top: -4px; right: -4px; 
-            color: var(--orange-accent); font-size: 10px; 
-        }
+        .p-card-cell.star::after { content: '★'; position: absolute; top: -4px; right: -4px; color: var(--orange-accent); font-size: 10px; }
         .p-card-cell.empty { background: transparent; border: 1px dashed #ddd; color: #ccc; }
 
         .no-card-waiting {
@@ -480,105 +370,32 @@
         .notification-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; display: none; align-items: center; gap: 10px; animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
-        .winner-display { 
-            position: fixed; inset: 0; background: #d9ade9;
-            display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; 
-            pointer-events: none;
-        }
-        .winner-content { 
-            width: 100%; max-width: 290px;
-            display: flex; flex-direction: column; gap: 14px; 
-            background: transparent; 
-            pointer-events: auto;
-        }
-        .winner-orange-box {
-            background: #FF9800;
-            border-radius: 12px;
-            padding: 14px 10px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
-        }
-        .winner-orange-box h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 6px;
-            letter-spacing: 1px;
-        }
-        .winner-orange-box p {
-            font-size: 15px;
-            font-weight: 600;
-            margin: 0;
-        }
-        .winner-orange-box .winner-name-badge {
-            display: inline-block;
-            background: #0F7B1B;
-            color: white;
-            padding: 3px 12px;
-            border-radius: 6px;
-            margin-right: 4px;
-            font-weight: 700;
-        }
-        .winner-card-wrapper {
-            background: #EAD6F1;
-            border: 2px solid #FFFFFF;
-            border-radius: 14px;
-            padding: 14px 14px 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .winner-card-header {
-            display: flex; gap: 3px; margin-bottom: 6px;
-        }
-        .winner-card-header-cell {
-            flex: 1; text-align: center; border-radius: 4px; padding: 4px 0;
-            font-weight: 800; font-size: 13px; color: white;
-        }
+        .winner-display { position: fixed; inset: 0; background: #d9ade9; display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; pointer-events: none; }
+        .winner-content { width: 100%; max-width: 290px; display: flex; flex-direction: column; gap: 14px; background: transparent; pointer-events: auto; }
+        .winner-orange-box { background: #FF9800; border-radius: 12px; padding: 14px 10px; text-align: center; color: white; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2); }
+        .winner-orange-box h1 { font-size: 32px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1px; }
+        .winner-orange-box p { font-size: 15px; font-weight: 600; margin: 0; }
+        .winner-orange-box .winner-name-badge { display: inline-block; background: #0F7B1B; color: white; padding: 3px 12px; border-radius: 6px; margin-right: 4px; font-weight: 700; }
+        .winner-card-wrapper { background: #EAD6F1; border: 2px solid #FFFFFF; border-radius: 14px; padding: 14px 14px 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .winner-card-header { display: flex; gap: 3px; margin-bottom: 6px; }
+        .winner-card-header-cell { flex: 1; text-align: center; border-radius: 4px; padding: 4px 0; font-weight: 800; font-size: 13px; color: white; }
         .winner-card-header-cell.b { background: var(--letter-b); }
         .winner-card-header-cell.i { background: var(--letter-i); }
         .winner-card-header-cell.n { background: var(--letter-n); }
         .winner-card-header-cell.g { background: var(--letter-g); }
         .winner-card-header-cell.o { background: var(--letter-o); }
-        .winner-card-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%;
-        }
-        .winner-card-cell {
-            aspect-ratio: 1; background: #ffffff; border-radius: 4px; 
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 12px; color: #333;
-            border: 1px solid #E0E0E0;
-        }
+        .winner-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; }
+        .winner-card-cell { aspect-ratio: 1; background: #ffffff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #333; border: 1px solid #E0E0E0; }
         .winner-card-cell.marked { background: #FFEB3B !important; border-color: #FFC107 !important; color: #333; }
         .winner-card-cell.free { background: #C8E6C9 !important; border-color: #81C784 !important; color: white; font-weight: 800; }
         .winner-card-cell.free::after { content: '*' !important; }
-        .winner-board-text {
-            text-align: center; margin-top: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px;
-        }
-        .winner-countdown-bar {
-            background: #FF9800;
-            border-radius: 12px;
-            padding: 16px 10px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
-        }
-        .winner-countdown-bar h2 {
-            font-size: 34px;
-            font-weight: 800;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        .audio-loading { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; 
-            display: none; 
-        }
+        .winner-board-text { text-align: center; margin-top: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px; }
+        .winner-countdown-bar { background: #FF9800; border-radius: 12px; padding: 16px 10px; text-align: center; color: white; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2); }
+        .winner-countdown-bar h2 { font-size: 34px; font-weight: 800; margin: 0; letter-spacing: 1px; }
+        .audio-loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; z-index: 9999; display: none; }
 
         @media (max-width: 600px) {
-            .game-layout { 
-                flex-direction: row !important; 
-                gap: 10px; 
-                align-items: stretch;
-            }
+            .game-layout { flex-direction: row !important; gap: 10px; align-items: stretch; }
             .board-container { width: 42%; flex-shrink: 0; }
             .right-panel { width: 68%; flex-shrink: 0; }
             .board-cell { font-size: 10px; }
@@ -595,7 +412,6 @@
         .wallet-tabs { display: flex; background: var(--purple-light); border-radius: 20px; padding: 4px; margin-top: 16px; }
         .wallet-tab { flex: 1; text-align: center; padding: 6px 0; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); }
         .wallet-tab.active { background: var(--purple-dark); color: var(--text-white); }
-        
         .wallet-total-card { background: var(--purple-dark); border-radius: 20px; padding: 16px; color: var(--text-white); margin-bottom: 12px; }
         .wallet-total-amount { font-size: 28px; font-weight: 700; margin-top: 4px; }
         .wallet-split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
@@ -613,22 +429,18 @@
 </head>
 <body>
 
-    <!-- ==================== DISQUALIFIED OVERLAY ==================== -->
     <div class="disqualified-overlay" id="disqualified-overlay">
         <div class="disqualified-content">
             <div class="icon">🚫</div>
             <h2>You've Been Disqualified!</h2>
             <p>You made an invalid BINGO claim.</p>
             <p style="font-size:12px; color:#666;">Your card has been deactivated and you have been removed from this game.</p>
-            <div class="refund-amount">
-                💰 Refunded: <span id="dq-refund-amount">0.00</span> birr
-            </div>
+            <div class="refund-amount">💰 Refunded: <span id="dq-refund-amount">0.00</span> birr</div>
             <p style="font-size:12px; color:#999;">You can still watch the game and play the next round.</p>
             <button class="continue-btn" onclick="closeDisqualifiedOverlay()">Continue Watching</button>
         </div>
     </div>
 
-    <!-- Overlays -->
     <div id="access-denied">
         <i class="fas fa-lock" style="font-size: 50px; color: #f44336; margin-bottom: 20px"></i>
         <h2>Access Restricted</h2>
@@ -640,7 +452,6 @@
         <span id="status-text">Connecting...</span>
     </div>
 
-    <!-- ==================== WINNER DISPLAY ==================== -->
     <div class="winner-display" id="winner-announcement">
         <div class="winner-content">
             <div class="winner-orange-box">
@@ -656,33 +467,18 @@
                     <div class="winner-card-header-cell o">O</div>
                 </div>
                 <div class="winner-card-grid" id="winner-card-grid"></div>
-                <div class="winner-board-text">
-                    Board number <span id="winner-board-number">0</span>
-                </div>
+                <div class="winner-board-text">Board number <span id="winner-board-number">0</span></div>
             </div>
-            <div class="winner-countdown-bar">
-                <h2 id="winner-announcement-timer">10</h2>
-            </div>
+            <div class="winner-countdown-bar"><h2 id="winner-announcement-timer">10</h2></div>
         </div>
     </div>
 
-    <!-- ==================== PAGE: GAME ==================== -->
     <div id="page-game" class="page-container active">
-        
-        <!-- WAITING SCREEN (Card Purchase) -->
         <div id="waiting-screen" class="screen active">
             <div class="game-stats">
-                <div class="stat-item">
-                    <div class="stat-value orange" id="countdown-timer">30</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Wallet</div>
-                    <div class="stat-value" id="wallet-balance">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Stake</div>
-                    <div class="stat-value" id="card-price">10</div>
-                </div>
+                <div class="stat-item"><div class="stat-value orange" id="countdown-timer">30</div></div>
+                <div class="stat-item"><div class="stat-label">Wallet</div><div class="stat-value" id="wallet-balance">0</div></div>
+                <div class="stat-item"><div class="stat-label">Stake</div><div class="stat-value" id="card-price">10</div></div>
             </div>
 
             <div id="phase-error-message" style="display:none; background:var(--surface-white); border-radius:12px; padding:10px; margin-bottom:12px; color:var(--red-accent); border:1px solid var(--red-accent); text-align:center;">
@@ -720,29 +516,13 @@
             </div>
         </div>
 
-        <!-- ==================== ACTIVE GAME SCREEN ==================== -->
         <div id="game-screen" class="screen">
             <div class="stats-row">
-               <div class="stat-box">
-                    <span class="label">ID</span>
-                    <span class="value" id="stat-game-id" style="font-size: 8px;">---</span>
-                </div>
-                <div class="stat-box">
-                    <span class="label">Derash</span>
-                    <span class="value" id="game-prize-pool">0</span>
-                </div>
-                <div class="stat-box">
-                    <span class="label">Players</span>
-                    <span class="value" id="game-player-count">0</span>
-                </div>
-                <div class="stat-box">
-                    <span class="label">Bet</span>
-                    <span class="value">10</span>
-                </div>
-                <div class="stat-box">
-                    <span class="label">Call</span>
-                    <span class="value" id="called-numbers-stat">0</span>
-                </div>
+               <div class="stat-box"><span class="label">ID</span><span class="value" id="stat-game-id" style="font-size: 8px;">---</span></div>
+                <div class="stat-box"><span class="label">Derash</span><span class="value" id="game-prize-pool">0</span></div>
+                <div class="stat-box"><span class="label">Players</span><span class="value" id="game-player-count">0</span></div>
+                <div class="stat-box"><span class="label">Bet</span><span class="value">10</span></div>
+                <div class="stat-box"><span class="label">Call</span><span class="value" id="called-numbers-stat">0</span></div>
             </div>
 
             <div class="game-layout">
@@ -788,33 +568,19 @@
         </div>
     </div>
 
-    <!-- ==================== OTHER PAGES ==================== -->
     <div id="page-history" class="page-container">
         <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px;">
             <span style="font-size:14px; font-weight:500; color:var(--text-muted);">GAME HISTORY</span>
             <button class="btn-secondary" onclick="loadPlayerHistory(1)" style="border:1px solid #ccc; background:transparent; padding:4px 14px; border-radius:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;"><i class="fas fa-sync-alt"></i> Reload</button>
         </div>
-        
         <div class="card" id="history-stats-container" style="display: none;">
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
-                <div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Games</div>
-                    <div id="history-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div>
-                </div>
-                <div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Wins</div>
-                    <div id="history-total-wins" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0</div>
-                </div>
-                <div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Winnings</div>
-                    <div id="history-total-winnings" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0 birr</div>
-                </div>
+                <div><div style="font-size: 11px; color: var(--text-muted);">Total Games</div><div id="history-total-games" style="font-size: 20px; font-weight: 700; color: var(--text-primary);">0</div></div>
+                <div><div style="font-size: 11px; color: var(--text-muted);">Total Wins</div><div id="history-total-wins" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0</div></div>
+                <div><div style="font-size: 11px; color: var(--text-muted);">Total Winnings</div><div id="history-total-winnings" style="font-size: 20px; font-weight: 700; color: var(--btn-green);">0 birr</div></div>
             </div>
         </div>
-
-        <div id="history-list-container">
-            <div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div>
-        </div>
+        <div id="history-list-container"><div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading history...</div></div>
     </div>
 
     <div id="page-wallet" class="page-container">
@@ -832,25 +598,14 @@
                 <div class="wallet-tab">HISTORY</div>
             </div>
         </div>
-
         <div class="wallet-total-card">
             <div class="wallet-total-label">TOTAL BALANCE</div>
             <div class="wallet-total-amount" id="wallet-total-balance">Br 0.00</div>
         </div>
-
         <div class="wallet-split-grid">
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">MAIN</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">BONUS</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">DEPOSITED</div>
-            </div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">MAIN</div></div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">BONUS</div></div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">DEPOSITED</div></div>
         </div>
     </div>
 
@@ -858,9 +613,7 @@
         <div class="card">
             <div class="card-title">ACCOUNT</div>
             <div id="profile-data" style="display: flex; align-items: center; gap: 16px;">
-                <div class="profile-avatar">
-                    <span class="profile-avatar-text" id="profile-avatar-letter">?</span>
-                </div>
+                <div class="profile-avatar"><span class="profile-avatar-text" id="profile-avatar-letter">?</span></div>
                 <div style="flex: 1;">
                     <div id="profile-username" style="font-size: 16px; font-weight: 700; color: var(--purple-dark);">@User</div>
                     <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--text-muted); font-size: 14px;">
@@ -870,61 +623,32 @@
                 </div>
             </div>
         </div>
-
         <div class="wallet-total-card">
             <div class="wallet-total-label">TOTAL BALANCE</div>
             <div class="wallet-total-amount" id="profile-balance">Br 0.00</div>
         </div>
-
         <div class="wallet-split-grid">
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">MAIN</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">BONUS</div>
-            </div>
-            <div class="wallet-split-box">
-                <div class="wallet-split-amount">Br 0.00</div>
-                <div class="wallet-split-label">DEPOSITED</div>
-            </div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">MAIN</div></div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">BONUS</div></div>
+            <div class="wallet-split-box"><div class="wallet-split-amount">Br 0.00</div><div class="wallet-split-label">DEPOSITED</div></div>
         </div>
-
         <div class="card">
             <div class="card-title">STATS</div>
             <div style="display: flex; flex-direction: column;">
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-money-bill-wave profile-stat-icon"></i> Total Withdrawal</div>
-                    <div class="profile-stat-value" id="profile-total-withdrawal">Br 0.00</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-trophy profile-stat-icon"></i> Games Won</div>
-                    <div class="profile-stat-value" id="profile-total-wins">0</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label"><i class="fas fa-gift profile-stat-icon"></i> Total Invites</div>
-                    <div class="profile-stat-value" id="profile-total-invites">0</div>
-                </div>
+                <div class="profile-stat-item"><div class="profile-stat-label"><i class="fas fa-money-bill-wave profile-stat-icon"></i> Total Withdrawal</div><div class="profile-stat-value" id="profile-total-withdrawal">Br 0.00</div></div>
+                <div class="profile-stat-item"><div class="profile-stat-label"><i class="fas fa-trophy profile-stat-icon"></i> Games Won</div><div class="profile-stat-value" id="profile-total-wins">0</div></div>
+                <div class="profile-stat-item"><div class="profile-stat-label"><i class="fas fa-gift profile-stat-icon"></i> Total Invites</div><div class="profile-stat-value" id="profile-total-invites">0</div></div>
             </div>
         </div>
-
         <div class="card" style="margin-bottom:20px;">
             <div class="card-title" style="display:flex; align-items:center; gap:8px;"><i class="fas fa-sliders-h"></i> SETTINGS</div>
             <div style="display: flex; flex-direction: column;">
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label">Sound</div>
-                    <div class="profile-toggle" id="profile-sound-toggle" onclick="toggleAudio()">OFF</div>
-                </div>
-                <div class="profile-stat-item">
-                    <div class="profile-stat-label">Auto Play</div>
-                    <div class="profile-toggle" id="profile-auto-toggle" onclick="toggleAuto()">OFF</div>
-                </div>
+                <div class="profile-stat-item"><div class="profile-stat-label">Sound</div><div class="profile-toggle" id="profile-sound-toggle" onclick="toggleAudio()">OFF</div></div>
+                <div class="profile-stat-item"><div class="profile-stat-label">Auto Play</div><div class="profile-toggle" id="profile-auto-toggle" onclick="toggleAuto()">OFF</div></div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== BOTTOM NAVIGATION ==================== -->
     <nav class="bottom-nav">
         <button class="nav-btn active" onclick="switchTab('game')"><i class="fas fa-gamepad"></i><span>GAME</span></button>
         <button class="nav-btn" onclick="switchTab('history')"><i class="fas fa-history"></i><span>HISTORY</span></button>
@@ -932,13 +656,16 @@
         <button class="nav-btn" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>PROFILE</span></button>
     </nav>
 
-    <!-- ==================== BOTTOM ACTION BUTTONS (GAME ONLY) ==================== -->
     <div class="bottom-actions" id="game-bottom-actions">
         <button class="action-btn orange" id="claim-bingo-btn" onclick="window.claimBingo()" disabled>BINGO!</button>
     </div>
 
-    <!-- ==================== SCRIPTS ==================== -->
     <script>
+    // ================================================================
+    // COMPLETE FIXED SCRIPT - Multi-card support, auto/sound buttons,
+    // BINGO claim, and proper data handling from server
+    // ================================================================
+
     // ==================== TAB SWITCHING ====================
     function switchTab(tabName) {
         document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -980,28 +707,20 @@
     }
     window.switchWalletTab = switchWalletTab;
 
-    // ==================== LOAD WALLET HISTORY ====================
     async function loadWalletHistory() {
         const container = document.getElementById('wallet-transactions-container');
         if (!container) return;
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-        
         setTimeout(() => {
             container.innerHTML = `
                 <div class="wallet-history-card">
-                    <div class="wallet-tx-row">
-                        <div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div>
-                        <div class="wallet-tx-amount positive">+Br 30.00</div>
-                    </div>
+                    <div class="wallet-tx-row"><div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div><div class="wallet-tx-amount positive">+Br 30.00</div></div>
                     <div class="wallet-tx-meta">15/07/2026, 13:04:40</div>
                     <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
                     <div class="wallet-tx-ref">Ref DGF7URQ5EP • Seid -> Unknown</div>
                 </div>
                 <div class="wallet-history-card">
-                    <div class="wallet-tx-row">
-                        <div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div>
-                        <div class="wallet-tx-amount positive">+Br 20.00</div>
-                    </div>
+                    <div class="wallet-tx-row"><div class="wallet-tx-type"><i class="fas fa-arrow-circle-down in"></i> DEPOSIT</div><div class="wallet-tx-amount positive">+Br 20.00</div></div>
                     <div class="wallet-tx-meta">15/07/2026, 12:50:27</div>
                     <div class="wallet-tx-meta"><span>TELEBIRR</span> • COMPLETED</div>
                     <div class="wallet-tx-ref">Ref DGF7UNFTAF • Seid -> Unknown</div>
@@ -1011,7 +730,6 @@
         }, 500);
     }
 
-    // ==================== API FUNCTIONS FOR HISTORY & PROFILE ====================
     let currentHistoryPage = 1;
     
     async function loadPlayerHistory(page = 1) {
@@ -1109,7 +827,7 @@
         }
     }
 
-    // ==================== PROFILE TOGGLES ====================
+    // ==================== TOGGLES ====================
     function toggleAudio() {
         if (!gameState.audioInitialized) { initializeAudio(); return; }
         gameState.audioEnabled = !gameState.audioEnabled;
@@ -1125,7 +843,6 @@
     }
     window.toggleAudio = toggleAudio;
 
-    // ==================== AUTO PLAY FUNCTION ====================
     function toggleAuto() {
         gameState.autoMode = !gameState.autoMode;
         const toggle = document.getElementById('profile-auto-toggle');
@@ -1145,7 +862,6 @@
     }
     window.toggleAuto = toggleAuto;
 
-    // ==================== DISQUALIFIED OVERLAY FUNCTIONS ====================
     function showDisqualifiedOverlay(refundAmount) {
         const refundEl = document.getElementById('dq-refund-amount');
         if (refundEl) refundEl.textContent = refundAmount.toFixed(2);
@@ -1158,7 +874,7 @@
         if (overlay) overlay.classList.remove('active');
     }
 
-    // ==================== YOUR ORIGINAL LOGIC (COMPLETE) ====================
+    // ==================== CONFIGURATION ====================
     const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
     const WS_BASE_URL = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
     const CARD_PRICE = 10.0;
@@ -1187,10 +903,8 @@
         lastCountdownSync: 0, countdownSyncThreshold: 5, cardsLoaded: false, cardsLoadAttempted: false,
         countdownStartTime: null, gameStartConfirmed: false, lastConfirmedPhase: "card_purchase",
         phaseChangePending: false, winnerSoundPlayed: false, walletBalance: 0, autoMode: false,
-        // MULTI-CARD VARS:
         ownedCardIndices: [],
         ownedCardsData: [],
-        // DISQUALIFICATION
         disqualified: false,
         disqualifiedCards: []
     };
@@ -1203,7 +917,6 @@
     }
     const tg = window.Telegram.WebApp; tg.expand();
 
-    // ==================== SHOW NOTIFICATION ====================
     function showNotification(message, type = "info", duration = 3000) {
         if (message && message.includes("Sound enabled")) return;
         let toast = document.getElementById("notification-toast");
@@ -1351,7 +1064,7 @@
         }
     }
 
-    // ==================== CLAIM BINGO - FIXED ====================
+    // ==================== CLAIM BINGO ====================
     async function claimBingo() {
         if (gameState.disqualified) {
             showNotification("You have been disqualified from this game!", "error", 3000);
@@ -1361,15 +1074,13 @@
         if (!gameState.gameActive && gameState.gamePhase !== "active" && gameState.gameStatus !== "active") {
             return showNotification("Can only claim bingo during active game", "error");
         }
-        // Check if user has any card
         const hasActiveCard = gameState.hasCard || (gameState.ownedCardIndices && gameState.ownedCardIndices.length > 0);
         if (!hasActiveCard) {
             return showNotification("You don't have a card in this game", "error");
         }
         if (gameState.bingoClaimInProgress) return showNotification("Already claiming BINGO...", "info");
         
-        // Check if all called numbers are marked (or enough for bingo)
-        // For now, just check if there's a valid bingo pattern
+        // Check if there's a bingo pattern first
         const hasBingo = checkForBingo();
         if (!hasBingo) {
             showNotification("No valid BINGO pattern found on your cards!", "warning", 3000);
@@ -1396,12 +1107,21 @@
         }, 10000);
         
         try {
-            // Get the card numbers to claim
             let cardNumbers = [];
             if (gameState.selectedCardNumbers && gameState.selectedCardNumbers.length === 25) {
                 cardNumbers = gameState.selectedCardNumbers;
             } else if (gameState.ownedCardsData && gameState.ownedCardsData.length > 0) {
                 cardNumbers = gameState.ownedCardsData[0].numbers || [];
+                // If still empty, try to get from ownedCardIndices
+                if (!cardNumbers || cardNumbers.length === 0) {
+                    for (const idx of gameState.ownedCardIndices) {
+                        const card = gameState.ownedCardsData.find(c => c.card_index === idx);
+                        if (card && card.numbers && card.numbers.length === 25) {
+                            cardNumbers = card.numbers;
+                            break;
+                        }
+                    }
+                }
             }
             
             const success = sendWebSocketMessage({
@@ -1472,7 +1192,7 @@
     }
     window.claimBingo = claimBingo;
 
-    // ==================== CHECK FOR BINGO - FIXED FOR MULTI-CARD ====================
+    // ==================== CHECK FOR BINGO ====================
     function checkForBingo() {
         try {
             // Check each owned card for bingo
@@ -1577,7 +1297,7 @@
         }
     }
 
-    // ==================== UPDATE BINGO BUTTON - FIXED ====================
+    // ==================== UPDATE BINGO BUTTON ====================
     function updateBingoButton() {
         const btn = document.getElementById("claim-bingo-btn"); 
         if (!btn) return;
@@ -1615,7 +1335,6 @@
             return; 
         }
         
-        // Check if there's a bingo pattern
         const hasBingo = checkForBingo();
         if (hasBingo) {
             btn.innerHTML = `<i class="fas fa-trophy"></i> BINGO!`;
@@ -1630,7 +1349,7 @@
         }
     }
 
-    // ==================== AUTO-PLAY FUNCTIONS ====================
+    // ==================== AUTO-PLAY ====================
     function handleServerNumberCalled(number, allCalled) {
         gameState.calledNumbers = allCalled;
         updateCalledNumbersDisplay(); 
@@ -1639,7 +1358,6 @@
         const calledStat = document.getElementById("called-numbers-stat");
         if (calledStat) calledStat.textContent = allCalled.length;
         
-        // Auto-mark in auto mode
         if (gameState.autoMode && (gameState.hasCard || gameState.ownedCardIndices.length > 0) && !gameState.disqualified) {
             autoMarkNumber(number);
         }
@@ -1649,14 +1367,12 @@
             playNumberAudio(number);
         }
         
-        // Update button state
         updateBingoButton();
     }
 
     function autoMarkNumber(number) {
         if (!gameState.autoMode || (!gameState.hasCard && gameState.ownedCardIndices.length === 0) || gameState.disqualified) return;
         
-        // Mark on all visible cards
         const allCards = document.querySelectorAll('.p-card-cell');
         let marked = false;
         allCards.forEach(cell => {
@@ -1690,14 +1406,12 @@
         }
     }
 
-    // ==================== HANDLE PLAYER CARD CLICK - FIXED FOR MULTI-CARD ====================
+    // ==================== HANDLE PLAYER CARD CLICK ====================
     function handlePlayerCardClick(cell, number) {
-        // Check if game is active
         if (!gameState.gameActive && gameState.gamePhase !== "active" && gameState.gameStatus !== "active") {
             showNotification("Game not active", "error");
             return;
         }
-        // Check if user has cards
         if (!gameState.hasCard && gameState.ownedCardIndices.length === 0) {
             showNotification("You don't have a card", "error");
             return;
@@ -1706,21 +1420,18 @@
             showNotification("You have been disqualified", "error");
             return;
         }
-        // Don't allow marking in auto mode
         if (gameState.autoMode) {
             showNotification("Auto mode is ON - numbers marked automatically", "info", 1500);
             return;
         }
         if (number === 0 || number === "0") return;
         
-        // Toggle mark
         if (gameState.markedNumbers.has(number)) {
             gameState.markedNumbers.delete(number);
             cell.classList.remove("marked");
             cell.style.background = '#f5f5f5';
             cell.style.color = '#212121';
         } else {
-            // Check if this number has been called
             if (!gameState.calledNumbers.includes(number)) {
                 showNotification("This number hasn't been called yet!", "warning", 1500);
                 return;
@@ -1891,7 +1602,6 @@
         }
     }
 
-    // ==================== INSTANT CARD UPDATE ====================
     function instantCardUpdate(cardIndex, newStatus, cardData = null) {
         const cardElement = gameState.cardsCache.cardElements[cardIndex]; 
         if (!cardElement) return;
@@ -1997,12 +1707,28 @@
                     updateCountdownStatusText(gameState.countdown);
                 }
                 
+                // ========== FIXED: Handle user cards properly ==========
                 if (data.user_cards && Array.isArray(data.user_cards) && data.user_cards.length > 0 && !gameState.disqualified) {
                     gameState.ownedCardIndices = data.user_cards.map(c => c.card_index);
-                    gameState.ownedCardsData = data.user_cards.map(c => ({ 
-                        card_index: c.card_index, 
-                        numbers: c.card_numbers || [] 
-                    }));
+                    gameState.ownedCardsData = data.user_cards.map(c => { 
+                        let numbers = c.card_numbers || [];
+                        // Try to parse if it's a string
+                        if (typeof numbers === 'string') {
+                            try { numbers = JSON.parse(numbers); } catch(e) { numbers = []; }
+                        }
+                        // If still empty, try card_data
+                        if ((!numbers || numbers.length === 0) && c.card_data) {
+                            try {
+                                let cardData = typeof c.card_data === 'string' ? JSON.parse(c.card_data) : c.card_data;
+                                if (Array.isArray(cardData)) numbers = cardData;
+                                else if (cardData && cardData.numbers) numbers = cardData.numbers;
+                            } catch(e) { numbers = []; }
+                        }
+                        return { 
+                            card_index: c.card_index, 
+                            numbers: numbers
+                        };
+                    });
                     gameState.hasCard = true;
                     gameState.selectedCardIndex = gameState.ownedCardIndices[0] || null;
                     if (gameState.ownedCardsData.length > 0 && gameState.ownedCardsData[0].numbers) {
@@ -3251,16 +2977,38 @@
         console.log(`🎴 Rendering ${gameState.ownedCardIndices.length} cards:`, gameState.ownedCardIndices);
 
         gameState.ownedCardIndices.forEach((index) => {
-            const cardData = gameState.ownedCardsData ? gameState.ownedCardsData.find(c => c.card_index === index) : null;
+            // Find card data - try multiple sources
+            let cardData = null;
+            
+            // 1. Try ownedCardsData
+            if (gameState.ownedCardsData) {
+                cardData = gameState.ownedCardsData.find(c => c.card_index === index);
+            }
+            
+            // 2. If not found, try to create from selected card data
+            if (!cardData && gameState.selectedCardIndex === index) {
+                cardData = {
+                    card_index: index,
+                    numbers: gameState.selectedCardNumbers || []
+                };
+            }
+            
+            // 3. If still not found, create fallback
             if (!cardData) {
-                console.warn(`No card data found for index ${index}`);
-                return;
+                cardData = {
+                    card_index: index,
+                    numbers: generateFallbackCardNumbers()
+                };
+                // Store it for future renders
+                if (!gameState.ownedCardsData) gameState.ownedCardsData = [];
+                gameState.ownedCardsData.push(cardData);
             }
 
             let numbersToUse = cardData.numbers || [];
             if (!numbersToUse || numbersToUse.length === 0) {
                 console.warn(`No numbers for card ${index}, generating fallback`);
                 numbersToUse = generateFallbackCardNumbers();
+                cardData.numbers = numbersToUse;
             }
 
             const wrapper = document.createElement('div');
