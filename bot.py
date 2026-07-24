@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Abisiniya Bingo Bot - Round-Based Game Only
+join Bingo Bot - Round-Based Game Only
 Enhanced with Telebirr/CBE verification, fraud prevention, and Amharic support
 """
 
@@ -100,7 +100,7 @@ dp = None
 MINIMUM_WITHDRAWAL_AMOUNT = 100.00
 PAYMENT_PHONE_NUMBER = "+251938014489"
 PAYMENT_RECEIVER_NAME = "Yitbarek Amare"
-SUPPORT_TELEGRAM_USER = "@Abisiniyabingosupport"
+SUPPORT_TELEGRAM_USER = "@joinbingosupport"
 
 # API URLs and keys (will be loaded from config)
 TELEBIRR_VERIFICATION_API_URL = "http://verifyapi.leulzenebe.pro/verify-telebirr"
@@ -1367,7 +1367,7 @@ async def notify_deposit_approved(user_id: int, amount: float, payment_id: int):
         f"*🏦 አዲስ ቀሪ ሒሳብ:* {new_balance:.2f} {currency}\n\n"
         "🎉 እንኳን ደስ አሎት! የገንዘብ ክፍያዎ ተሰርቶ በቀሪ ሒሳብዎ ላይ ታክሏል።\n"
         "🎮 አሁን /balance ብለው አዲሱን ቀሪ ሒሳብዎ ለመመልከት እና መጫወት መጀመር ይችላሉ!\n\n"
-        "Abisiniya Bingo ስለመረጡዎ እናመሰግናለን! 🎯"
+        "join Bingo ስለመረጡዎ እናመሰግናለን! 🎯"
     )
     return await send_notification_to_user(user_id, message)
 
@@ -2161,7 +2161,7 @@ async def main():
         signal.signal(signal.SIGTERM, handle_signal)
     signal.signal(signal.SIGINT, handle_signal)
     
-    logger.info("Starting Abisiniya Bingo Bot - Enhanced with Fraud Prevention...")
+    logger.info("Starting join Bingo Bot - Enhanced with Fraud Prevention...")
     
     try:
         from config import BOT_TOKEN, GAME_CONFIG, WEBSERVER_HOST, WEBSERVER_PORT, WEB_APP_URL, ADMIN_IDS
@@ -2193,7 +2193,7 @@ async def main():
     
     banner = """
 ╔══════════════════════════════════════════════════════════════╗
-║                    Abisiniya BINGO BOT                         ║
+║                    join BINGO BOT                         ║
 ║                     ROUND-BASED GAME                         ║
 ║                   FRAUD PREVENTION SYSTEM                    ║
 ║           WITH TELEBIRR & CBE BIRR API INTEGRATION           ║
@@ -2203,7 +2203,7 @@ async def main():
     print(banner)
     
     print("\n" + "="*60)
-    print("🎯 Abisiniya BINGO - ENHANCED EDITION 🎯")
+    print("🎯 join BINGO - ENHANCED EDITION 🎯")
     print("="*60)
     print(f"💰 Currency: {currency.upper()}")
     print(f"🎟️  Card Price: {card_price:.2f} {currency}")
@@ -2295,7 +2295,7 @@ async def main():
             welcome_message = f"""
 ✨✨ *እንኳን ደህና መጡ {first_name}!* ✨✨
 
-🎉 *ወደ Abisiniya Bingo በደህና መጡ!* 🎉
+🎉 *ወደ join Bingo በደህና መጡ!* 🎉
 
 ✅ *መዝግብዎ ተሳክቷል!* 
 💰 *የመጀመሪያ ስጦታዎ*: 5 {currency} ነፃ ቀሪ ሒሳብ ተሰጥቶዎታል!
@@ -2318,7 +2318,7 @@ async def main():
             welcome_message = f"""
 ✨✨ *እንኳን ተመለሱ {first_name}!* ✨✨
 
-🎮 *Abisiniya Bingo እንደገና አርበዎታል!* 🎮
+🎮 *join Bingo እንደገና አርበዎታል!* 🎮
 
 🚀 *ፈጣን ትእዛዞች*:
 • /play - አዲስ ጨዋታ ይጀምሩ
@@ -3340,7 +3340,7 @@ async def main():
             with open(temp_path, 'rb') as f:
                 await message.reply_document(
                     document=f,
-                    caption=f"📊 Abisiniya Bingo Database Backup\n"
+                    caption=f"📊 join Bingo Database Backup\n"
                            f"🕐 {timestamp}\n"
                            f"📁 Size: {file_size_mb:.2f} MB\n"
                            f"📊 {record_counts}"
