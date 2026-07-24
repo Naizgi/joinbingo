@@ -136,7 +136,7 @@
             grid-template-columns: repeat(6, 1fr);
             gap: 2px;
             background: transparent;
-            padding: 2px;
+            padding: 12px 2px !important;
             border: none;
             border-radius: 0;
             box-shadow: none;
@@ -189,8 +189,8 @@
         .board-header-cell.n { background: var(--letter-n); }
         .board-header-cell.g { background: var(--letter-g); }
         .board-header-cell.o { background: var(--letter-o); }
-        .board-columns { display: flex; gap: 3px; }
-        .board-column { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+        .board-columns { display: flex; gap: 3px !important; }
+        .board-column { display: flex; flex-direction: column; gap: 3px !important; flex: 1; }
         .board-cell {
             display: flex; align-items: center; justify-content: center;
             background: var(--grey-card); border-radius: 8px; aspect-ratio: 1;
@@ -364,7 +364,7 @@
             backdrop-filter: blur(2px);
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            min-height: 280px;
+            min-height: 280px !important;
             display: flex;
             align-items: center;
             justify-content: center;
