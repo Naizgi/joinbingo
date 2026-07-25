@@ -1839,19 +1839,20 @@ async def stop_current_game(admin_id: int) -> Tuple[bool, str]:
         return False, f"Error: {str(e)[:100]}"
 
 async def notify_all_players(message: str):
-    """Notify all active players about game events"""
+    """Notify all active REAL players about game events"""
     try:
         from database.db import Database
         from web_server import notification_queue
         
-        # Get all users who have played recently
+        # Get all users who have played recently - ONLY REAL USERS
         with Database.get_cursor() as cursor:
             cursor.execute("""
                 SELECT DISTINCT user_id FROM games 
                 WHERE created_at > datetime('now', '-7 days')
+                AND user_id > 0
                 UNION
                 SELECT DISTINCT user_id FROM users
-                WHERE balance > 0
+                WHERE balance > 0 AND user_id > 0
                 LIMIT 100
             """)
             users = cursor.fetchall()
@@ -1860,11 +1861,10 @@ async def notify_all_players(message: str):
             user_id = user['user_id']
             notification_queue.add_notification(user_id, message)
             
-        logger.info(f"Sent notification to {len(users)} players")
+        logger.info(f"Sent notification to {len(users)} real players")
         
     except Exception as e:
         logger.error(f"Error notifying players: {e}")
-
 # ==================== SAFE DATABASE RESTORE FUNCTION ====================
 async def restore_database_from_file(file_path: str, admin_id: int, original_message, status_msg) -> Tuple[bool, str]:
     """

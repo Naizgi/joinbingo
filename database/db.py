@@ -4332,10 +4332,16 @@ class Database:
 
     @classmethod
     async def get_all_users(cls) -> List[int]:
-        """Get all active user IDs"""
+        """Get all active REAL user IDs (excludes fake users with negative IDs)"""
         try:
             with cls.get_cursor() as cursor:
-                cursor.execute("SELECT user_id FROM users WHERE status = 'active' AND deleted_at IS NULL")
+                # IMPORTANT: user_id > 0 filters out fake users (negative IDs)
+                cursor.execute("""
+                    SELECT user_id FROM users 
+                    WHERE status = 'active' 
+                    AND deleted_at IS NULL 
+                    AND user_id > 0
+                """)
                 rows = cursor.fetchall()
                 return [row[0] for row in rows]
         except Exception as e:

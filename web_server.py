@@ -2990,7 +2990,7 @@ async def admin_send_notification(request):
         data = await request.json()
         title = data.get('title')
         message = data.get('message')
-        target = data.get('target', 'all')  # all, active, specific
+        target = data.get('target', 'all')
         target_ids = data.get('target_ids', [])
         
         if not title or not message:
@@ -3007,13 +3007,17 @@ async def admin_send_notification(request):
         # ============ SEND TO TELEGRAM BOT USERS ============
         sent_to_telegram = 0
         try:
-            # Import the notification queue
             from web_server import notification_queue
             
             if target == 'all':
-                # Get all users from database
+                # ============ FIX: ONLY GET REAL USERS ============
                 with Database.get_cursor() as cursor:
-                    cursor.execute("SELECT user_id FROM users WHERE status = 'active'")
+                    # IMPORTANT: user_id > 0 filters out fake users (negative IDs)
+                    cursor.execute("""
+                        SELECT user_id FROM users 
+                        WHERE status = 'active' 
+                        AND user_id > 0
+                    """)
                     users = cursor.fetchall()
                     
                 for user in users:
@@ -3023,15 +3027,23 @@ async def admin_send_notification(request):
                     
             elif target == 'active':
                 # Get active users from WebSocket connections
-                for user_id in websocket_server.user_connections.keys():
-                    notification_queue.add_notification(int(user_id), full_message)
-                    sent_to_telegram += 1
+                # Filter out fake users (negative IDs)
+                for user_id_str in websocket_server.user_connections.keys():
+                    try:
+                        user_id = int(user_id_str)
+                        if user_id > 0:  # Only real users
+                            notification_queue.add_notification(user_id, full_message)
+                            sent_to_telegram += 1
+                    except:
+                        pass
                     
             elif target == 'specific':
                 for user_id in target_ids:
                     try:
-                        notification_queue.add_notification(int(user_id), full_message)
-                        sent_to_telegram += 1
+                        user_id_int = int(user_id)
+                        if user_id_int > 0:  # Only real users
+                            notification_queue.add_notification(user_id_int, full_message)
+                            sent_to_telegram += 1
                     except:
                         pass
             
@@ -3050,7 +3062,7 @@ async def admin_send_notification(request):
             }
         }
         
-        # Send to WebSocket connections
+        # Send to WebSocket connections (also filter real users)
         websocket_count = 0
         if target == 'all' or target == 'active':
             for ws in list(websocket_server.connections):
@@ -3058,8 +3070,12 @@ async def admin_send_notification(request):
                 websocket_count += 1
         elif target == 'specific':
             for user_id in target_ids:
-                await websocket_server.send_to_user(str(user_id), notification_data)
-                websocket_count += 1
+                try:
+                    if int(user_id) > 0:  # Only real users
+                        await websocket_server.send_to_user(str(user_id), notification_data)
+                        websocket_count += 1
+                except:
+                    pass
         
         # ============ RECORD IN DATABASE ============
         notification_id = await Database.record_notification(
