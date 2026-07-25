@@ -1852,6 +1852,63 @@
             padding: 8px 0;
         }
 
+        /* Notification Modal Styles */
+        #notification-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 60px;
+            border: 1px solid #e0e0e0;
+        }
+
+        #notification-preview strong {
+            color: var(--primary-color);
+        }
+
+        #notification-stats {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 12px 15px;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+        }
+
+        #specific-users-group {
+            margin-top: 10px;
+        }
+
+        #notification-type {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 100%;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        body.theme-dark #notification-preview {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #fff;
+        }
+
+        body.theme-dark #notification-preview strong {
+            color: var(--secondary-color);
+        }
+
+        body.theme-dark #notification-stats {
+            background: #1a237e;
+            color: #90caf9;
+            border-left-color: #42a5f5;
+        }
+
+        body.theme-dark #notification-type {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #fff;
+        }
+
         @media (max-width: 767px) {
             body {
                 padding-bottom: 80px;
@@ -3065,22 +3122,54 @@
         </div>
     </div>
 
-    <!-- Send Notification Modal -->
+    <!-- Send Notification Modal - ENHANCED -->
     <div class="modal" id="send-notification-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Send Notification</h3>
+                <h3><i class="fas fa-bell"></i> Send Notification</h3>
                 <button class="modal-close" data-modal="send-notification-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="notification-title">Title</label>
-                    <input type="text" id="notification-title" placeholder="Enter notification title" value="System Notification">
+                    <label for="notification-type">Send To</label>
+                    <select id="notification-type" class="filter-select">
+                        <option value="all">All Players</option>
+                        <option value="active">Active Players (Online)</option>
+                        <option value="specific">Specific Users</option>
+                    </select>
                 </div>
+
+                <div id="specific-users-group" style="display: none;">
+                    <div class="form-group">
+                        <label for="specific-user-ids">User IDs (comma separated)</label>
+                        <input type="text" id="specific-user-ids" placeholder="e.g. 123456789, 987654321">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notification-title">Title</label>
+                    <input type="text" id="notification-title" placeholder="Enter notification title" value="📢 Announcement">
+                </div>
+
                 <div class="form-group">
                     <label for="notification-message">Message</label>
-                    <textarea id="notification-message" rows="4" placeholder="Enter notification message"></textarea>
+                    <textarea id="notification-message" rows="5" placeholder="Enter notification message..."></textarea>
                 </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary-color);">
+                    <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Preview:</div>
+                    <div id="notification-preview" style="font-size: 14px; color: #333;">
+                        📢 Announcement<br><br>Your message will appear here...
+                    </div>
+                </div>
+
+                <div id="notification-stats" style="display: none; background: #e3f2fd; border-radius: 8px; padding: 12px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+                    <div style="font-size: 13px; color: #1565c0;">
+                        <i class="fas fa-info-circle"></i>
+                        Will be sent to <span id="notification-recipient-count">0</span> users
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button class="btn btn-secondary" data-modal="send-notification-modal">Cancel</button>
                     <button class="btn btn-primary" id="submit-notification">
@@ -4452,6 +4541,181 @@
         loadUsers();
     }
 
+    // ==================== NOTIFICATION FUNCTIONS ====================
+    function updateNotificationPreview() {
+        const title = document.getElementById('notification-title').value || '📢 Announcement';
+        const message = document.getElementById('notification-message').value || 'Your message will appear here...';
+        
+        const preview = document.getElementById('notification-preview');
+        if (preview) {
+            preview.innerHTML = `<strong>${title}</strong><br><br>${message}`;
+        }
+        
+        const statsDiv = document.getElementById('notification-stats');
+        if (message.trim() && title.trim()) {
+            statsDiv.style.display = 'block';
+        } else {
+            statsDiv.style.display = 'none';
+        }
+    }
+
+    function toggleNotificationType() {
+        const type = document.getElementById('notification-type').value;
+        const specificGroup = document.getElementById('specific-users-group');
+        
+        if (type === 'specific') {
+            specificGroup.style.display = 'block';
+        } else {
+            specificGroup.style.display = 'none';
+        }
+    }
+
+    async function getRecipientCount() {
+        const type = document.getElementById('notification-type').value;
+        
+        try {
+            if (type === 'all') {
+                const response = await fetch('/api/admin/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.stats?.total_users || 0;
+                }
+                return 0;
+            } else if (type === 'active') {
+                const response = await fetch('/api/system/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.websocket?.authenticated_users || 0;
+                }
+                return 0;
+            } else if (type === 'specific') {
+                const ids = document.getElementById('specific-user-ids').value;
+                if (ids.trim()) {
+                    return ids.split(',').filter(id => id.trim()).length;
+                }
+                return 0;
+            }
+            return 0;
+        } catch (error) {
+            console.error('Error getting recipient count:', error);
+            return 0;
+        }
+    }
+
+    async function sendNotification() {
+        const title = document.getElementById('notification-title').value.trim();
+        const message = document.getElementById('notification-message').value.trim();
+        const type = document.getElementById('notification-type').value;
+        const specificIds = document.getElementById('specific-user-ids').value;
+        
+        if (!title) {
+            showNotification('Please enter a title', 'warning');
+            return;
+        }
+        
+        if (!message) {
+            showNotification('Please enter a message', 'warning');
+            return;
+        }
+        
+        const recipientCount = await getRecipientCount();
+        let confirmMsg = `Send notification to ${recipientCount} users?`;
+        
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+        
+        const btn = document.getElementById('submit-notification');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        
+        try {
+            let target = type;
+            let targetIds = [];
+            
+            if (type === 'specific') {
+                targetIds = specificIds.split(',').map(id => id.trim()).filter(id => id);
+                if (targetIds.length === 0) {
+                    showNotification('Please enter at least one valid user ID', 'warning');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Notification';
+                    return;
+                }
+                target = 'specific';
+            }
+            
+            const payload = {
+                title: title,
+                message: message,
+                target: target,
+                target_ids: targetIds,
+                admin_id: adminData?.id || 'system'
+            };
+            
+            const response = await fetch('/api/admin/notification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error (${response.status}): ${errorText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(`✅ Notification sent to ${data.sent_to || 0} users!`, 'success');
+                addLiveUpdate(`Notification sent: "${title}"`, 'success');
+                closeModal('send-notification-modal');
+                document.getElementById('notification-message').value = '';
+                document.getElementById('notification-title').value = '📢 Announcement';
+                document.getElementById('specific-user-ids').value = '';
+            } else {
+                showNotification('Failed to send notification: ' + (data.message || 'Unknown error'), 'danger');
+            }
+            
+        } catch (error) {
+            console.error('Error sending notification:', error);
+            showNotification('Error sending notification: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Notification';
+        }
+    }
+
+    function openNotificationModal() {
+        document.getElementById('notification-title').value = '📢 Announcement';
+        document.getElementById('notification-message').value = '';
+        document.getElementById('specific-user-ids').value = '';
+        document.getElementById('notification-type').value = 'all';
+        document.getElementById('specific-users-group').style.display = 'none';
+        document.getElementById('notification-stats').style.display = 'none';
+        
+        updateNotificationPreview();
+        
+        getRecipientCount().then(count => {
+            document.getElementById('notification-recipient-count').textContent = count;
+        });
+        
+        document.getElementById('notification-title').addEventListener('input', updateNotificationPreview);
+        document.getElementById('notification-message').addEventListener('input', updateNotificationPreview);
+        document.getElementById('notification-type').addEventListener('change', () => {
+            toggleNotificationType();
+            getRecipientCount().then(count => {
+                document.getElementById('notification-recipient-count').textContent = count;
+            });
+        });
+        document.getElementById('specific-user-ids').addEventListener('input', () => {
+            getRecipientCount().then(count => {
+                document.getElementById('notification-recipient-count').textContent = count;
+            });
+        });
+        
+        openModal('send-notification-modal');
+    }
+
     // ==================== LOAD FUNCTIONS ====================
     async function loadStats() {
         try {
@@ -4464,7 +4728,6 @@
             
             if (data && data.stats) {
                 document.getElementById('total-users').textContent = data.stats.total_users || 0;
-                
                 
                 try {
                     const depositsRes = await fetch('/api/admin/payments?status=pending&limit=1');
@@ -4524,7 +4787,6 @@
                 setCommissionWithPayable('last-week-commission', data.last_week_commission, data.last_week_payable);
                 setCommissionWithPayable('this-month-commission', data.this_month_commission, data.this_month_payable);
                 setCommissionWithPayable('total-commission', data.total_commission, data.total_payable);
-                // modified to show total deductable balance
                 document.getElementById('active-games').textContent = data.total_payable || 0;
                 let weeklyData = data.weekly_data || [];
                 if (weeklyData.length > 0) {
@@ -4662,7 +4924,6 @@
         try {
             usersPage = page;
             
-            // If in search mode, don't load regular users
             if (isSearchMode) {
                 const pagination = document.getElementById('users-pagination');
                 if (pagination) {
@@ -4977,7 +5238,6 @@
             transactionsPage = page;
             currentTransactionType = typeFilter;
             
-            // Update active tab
             document.querySelectorAll('.transaction-tab-btn').forEach(tab => {
                 tab.classList.remove('active');
                 if (tab.dataset.transactionType === typeFilter) {
@@ -5000,7 +5260,6 @@
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
                 
-                // Try to parse error message
                 try {
                     const errorData = JSON.parse(errorText);
                     document.getElementById('transactions-table-body').innerHTML = `<tr><td colspan="6" style="text-align: center;">${errorData.message || 'Error loading transactions'}</td></tr>`;
@@ -5069,7 +5328,6 @@
 
     async function loadCommissionDetails() {
         try {
-            // Load games commission
             const gamesTbody = document.getElementById('commission-games-body');
             if (gamesTbody) {
                 gamesTbody.innerHTML = '<tr><td colspan="7" class="loading">Loading commission data...</td></tr>';
@@ -5104,7 +5362,6 @@
                         gamesTbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No commission data available</td></tr>';
                     }
                     
-                    // Load daily commission
                     if (data.daily && data.daily.length > 0) {
                         const dailyTbody = document.getElementById('commission-daily-body');
                         let dailyHtml = '';
@@ -5123,7 +5380,6 @@
                         dailyTbody.innerHTML = dailyHtml;
                     }
                     
-                    // Load monthly commission
                     if (data.monthly && data.monthly.length > 0) {
                         const monthlyTbody = document.getElementById('commission-monthly-body');
                         let monthlyHtml = '';
@@ -5156,7 +5412,6 @@
         try {
             const response = await fetch('/api/game/active');
             
-            // Handle 404 gracefully - no active game
             if (response.status === 404) {
                 document.getElementById('current-game-status').textContent = 'No Active Game';
                 document.getElementById('current-game-info').textContent = 'Start a new game round';
@@ -5211,7 +5466,6 @@
         currentTransactionPage = page;
         currentTransactionPageSize = parseInt(document.getElementById('user-trans-page-size').value);
         
-        // Show loading state
         document.getElementById('user-transactions-body').innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading transactions...</td></tr>';
         
         try {
@@ -5227,18 +5481,14 @@
                 userTransactionsTotal = data.pagination?.total || 0;
                 userTransactionsTotalPages = data.pagination?.pages || Math.ceil(userTransactionsTotal / currentTransactionPageSize);
                 
-                // Update pagination info
                 document.getElementById('user-trans-info').textContent = 
                     `Page ${page} of ${userTransactionsTotalPages || 1}`;
                 
-                // Enable/disable prev/next buttons
                 document.getElementById('user-trans-prev').disabled = page === 1;
                 document.getElementById('user-trans-next').disabled = page === userTransactionsTotalPages || userTransactionsTotalPages === 0;
                 
-                // Show transactions section
                 document.getElementById('user-transactions-section').style.display = 'block';
                 
-                // Render transactions table
                 const tbody = document.getElementById('user-transactions-body');
                 
                 if (data.transactions && data.transactions.length > 0) {
@@ -5483,14 +5733,12 @@
                 
                 document.getElementById('user-details-content').innerHTML = html;
                 
-                // Reset transaction pagination and load first page
                 currentTransactionUserId = userId;
                 currentTransactionPage = 1;
                 await loadUserTransactions(userId, 1);
                 
                 const actionSection = document.getElementById('user-details-modal').querySelector('.form-actions');
                 if (actionSection) {
-                    // Remove existing action buttons except close
                     while (actionSection.children.length > 1) {
                         actionSection.removeChild(actionSection.children[0]);
                     }
@@ -5979,10 +6227,8 @@
 
     // ==================== INITIALIZATION ====================
     function init() {
-        // Check authentication first
         if (!checkAuth()) return;
         
-        // Set admin name
         document.getElementById('admin-name').textContent = adminData?.full_name || adminData?.username || adminId;
         
         function updateTime() {
@@ -6011,7 +6257,7 @@
                 if (this.dataset.tab === 'system') checkDatabaseInfo();
                 else if (this.dataset.tab === 'games') loadGames();
                 else if (this.dataset.tab === 'users') {
-                    clearUserSearch(); // Clear search when switching tabs
+                    clearUserSearch();
                     loadUsers();
                 }
                 else if (this.dataset.tab === 'payments') {
@@ -6022,7 +6268,6 @@
             });
         });
         
-        // Transaction type tabs
         document.querySelectorAll('.transaction-tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const type = this.dataset.transactionType;
@@ -6071,6 +6316,27 @@
             document.getElementById('live-updates-list').innerHTML = '';
         });
         
+        // Notification quick action
+        document.getElementById('quick-send-notification')?.addEventListener('click', openNotificationModal);
+        
+        // Notification submit
+        document.getElementById('submit-notification')?.addEventListener('click', sendNotification);
+        
+        // Notification live preview
+        document.getElementById('notification-title')?.addEventListener('input', updateNotificationPreview);
+        document.getElementById('notification-message')?.addEventListener('input', updateNotificationPreview);
+        document.getElementById('notification-type')?.addEventListener('change', () => {
+            toggleNotificationType();
+            getRecipientCount().then(count => {
+                document.getElementById('notification-recipient-count').textContent = count;
+            });
+        });
+        document.getElementById('specific-user-ids')?.addEventListener('input', () => {
+            getRecipientCount().then(count => {
+                document.getElementById('notification-recipient-count').textContent = count;
+            });
+        });
+        
         document.getElementById('check-db-info')?.addEventListener('click', checkDatabaseInfo);
         document.getElementById('download-db-gz')?.addEventListener('click', () => downloadDatabase(true, 'gz'));
         document.getElementById('download-db-zip')?.addEventListener('click', () => downloadDatabase(true, 'zip'));
@@ -6093,10 +6359,8 @@
             });
         }
         
-        // Profile save button
         document.getElementById('save-profile-btn')?.addEventListener('click', saveProfile);
         
-        // Fake player settings button
         document.querySelectorAll('.btn[onclick="openFakePlayerSettingsModal()"]').forEach(btn => {
             btn.addEventListener('click', openFakePlayerSettingsModal);
         });
@@ -6379,44 +6643,6 @@
                 }
             } catch (error) {
                 showNotification('Error adding balance: ' + error.message, 'danger');
-            }
-        });
-        
-        document.getElementById('submit-notification')?.addEventListener('click', async () => {
-            const title = document.getElementById('notification-title').value;
-            const message = document.getElementById('notification-message').value;
-            
-            if (!title || !message) {
-                showNotification('Enter title and message', 'warning');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/notification', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: title,
-                        message: message,
-                        target: 'all',
-                        admin_id: adminData?.id || 'system'
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server error (${response.status}): ${errorText}`);
-                }
-                
-                const data = await response.json();
-                if (data.success) {
-                    showNotification('Notification sent successfully', 'success');
-                    closeModal('send-notification-modal');
-                } else {
-                    showNotification('Failed to send notification: ' + (data.message || 'Unknown error'), 'danger');
-                }
-            } catch (error) {
-                showNotification('Error sending notification: ' + error.message, 'danger');
             }
         });
         

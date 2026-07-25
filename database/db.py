@@ -4244,6 +4244,188 @@ class Database:
         except Exception as e:
             logger.error(f"Error activating admin: {e}")
             return False
+        
+
+        
+            # ==================== NOTIFICATION METHODS ====================
+
+    @classmethod
+    async def record_notification(cls, user_id: int = None, notification_type: str = "system",
+                                title: str = "", message: str = "", sender_id: int = None) -> int:
+        """Record a notification in the database"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO notifications (user_id, notification_type, title, message, is_read, created_at, sender_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (user_id, notification_type, title, message, 0, datetime.now(), sender_id))
+                
+                return cursor.lastrowid
+        except Exception as e:
+            logger.error(f"Error recording notification: {e}")
+            return 0
+
+    @classmethod
+    async def get_notifications(cls, user_id: int, limit: int = 50, offset: int = 0) -> List[Dict]:
+        """Get notifications for a specific user"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT n.*, u.username as sender_username
+                    FROM notifications n
+                    LEFT JOIN admin_credentials a ON n.sender_id = a.id
+                    LEFT JOIN users u ON a.user_id = u.user_id
+                    WHERE n.user_id = ? OR n.user_id IS NULL
+                    ORDER BY n.created_at DESC
+                    LIMIT ? OFFSET ?
+                """, (user_id, limit, offset))
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting notifications: {e}")
+            return []
+
+    @classmethod
+    async def get_unread_notifications_count(cls, user_id: int) -> int:
+        """Get count of unread notifications for a user"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT COUNT(*) as count FROM notifications
+                    WHERE (user_id = ? OR user_id IS NULL) AND is_read = 0
+                """, (user_id,))
+                result = cursor.fetchone()
+                return result[0] if result else 0
+        except Exception as e:
+            logger.error(f"Error getting unread notifications count: {e}")
+            return 0
+
+    @classmethod
+    async def mark_notification_read(cls, notification_id: int, user_id: int) -> bool:
+        """Mark a notification as read"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE notifications
+                    SET is_read = 1, read_at = ?
+                    WHERE id = ? AND (user_id = ? OR user_id IS NULL)
+                """, (datetime.now(), notification_id, user_id))
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"Error marking notification read: {e}")
+            return False
+
+    @classmethod
+    async def mark_all_notifications_read(cls, user_id: int) -> bool:
+        """Mark all notifications as read for a user"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    UPDATE notifications
+                    SET is_read = 1, read_at = ?
+                    WHERE (user_id = ? OR user_id IS NULL) AND is_read = 0
+                """, (datetime.now(), user_id))
+                return True
+        except Exception as e:
+            logger.error(f"Error marking all notifications read: {e}")
+            return False
+
+    @classmethod
+    async def get_all_users(cls) -> List[int]:
+        """Get all active user IDs"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("SELECT user_id FROM users WHERE status = 'active' AND deleted_at IS NULL")
+                rows = cursor.fetchall()
+                return [row[0] for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting all users: {e}")
+            return []
+
+    @classmethod
+    async def send_broadcast_notification(cls, title: str, message: str, sender_id: int = None) -> Dict:
+        """Send notification to all users"""
+        try:
+            # Get all active users
+            users = await cls.get_all_users()
+            sent_count = 0
+            
+            # Record notification for each user
+            for user_id in users:
+                notification_id = await cls.record_notification(
+                    user_id=user_id,
+                    notification_type="admin_broadcast",
+                    title=title,
+                    message=message,
+                    sender_id=sender_id
+                )
+                if notification_id:
+                    sent_count += 1
+            
+            # Also record a global notification (for users who might join later)
+            global_id = await cls.record_notification(
+                user_id=None,
+                notification_type="admin_broadcast",
+                title=title,
+                message=message,
+                sender_id=sender_id
+            )
+            
+            logger.info(f"📢 Broadcast notification sent to {sent_count} users")
+            
+            return {
+                'success': True,
+                'sent_count': sent_count,
+                'global_notification_id': global_id,
+                'message': f'Notification sent to {sent_count} users'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending broadcast notification: {e}")
+            return {
+                'success': False,
+                'message': str(e)
+            }
+
+    @classmethod
+    async def send_notification_to_user(cls, user_id: int, title: str, message: str, sender_id: int = None) -> int:
+        """Send notification to a specific user"""
+        return await cls.record_notification(user_id, "direct", title, message, sender_id)
+
+    @classmethod
+    async def delete_notification(cls, notification_id: int, user_id: int) -> bool:
+        """Delete a notification (soft delete)"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM notifications
+                    WHERE id = ? AND (user_id = ? OR user_id IS NULL)
+                """, (notification_id, user_id))
+                return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"Error deleting notification: {e}")
+            return False
+
+    @classmethod
+    async def delete_all_notifications(cls, user_id: int) -> bool:
+        """Delete all notifications for a user"""
+        try:
+            with cls.get_cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM notifications
+                    WHERE user_id = ? OR user_id IS NULL
+                """, (user_id,))
+                return True
+        except Exception as e:
+            logger.error(f"Error deleting all notifications: {e}")
+            return False
+        
+        
+        
+        
+        
+        
+        
     
     # ==================== TRANSACTION METHODS ====================
     
