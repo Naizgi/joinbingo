@@ -1296,26 +1296,42 @@
         <span id="status-text">Connecting...</span>
     </div>
 
-    <div class="winner-display" id="winner-announcement">
-        <div class="winner-content">
-            <div class="winner-orange-box">
-                <h1>BINGO!</h1>
-                <p><span class="winner-name-badge" id="winners-name-badge">Na</span> <span id="winners-full-text">has won the game.</span></p>
+   <div class="winner-display" id="winner-announcement">
+    <div class="winner-content">
+        <div class="winner-orange-box">
+            <h1>🎉 BINGO! 🎉</h1>
+            <p style="font-size: 16px; font-weight: 700; margin-top: 4px;">
+                <span id="winners-name-badge" style="
+                    display: inline-block;
+                    background: #0F7B1B;
+                    color: white;
+                    padding: 4px 14px;
+                    border-radius: 6px;
+                    font-size: 16px;
+                    min-width: 60px;
+                ">Winner</span>
+            </p>
+            <p id="winners-full-text" style="font-size: 14px; margin-top: 2px;">has won the game! 🎉</p>
+        </div>
+        
+        <div class="winner-card-wrapper">
+            <div class="winner-card-header">
+                <div class="winner-card-header-cell b">B</div>
+                <div class="winner-card-header-cell i">I</div>
+                <div class="winner-card-header-cell n">N</div>
+                <div class="winner-card-header-cell g">G</div>
+                <div class="winner-card-header-cell o">O</div>
             </div>
-            <div class="winner-card-wrapper">
-                <div class="winner-card-header">
-                    <div class="winner-card-header-cell b">B</div>
-                    <div class="winner-card-header-cell i">I</div>
-                    <div class="winner-card-header-cell n">N</div>
-                    <div class="winner-card-header-cell g">G</div>
-                    <div class="winner-card-header-cell o">O</div>
-                </div>
-                <div class="winner-card-grid" id="winner-card-grid"></div>
-                <div class="winner-board-text">Board number <span id="winner-board-number">0</span></div>
-            </div>
-            <div class="winner-countdown-bar"><h2 id="winner-announcement-timer">10</h2></div>
+            <div class="winner-card-grid" id="winner-card-grid"></div>
+            <div class="winner-board-text">Board number <span id="winner-board-number">0</span></div>
+        </div>
+        
+        <div class="winner-countdown-bar">
+            <h2 id="winner-announcement-timer">10</h2>
+            <p style="font-size: 12px; font-weight: 400;">seconds remaining</p>
         </div>
     </div>
+</div>
 
     <div id="page-game" class="page-container active">
         <div id="waiting-screen" class="screen active">
@@ -2994,52 +3010,156 @@ async function loadWalletHistoryPage(page = 1) {
     }
 
     function showWinnerAnnouncementScreen(winnerData) {
-        const announcement = document.getElementById("winner-announcement");
-        const gridContainer = document.getElementById("winner-card-grid");
-        const nameBadge = document.getElementById("winners-name-badge");
-        const nameText = document.getElementById("winners-full-text");
-        const boardNum = document.getElementById("winner-board-number");
-        const timerElement = document.getElementById("winner-announcement-timer");
-        if (!announcement) return;
-        if (!winnerData) winnerData = gameState.winnerData || { full_name: "Unknown Winner", username: "unknown", prize_amount: 0, card_index: 0, card_numbers: [], winning_pattern: [], pattern_type: "BINGO", all_winners: [] };
-        const winner = winnerData.all_winners ? winnerData.all_winners[winnerData.all_winners.length - 1] : winnerData;
-        const name = winner.full_name || winner.username || "Winner";
-        if (nameBadge) nameBadge.textContent = name.charAt(0).toUpperCase();
-        if (nameText) nameText.textContent = `has won the game.`;
-        if (boardNum) boardNum.textContent = winner.card_index || 0;
-        if (gridContainer) {
-            gridContainer.innerHTML = "";
-            const cardNums = winner.card_numbers || winnerData.card_numbers || [];
-            const pattern = winner.winning_pattern || winnerData.winning_pattern || [];
-            const patternSet = new Set(pattern.map(n => n.toString()));
-            const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners";
-            const cornerIndices = [0, 4, 20, 24];
-            for(let i=0; i < 25; i++) {
-                const cell = document.createElement("div");
-                cell.className = "winner-card-cell";
-                const num = cardNums[i];
-                const numStr = num ? num.toString() : "?";
-                if(i === 12 || num === 0 || num === "0" || num === "FREE") {
-                    cell.classList.add("free");
-                    cell.textContent = "*";
-                } else {
-                    cell.textContent = num;
-                    let isMarked = patternSet.has(numStr);
-                    if(isFourCorners && cornerIndices.includes(i)) {
-                        isMarked = true;
-                    }
-                    if(isMarked) {
-                        cell.classList.add("marked");
-                    }
-                }
-                gridContainer.appendChild(cell);
-            }
+    const announcement = document.getElementById("winner-announcement");
+    const gridContainer = document.getElementById("winner-card-grid");
+    const nameBadge = document.getElementById("winners-name-badge");
+    const nameText = document.getElementById("winners-full-text");
+    const boardNum = document.getElementById("winner-board-number");
+    const timerElement = document.getElementById("winner-announcement-timer");
+    
+    if (!announcement) return;
+    
+    if (!winnerData) winnerData = gameState.winnerData || { 
+        full_name: "Unknown Winner", 
+        username: "unknown", 
+        prize_amount: 0, 
+        card_index: 0, 
+        card_numbers: [], 
+        winning_pattern: [], 
+        pattern_type: "BINGO", 
+        all_winners: [] 
+    };
+    
+    const winner = winnerData.all_winners ? winnerData.all_winners[winnerData.all_winners.length - 1] : winnerData;
+    
+    // ====== GET FULL USER NAME ======
+    let displayName = winner.full_name || winner.username || "Winner";
+    
+    // If we have username but no full_name, try to get from Telegram or database
+    if (!winner.full_name && winner.username) {
+        // Check if username is a Telegram username (starts with @)
+        if (winner.username.startsWith('@')) {
+            displayName = winner.username;
+        } else {
+            displayName = `@${winner.username}`;
         }
-        const DEFAULT_WINNER_DURATION = 10;
-        startWinnerDisplayCountdown(winnerData.game_id, DEFAULT_WINNER_DURATION);
-        if (announcement) announcement.style.display = "flex";
     }
-
+    
+    // If still no name, use user_id as fallback
+    if (!displayName || displayName === "Unknown" || displayName === "Winner") {
+        displayName = `User ${winner.user_id || ''}`;
+    }
+    
+    // Truncate long names for display
+    const maxLength = 20;
+    if (displayName.length > maxLength) {
+        displayName = displayName.substring(0, maxLength) + '...';
+    }
+    
+    // ====== UPDATE UI ======
+    // Show full name in the badge (not just first letter)
+    if (nameBadge) {
+        // Store full name as data attribute for tooltip or additional display
+        nameBadge.dataset.fullName = displayName;
+        nameBadge.textContent = displayName;
+        // Make badge wider to accommodate full name
+        nameBadge.style.padding = '4px 14px';
+        nameBadge.style.fontSize = '14px';
+        nameBadge.style.minWidth = '60px';
+        nameBadge.style.display = 'inline-block';
+        nameBadge.style.whiteSpace = 'nowrap';
+    }
+    
+    if (nameText) {
+        // Get prize amount
+        const prizeAmount = winner.prize_amount || winnerData.prize_amount || 0;
+        const prizeText = prizeAmount > 0 ? `🎉 Won ${prizeAmount.toFixed(2)} birr!` : '';
+        nameText.textContent = prizeText || 'has won the game! 🎉';
+    }
+    
+    if (boardNum) {
+        boardNum.textContent = winner.card_index || 0;
+    }
+    
+    // ====== RENDER WINNER CARD ======
+    if (gridContainer) {
+        gridContainer.innerHTML = "";
+        const cardNums = winner.card_numbers || winnerData.card_numbers || [];
+        const pattern = winner.winning_pattern || winnerData.winning_pattern || [];
+        const patternSet = new Set(pattern.map(n => n.toString()));
+        const isFourCorners = (winner.pattern_type || winnerData.pattern_type) === "four_corners";
+        const cornerIndices = [0, 4, 20, 24];
+        
+        for(let i = 0; i < 25; i++) {
+            const cell = document.createElement("div");
+            cell.className = "winner-card-cell";
+            const num = cardNums[i];
+            const numStr = num ? num.toString() : "?";
+            
+            if(i === 12 || num === 0 || num === "0" || num === "FREE") {
+                cell.classList.add("free");
+                cell.textContent = "*";
+            } else {
+                cell.textContent = num;
+                let isMarked = patternSet.has(numStr);
+                if(isFourCorners && cornerIndices.includes(i)) {
+                    isMarked = true;
+                }
+                if(isMarked) {
+                    cell.classList.add("marked");
+                }
+            }
+            gridContainer.appendChild(cell);
+        }
+    }
+    
+    // ====== ADD WINNER DETAILS BELOW ======
+    // Add winner details section if not exists
+    let winnerDetails = document.getElementById("winner-details");
+    if (!winnerDetails) {
+        winnerDetails = document.createElement("div");
+        winnerDetails.id = "winner-details";
+        winnerDetails.style.cssText = `
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            margin-top: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        `;
+        // Insert after winner-card-wrapper
+        const cardWrapper = document.querySelector('.winner-card-wrapper');
+        if (cardWrapper && cardWrapper.parentNode) {
+            cardWrapper.parentNode.insertBefore(winnerDetails, cardWrapper.nextSibling);
+        }
+    }
+    
+    // Update winner details
+    if (winnerDetails) {
+        const prizeAmount = winner.prize_amount || winnerData.prize_amount || 0;
+        const patternType = winner.pattern_type || winnerData.pattern_type || 'BINGO';
+        const patternDisplay = patternType.replace('_', ' ').toUpperCase();
+        
+        winnerDetails.innerHTML = `
+            <span style="font-weight: 700;">👤 ${displayName}</span>
+            ${prizeAmount > 0 ? ` • 💰 ${prizeAmount.toFixed(2)} birr` : ''}
+            ${patternType ? ` • 🎯 ${patternDisplay}` : ''}
+        `;
+    }
+    
+    // ====== START COUNTDOWN ======
+    const DEFAULT_WINNER_DURATION = 10;
+    startWinnerDisplayCountdown(winnerData.game_id, DEFAULT_WINNER_DURATION);
+    
+    if (announcement) {
+        announcement.style.display = "flex";
+        // Ensure the announcement is centered and visible
+        announcement.style.alignItems = "center";
+        announcement.style.justifyContent = "center";
+    }
+}
     function startWinnerDisplayCountdown(gameId, durationSeconds = 10) {
         if (gameState.winnerDisplayInterval) clearInterval(gameState.winnerDisplayInterval);
         gameState.isWinnerDisplayActive = true; 
