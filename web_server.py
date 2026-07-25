@@ -3001,37 +3001,73 @@ async def admin_send_notification(request):
         
         from database.db import Database
         
-        # Record notification
-        notification_id = await Database.record_notification(
-            user_id=None,
-            notification_type="admin",
-            title=title,
-            message=message
-        )
+        # Format the full message
+        full_message = f"📢 *{title}*\n\n{message}"
         
-        # Send to WebSocket connections
+        # ============ SEND TO TELEGRAM BOT USERS ============
+        sent_to_telegram = 0
+        try:
+            # Import the notification queue
+            from web_server import notification_queue
+            
+            if target == 'all':
+                # Get all users from database
+                with Database.get_cursor() as cursor:
+                    cursor.execute("SELECT user_id FROM users WHERE status = 'active'")
+                    users = cursor.fetchall()
+                    
+                for user in users:
+                    user_id = user['user_id']
+                    notification_queue.add_notification(user_id, full_message)
+                    sent_to_telegram += 1
+                    
+            elif target == 'active':
+                # Get active users from WebSocket connections
+                for user_id in websocket_server.user_connections.keys():
+                    notification_queue.add_notification(int(user_id), full_message)
+                    sent_to_telegram += 1
+                    
+            elif target == 'specific':
+                for user_id in target_ids:
+                    try:
+                        notification_queue.add_notification(int(user_id), full_message)
+                        sent_to_telegram += 1
+                    except:
+                        pass
+            
+            logger.info(f"📨 Added {sent_to_telegram} Telegram notifications to queue")
+            
+        except Exception as e:
+            logger.error(f"Error sending Telegram notifications: {e}")
+        
+        # ============ SEND TO WEBSOCKET CONNECTIONS ============
         notification_data = {
             'type': 'admin_notification',
             'notification': {
-                'id': notification_id,
                 'title': title,
                 'message': message,
                 'timestamp': datetime.now().isoformat()
             }
         }
         
-        if target == 'all':
-            # Send to all connected users
-            for user_id, ws in list(websocket_server.user_connections.items()):
-                await websocket_server._safe_send_async(ws, notification_data)
-        elif target == 'active':
-            # Send to all active WebSocket connections
+        # Send to WebSocket connections
+        websocket_count = 0
+        if target == 'all' or target == 'active':
             for ws in list(websocket_server.connections):
                 await websocket_server._safe_send_async(ws, notification_data)
+                websocket_count += 1
         elif target == 'specific':
-            # Send to specific users
             for user_id in target_ids:
                 await websocket_server.send_to_user(str(user_id), notification_data)
+                websocket_count += 1
+        
+        # ============ RECORD IN DATABASE ============
+        notification_id = await Database.record_notification(
+            user_id=None,
+            notification_type="admin",
+            title=title,
+            message=message
+        )
         
         # Record admin transaction
         await Database.record_admin_transaction(
@@ -3043,7 +3079,8 @@ async def admin_send_notification(request):
                 'title': title,
                 'message': message,
                 'target': target,
-                'target_count': len(target_ids) if target == 'specific' else 'all'
+                'telegram_sent': sent_to_telegram,
+                'websocket_sent': websocket_count
             }
         )
         
@@ -3051,7 +3088,9 @@ async def admin_send_notification(request):
             'success': True,
             'message': 'Notification sent successfully',
             'notification_id': notification_id,
-            'sent_to': len(websocket_server.user_connections) if target == 'all' else len(target_ids) if target == 'specific' else 'all'
+            'sent_to_telegram': sent_to_telegram,
+            'sent_to_websocket': websocket_count,
+            'total_sent': sent_to_telegram + websocket_count
         })
         
     except Exception as e:
@@ -3060,7 +3099,6 @@ async def admin_send_notification(request):
             'success': False,
             'message': str(e)
         }, status=500)
-
 
 # ==================== PAYMENT & WITHDRAWAL ADMIN ENDPOINTS ====================
 @routes.get('/api/admin/payment/{payment_id}')
