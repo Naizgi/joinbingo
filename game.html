@@ -1144,120 +1144,172 @@
         .profile-toggle.on { background: var(--btn-green); }
 
         /* ===== RESPONSIVE BREAKPOINTS ===== */
-        @media (max-width: 600px) {
-            .game-layout {
-                flex-direction: row !important;
-                gap: 4px;
-                align-items: stretch;
-            }
-            .board-container {
-                width: 42%;
-                flex-shrink: 0;
-            }
-            .right-panel {
-                width: 58%;
-                flex-shrink: 0;
-            }
-            .board-cell {
-                font-size: 8px !important;
-                min-height: 20px;
-                min-width: 20px;
-            }
-            .board-header-cell {
-                font-size: 11px;
-                padding: 2px 0;
-            }
-            .p-card-cell { font-size: 8px; }
-            .player-cards-container {
-                max-height: 280px;
-                min-height: 150px;
-            }
-            .player-cards-container-inner { max-height: 280px; }
-            .stats-row {
-                gap: 1px;
-                padding: 2px 1px !important;
-            }
-            .stat-box .label { font-size: 7px; }
-            .stat-box .value { font-size: 10px; }
-            .call-bubble {
-                width: 22px;
-                height: 22px;
-                font-size: 8px;
-            }
-            .current-call-badge {
-                width: 36px;
-                height: 36px;
-                font-size: 11px;
-            }
-            .bottom-actions {
-                bottom: 65px;
-                right: 8px;
-            }
-            .cards-grid {
-                grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
-                min-height: 200px;
-                max-height: 250px;
-            }
-        }
+        /* ===== RESPONSIVE BREAKPOINTS ===== */
 
-        @media (min-width: 768px) {
-            .board-cell {
-                font-size: 14px !important;
-                min-height: 36px;
-                min-width: 36px;
-            }
-            .board-header-cell {
-                font-size: 18px;
-                padding: 6px 0;
-            }
-            .board-container { width: 36%; }
-            .right-panel { width: 64%; }
-            .p-card-cell { font-size: 12px; }
-            .stat-box .label { font-size: 11px; }
-            .stat-box .value { font-size: 14px; }
-            .call-bubble {
-                width: 44px;
-                height: 44px;
-                font-size: 12px;
-            }
-            .current-call-badge {
-                width: 50px;
-                height: 50px;
-                font-size: 16px;
-            }
-            .player-cards-container {
-                min-height: 280px;
-                max-height: 450px;
-            }
-            .player-cards-container-inner { max-height: 450px; }
-        }
+/* Mobile (max-width: 600px) */
+@media (max-width: 600px) {
+    .game-layout {
+        flex-direction: row !important;
+        gap: 4px;
+        align-items: stretch;
+    }
+    .board-container {
+        width: 42%;
+        flex-shrink: 0;
+    }
+    .right-panel {
+        width: 58%;
+        flex-shrink: 0;
+    }
+    
+    /* BINGO GRID - BIGGER AND BOLDER ON MOBILE */
+    .board-cell {
+        font-size: 16px !important;  /* Increased from 8px */
+        font-weight: 900 !important;
+        min-height: 28px;
+        min-width: 28px;
+    }
+    .board-cell.called.current-call {
+        font-size: 18px !important;
+    }
+    
+    .board-header-cell {
+        font-size: 12px;  /* Increased from 11px */
+        padding: 3px 0;
+    }
+    
+    .p-card-cell { 
+        font-size: 12px !important;  /* Increased from 8px */
+        font-weight: 700 !important;
+    }
+    
+    .player-cards-container {
+        max-height: 280px;
+        min-height: 150px;
+    }
+    .player-cards-container-inner { max-height: 280px; }
+    
+    .stats-row {
+        gap: 1px;
+        padding: 2px 1px !important;
+    }
+    .stat-box .label { font-size: 8px; }
+    .stat-box .value { font-size: 11px; font-weight: 800; }
+    
+    .call-bubble {
+        width: 30px;
+        height: 30px;
+        font-size: 10px;
+    }
+    .current-call-badge {
+        width: 36px;
+        height: 36px;
+        font-size: 11px;
+    }
+    .bottom-actions {
+        bottom: 65px;
+        right: 8px;
+    }
+    .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+        min-height: 200px;
+        max-height: 250px;
+    }
+}
 
-        @media (min-width: 1024px) {
-            .board-container { width: 34%; }
-            .right-panel { width: 66%; }
-            .board-cell {
-                font-size: 16px !important;
-                min-height: 42px;
-                min-width: 42px;
-            }
-            .board-header-cell {
-                font-size: 20px;
-                padding: 8px 0;
-            }
-            .p-card-cell { font-size: 14px; }
-            .player-cards-container {
-                min-height: 320px;
-                max-height: 500px;
-            }
-            .player-cards-container-inner { max-height: 500px; }
-            .stats-row {
-                padding: 6px 4px !important;
-                gap: 4px;
-            }
-            .stat-box .label { font-size: 13px; }
-            .stat-box .value { font-size: 16px; }
-            .stat-box { padding: 8px 4px; }
-        }
+/* Tablet (min-width: 768px) */
+@media (min-width: 768px) {
+    .board-cell {
+        font-size: 22px !important;  /* Increased from 14px */
+        font-weight: 900 !important;
+        min-height: 42px;
+        min-width: 42px;
+    }
+    .board-cell.called.current-call {
+        font-size: 24px !important;
+    }
+    
+    .board-header-cell {
+        font-size: 18px;
+        padding: 6px 0;
+    }
+    .board-container { width: 36%; }
+    .right-panel { width: 64%; }
+    
+    .p-card-cell { 
+        font-size: 16px !important;  /* Increased from 12px */
+        font-weight: 700 !important;
+    }
+    
+    .stat-box .label { font-size: 11px; }
+    .stat-box .value { font-size: 14px; font-weight: 800; }
+    .call-bubble {
+        width: 44px;
+        height: 44px;
+        font-size: 14px;
+    }
+    .current-call-badge {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+    .player-cards-container {
+        min-height: 280px;
+        max-height: 450px;
+    }
+    .player-cards-container-inner { max-height: 450px; }
+}
+
+/* Desktop (min-width: 1024px) */
+@media (min-width: 1024px) {
+    .board-container { width: 34%; }
+    .right-panel { width: 66%; }
+    
+    .board-cell {
+        font-size: 24px !important;  /* Increased from 16px */
+        font-weight: 900 !important;
+        min-height: 48px;
+        min-width: 48px;
+    }
+    .board-cell.called.current-call {
+        font-size: 26px !important;
+    }
+    
+    .board-header-cell {
+        font-size: 22px;
+        padding: 8px 0;
+    }
+    
+    .p-card-cell { 
+        font-size: 18px !important;  /* Increased from 14px */
+        font-weight: 700 !important;
+    }
+    
+    .player-cards-container {
+        min-height: 320px;
+        max-height: 500px;
+    }
+    .player-cards-container-inner { max-height: 500px; }
+    
+    .stats-row {
+        padding: 6px 4px !important;
+        gap: 4px;
+    }
+    .stat-box .label { font-size: 13px; }
+    .stat-box .value { font-size: 16px; font-weight: 800; }
+    .stat-box { padding: 8px 4px; }
+    
+    .call-bubble {
+        width: 52px;
+        height: 52px;
+        font-size: 16px;
+    }
+    .current-call-badge {
+        width: 56px;
+        height: 56px;
+        font-size: 18px;
+    }
+}
     </style>
 </head>
 <body>
