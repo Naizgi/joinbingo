@@ -98,9 +98,9 @@ dp = None
 
 # ==================== PAYMENT CONFIGURATION ====================
 MINIMUM_WITHDRAWAL_AMOUNT = 100.00
-PAYMENT_PHONE_NUMBER = "+251938014489"
-PAYMENT_RECEIVER_NAME = "Yitbarek Amare"
-SUPPORT_TELEGRAM_USER = "@joinbingosupport"
+PAYMENT_PHONE_NUMBER = "0933549812"
+PAYMENT_RECEIVER_NAME = "manaye kassa"
+SUPPORT_TELEGRAM_USER = "@JoinBingo"
 
 # API URLs and keys (will be loaded from config)
 TELEBIRR_VERIFICATION_API_URL = "http://verifyapi.leulzenebe.pro/verify-telebirr"
@@ -2425,8 +2425,8 @@ async def main():
         instructions += f"📋 የፒሜንት መታወቂያ: {payment_id}\n\n"
         instructions += f"1️⃣ ቴሌብር አፕዎን ይክፈቱ\n"
         instructions += f"2️⃣ የሚፈልጉትን መጠን ወደዚህ ይላኩ፡\n"
-        instructions += f"   📱 ስልክ: +251994902304\n"
-        instructions += f"   👤 ስም: dawit hayilekiros\n\n"
+        instructions += f"   📱 ስልክ: +251933549812\n"
+        instructions += f"   👤 ስም: manaye kassa\n\n"
         instructions += f"3️⃣ ከላኩ በኋላ፣ የማረጋገጫ መልእክት ይደርስዎታል\n"
         instructions += f"4️⃣ አጠቃላይ የግብይት መልእክቱን *COPY* ያድርጉ\n"
         instructions += f"5️⃣ እዚህ በቻት ውስጥ *PASTE* ያድርጉት\n\n"
