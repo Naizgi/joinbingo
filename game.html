@@ -1296,38 +1296,26 @@
         <span id="status-text">Connecting...</span>
     </div>
 
-   <div class="winner-display" id="winner-announcement">
-    <div class="winner-content">
-        <!-- Winner Banner -->
-        <div class="winner-banner">
-            <div class="winner-title">BINGO!</div>
-            <div class="winner-name-container">
-                <span class="winner-name">Melaku</span>
-                <span class="winner-status">has won the game.</span>
+    <div class="winner-display" id="winner-announcement">
+        <div class="winner-content">
+            <div class="winner-orange-box">
+                <h1>BINGO!</h1>
+                <p><span class="winner-name-badge" id="winners-name-badge">Na</span> <span id="winners-full-text">has won the game.</span></p>
             </div>
-        </div>
-
-        <!-- Winner Card -->
-        <div class="winner-card-wrapper">
-            <div class="winner-card-header">
-                <div class="winner-card-header-cell b">B</div>
-                <div class="winner-card-header-cell i">I</div>
-                <div class="winner-card-header-cell n">N</div>
-                <div class="winner-card-header-cell g">G</div>
-                <div class="winner-card-header-cell o">O</div>
+            <div class="winner-card-wrapper">
+                <div class="winner-card-header">
+                    <div class="winner-card-header-cell b">B</div>
+                    <div class="winner-card-header-cell i">I</div>
+                    <div class="winner-card-header-cell n">N</div>
+                    <div class="winner-card-header-cell g">G</div>
+                    <div class="winner-card-header-cell o">O</div>
+                </div>
+                <div class="winner-card-grid" id="winner-card-grid"></div>
+                <div class="winner-board-text">Board number <span id="winner-board-number">0</span></div>
             </div>
-            <div class="winner-card-grid" id="winner-card-grid">
-                <!-- Numbers will be filled by JavaScript -->
-            </div>
-            <div class="winner-board-text">Board number <span id="winner-board-number">32</span></div>
-        </div>
-
-        <!-- Countdown -->
-        <div class="winner-countdown-bar">
-            <div class="winner-countdown-number" id="winner-announcement-timer">0</div>
+            <div class="winner-countdown-bar"><h2 id="winner-announcement-timer">10</h2></div>
         </div>
     </div>
-</div>
 
     <div id="page-game" class="page-container active">
         <div id="waiting-screen" class="screen active">
