@@ -396,14 +396,14 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* ==================== PLAYER CARDS - MATCHING IMAGE UI ==================== */
+        /* ==================== PLAYER CARDS - VERTICAL (TOP & BOTTOM) ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 4px;
             border: 1px solid rgba(255, 255, 255, 0.5);
-            min-height: 140px;
-            max-height: 260px;
+            min-height: 180px;
+            max-height: 320px;
             overflow: hidden;
             flex: 1;
             display: flex;
@@ -412,7 +412,7 @@
 
         .player-cards-container-inner {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             gap: 4px;
             padding: 4px;
             flex: 1;
@@ -420,7 +420,7 @@
             justify-content: center;
             overflow: hidden;
             height: 100%;
-            max-height: 260px;
+            max-height: 320px;
         }
 
         .p-card-wrapper {
@@ -431,22 +431,28 @@
             border: 1px solid var(--border-light);
             flex: 1;
             min-width: 0;
-            max-width: 50%;
+            max-width: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: auto;
+            min-height: 0;
         }
 
         .p-card-wrapper:only-child {
-            max-width: 100%;
+            flex: 1;
+        }
+
+        .p-card-wrapper:not(:only-child) {
+            flex: 1;
+            max-height: 50%;
         }
 
         .p-card-title {
-            font-size: 8px;
+            font-size: 9px;
             font-weight: 700;
             color: #7F1089;
             text-align: center;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
             flex-shrink: 0;
             letter-spacing: 0.5px;
         }
@@ -454,7 +460,7 @@
         .p-card-header-row {
             display: flex;
             gap: 1px;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
             flex-shrink: 0;
         }
 
@@ -464,7 +470,7 @@
             border-radius: 2px;
             padding: 1px 0;
             font-weight: 700;
-            font-size: 7px;
+            font-size: 8px;
             color: var(--text-white);
         }
         .p-card-header-cell.b { background: var(--letter-b); }
@@ -476,9 +482,10 @@
         .p-card-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1px;
+            gap: 1.5px;
             width: 100%;
             flex: 1;
+            aspect-ratio: 1;
         }
 
         .p-card-cell {
@@ -489,7 +496,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 9px;
+            font-size: 10px;
             color: var(--text-main);
             border: 1px solid var(--border-light);
             cursor: pointer;
@@ -513,10 +520,10 @@
         .p-card-cell.star::after {
             content: '★';
             position: absolute;
-            top: -1px;
-            right: -1px;
+            top: -2px;
+            right: -2px;
             color: var(--orange-accent);
-            font-size: 5px;
+            font-size: 6px;
         }
 
         .p-card-cell.empty {
@@ -1168,17 +1175,20 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== PLAYER CARDS RESPONSIVE - MATCHING IMAGE ===== */
+        /* ===== PLAYER CARDS RESPONSIVE - VERTICAL ===== */
         @media (max-width: 600px) {
             .player-cards-container {
-                min-height: 120px;
-                max-height: 200px;
+                min-height: 140px;
+                max-height: 220px;
             }
             .player-cards-container-inner {
-                max-height: 200px;
+                max-height: 220px;
             }
             .p-card-wrapper {
                 padding: 2px;
+            }
+            .p-card-wrapper:not(:only-child) {
+                max-height: 50%;
             }
             .p-card-cell {
                 font-size: 7px !important;
@@ -1247,10 +1257,13 @@
         @media (min-width: 601px) and (max-width: 1024px) {
             .player-cards-container {
                 min-height: 160px;
-                max-height: 220px;
+                max-height: 260px;
             }
             .player-cards-container-inner {
-                max-height: 220px;
+                max-height: 260px;
+            }
+            .p-card-wrapper:not(:only-child) {
+                max-height: 50%;
             }
             .p-card-cell {
                 font-size: 9px !important;
@@ -1290,10 +1303,13 @@
         @media (min-width: 1025px) {
             .player-cards-container {
                 min-height: 180px;
-                max-height: 260px;
+                max-height: 320px;
             }
             .player-cards-container-inner {
-                max-height: 260px;
+                max-height: 320px;
+            }
+            .p-card-wrapper:not(:only-child) {
+                max-height: 50%;
             }
             .p-card-cell {
                 font-size: 11px !important;
