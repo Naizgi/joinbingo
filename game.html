@@ -9,7 +9,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
    <style>
-        :root {
+               :root {
             --bg-main: #d9ade9;
             --surface-white: #FFFFFF;
             --purple-dark: #7F1089;
@@ -396,59 +396,71 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
+        /* ==================== PLAYER CARDS - FIXED & FIT TO SCREEN ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 4px;
             border: 1px solid rgba(255, 255, 255, 0.5);
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
+            min-height: 150px;
+            max-height: 280px;
+            overflow: hidden;
             flex: 1;
-        }
-        .player-cards-container-inner {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 2px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--purple-dark) transparent;
         }
-        .player-cards-container-inner::-webkit-scrollbar { width: 3px; }
-        .player-cards-container-inner::-webkit-scrollbar-track { background: transparent; }
-        .player-cards-container-inner::-webkit-scrollbar-thumb {
-            background: var(--purple-dark);
-            border-radius: 4px;
+
+        .player-cards-container-inner {
+            display: flex;
+            flex-direction: row;
+            gap: 4px;
+            padding: 4px;
+            flex: 1;
+            align-items: stretch;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            height: 100%;
+            max-height: 280px;
         }
 
         .p-card-wrapper {
             background: var(--surface-white);
-            border-radius: 8px;
-            padding: 4px;
+            border-radius: 6px;
+            padding: 3px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border-light);
+            flex: 1;
+            min-width: 0;
+            max-width: 50%;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
+
         .p-card-title {
-            font-size: 12px;
+            font-size: 9px;
             font-weight: 700;
             color: var(--orange-accent);
             text-align: center;
             margin-bottom: 2px;
+            flex-shrink: 0;
         }
+
         .p-card-header-row {
             display: flex;
             gap: 1px;
             margin-bottom: 2px;
+            flex-shrink: 0;
         }
+
         .p-card-header-cell {
             flex: 1;
             text-align: center;
-            border-radius: 3px;
-            padding: 2px 0;
+            border-radius: 2px;
+            padding: 1px 0;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 8px;
             color: var(--text-white);
         }
         .p-card-header-cell.b { background: var(--letter-b); }
@@ -460,41 +472,50 @@
         .p-card-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 2px;
+            gap: 1.5px;
             width: 100%;
+            flex: 1;
+            aspect-ratio: 1;
         }
+
         .p-card-cell {
             aspect-ratio: 1;
             background: #f5f5f5;
-            border-radius: 3px;
+            border-radius: 2px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 10px;
             color: var(--text-main);
             border: 1px solid var(--border-light);
             cursor: pointer;
+            min-width: 0;
+            min-height: 0;
         }
+
         .p-card-cell.marked {
             background: var(--btn-green) !important;
             color: white !important;
             border-color: #2e7d32 !important;
         }
+
         .p-card-cell.free {
             background: #CFD8DC;
             border-color: #90A4AE;
-            font-size: 8px;
+            font-size: 7px;
         }
+
         .p-card-cell.star { position: relative; }
         .p-card-cell.star::after {
             content: '★';
             position: absolute;
-            top: -3px;
-            right: -3px;
+            top: -2px;
+            right: -2px;
             color: var(--orange-accent);
-            font-size: 8px;
+            font-size: 6px;
         }
+
         .p-card-cell.empty {
             background: transparent;
             border: 1px dashed #ddd;
@@ -504,19 +525,20 @@
         .no-card-waiting {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            padding: 30px 10px;
+            padding: 20px 10px;
             text-align: center;
             color: var(--purple-dark);
             font-weight: 800;
-            font-size: 14px;
+            font-size: 12px;
             line-height: 1.6;
             backdrop-filter: blur(2px);
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            min-height: 120px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex: 1;
         }
 
         /* ==================== WAITING SCREEN ==================== */
@@ -1143,8 +1165,33 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== RESPONSIVE BREAKPOINTS ===== */
+        /* ===== PLAYER CARDS RESPONSIVE FIXES ===== */
         @media (max-width: 600px) {
+            .player-cards-container {
+                max-height: 200px;
+                min-height: 120px;
+            }
+            .player-cards-container-inner {
+                max-height: 200px;
+            }
+            .p-card-wrapper {
+                padding: 2px;
+            }
+            .p-card-cell {
+                font-size: 7px !important;
+                border-radius: 1px;
+            }
+            .p-card-header-cell {
+                font-size: 6px !important;
+                padding: 0px 0;
+            }
+            .p-card-title {
+                font-size: 7px !important;
+            }
+            .p-card-grid {
+                gap: 1px;
+            }
+            
             .game-layout {
                 flex-direction: row !important;
                 gap: 4px;
@@ -1167,12 +1214,6 @@
                 font-size: 11px;
                 padding: 2px 0;
             }
-            .p-card-cell { font-size: 8px; }
-            .player-cards-container {
-                max-height: 280px;
-                min-height: 150px;
-            }
-            .player-cards-container-inner { max-height: 280px; }
             .stats-row {
                 gap: 1px;
                 padding: 2px 1px !important;
@@ -1200,7 +1241,21 @@
             }
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 601px) and (max-width: 1024px) {
+            .player-cards-container {
+                max-height: 240px;
+                min-height: 150px;
+            }
+            .player-cards-container-inner {
+                max-height: 240px;
+            }
+            .p-card-cell {
+                font-size: 9px !important;
+            }
+            .p-card-header-cell {
+                font-size: 7px !important;
+            }
+            
             .board-cell {
                 font-size: 16px !important;
                 min-height: 36px;
@@ -1212,7 +1267,6 @@
             }
             .board-container { width: 36%; }
             .right-panel { width: 64%; }
-            .p-card-cell { font-size: 12px; }
             .stat-box .label { font-size: 11px; }
             .stat-box .value { font-size: 14px; }
             .call-bubble {
@@ -1225,14 +1279,20 @@
                 height: 50px;
                 font-size: 16px;
             }
-            .player-cards-container {
-                min-height: 280px;
-                max-height: 450px;
-            }
-            .player-cards-container-inner { max-height: 450px; }
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 1025px) {
+            .player-cards-container {
+                max-height: 320px;
+                min-height: 200px;
+            }
+            .player-cards-container-inner {
+                max-height: 320px;
+            }
+            .p-card-cell {
+                font-size: 12px !important;
+            }
+            
             .board-container { width: 34%; }
             .right-panel { width: 66%; }
             .board-cell {
@@ -1244,12 +1304,6 @@
                 font-size: 20px;
                 padding: 8px 0;
             }
-            .p-card-cell { font-size: 16px; }
-            .player-cards-container {
-                min-height: 320px;
-                max-height: 500px;
-            }
-            .player-cards-container-inner { max-height: 500px; }
             .stats-row {
                 padding: 6px 4px !important;
                 gap: 4px;
@@ -3514,6 +3568,7 @@ async function loadWalletHistoryPage(page = 1) {
     }
 
     // ==================== RENDER PLAYER CARDS FROM OWNED ====================
+        // ==================== RENDER PLAYER CARDS FROM OWNED ====================
     function renderPlayerCardsFromOwned() {
         const innerContainer = document.getElementById("player-cards-inner");
         if(!innerContainer) return;
@@ -3529,9 +3584,13 @@ async function loadWalletHistoryPage(page = 1) {
             return;
         }
 
-        console.log(`🎴 Rendering ${gameState.ownedCardIndices.length} cards:`, gameState.ownedCardIndices);
+        // Limit to 2 cards max
+        const cardsToShow = gameState.ownedCardIndices.slice(0, 2);
+        const cardCount = cardsToShow.length;
 
-        gameState.ownedCardIndices.forEach((index) => {
+        console.log(`🎴 Rendering ${cardCount} card(s):`, cardsToShow);
+
+        cardsToShow.forEach((index, position) => {
             let cardData = null;
             if (gameState.ownedCardsData) {
                 cardData = gameState.ownedCardsData.find(c => c.card_index === index);
@@ -3549,19 +3608,13 @@ async function loadWalletHistoryPage(page = 1) {
 
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            wrapper.style.marginBottom = '3px';
-            wrapper.style.background = '#FFFFFF';
-            wrapper.style.borderRadius = '8px';
-            wrapper.style.padding = '4px';
+            wrapper.style.flex = cardCount === 1 ? '1' : '1 1 0';
+            wrapper.style.maxWidth = cardCount === 1 ? '100%' : '50%';
+            wrapper.style.minWidth = '0';
             
             const title = document.createElement('div');
             title.className = 'p-card-title';
-            title.innerHTML = `Cartela #${index}`;
-            title.style.color = '#6A1B9A';
-            title.style.fontSize = '10px';
-            title.style.fontWeight = '700';
-            title.style.marginBottom = '2px';
-            title.style.textAlign = 'center';
+            title.innerHTML = `Board #${index}`;
             wrapper.appendChild(title);
 
             const headerRow = document.createElement('div');
@@ -3572,42 +3625,25 @@ async function loadWalletHistoryPage(page = 1) {
                 const box = document.createElement('div');
                 box.className = `p-card-header-cell ${colors[i]}`;
                 box.textContent = l;
-                box.style.fontSize = '8px';
-                box.style.padding = '1px 0';
                 headerRow.appendChild(box);
             });
             wrapper.appendChild(headerRow);
 
             const grid = document.createElement('div');
             grid.className = 'p-card-grid';
-            grid.style.gap = '1.5px';
             grid.id = `player-card-grid-${index}`;
             
             numbersToUse.forEach((num, i) => {
                 const cell = document.createElement('div');
                 cell.className = 'p-card-cell';
-                cell.style.fontSize = '8px';
-                cell.style.padding = '1px';
-                cell.style.aspectRatio = '1';
-                cell.style.display = 'flex';
-                cell.style.alignItems = 'center';
-                cell.style.justifyContent = 'center';
-                cell.style.background = '#f5f5f5';
-                cell.style.border = '1px solid #e0e0e0';
-                cell.style.borderRadius = '3px';
                 
                 if(num === 0 || num === '0' || i === 12) {
                     cell.classList.add('free');
                     cell.textContent = '★';
-                    cell.style.background = '#C8E6C9';
-                    cell.style.color = '#2E7D32';
-                    cell.style.fontWeight = 'bold';
                 } else {
                     cell.textContent = num;
-                    if (gameState.markedNumbers.has(num)) {
+                    if (gameState.markedNumbers && gameState.markedNumbers.has(num)) {
                         cell.classList.add('marked');
-                        cell.style.background = '#4CAF50';
-                        cell.style.color = 'white';
                     }
                 }
                 
@@ -3621,11 +3657,16 @@ async function loadWalletHistoryPage(page = 1) {
         const boardCountText = document.getElementById('boards-count-text');
         if (boardCountText) {
             const owned = gameState.ownedCardIndices ? gameState.ownedCardIndices.length : 0;
-            boardCountText.textContent = `${owned}/2`;
+            boardCountText.textContent = `${Math.min(owned, 2)}/2`;
         }
         updateBingoButton();
     }
     window.renderPlayerCardsFromOwned = renderPlayerCardsFromOwned;
+
+
+
+
+
 
     function showPreviewForIndex(cardIndex, numbers) {
         const previewContainer = document.getElementById("selected-card-info");
@@ -3854,7 +3895,7 @@ async function loadWalletHistoryPage(page = 1) {
             container.appendChild(cardWrapper);
         });
     }
-    
+
     // ==================== UPDATE PREVIEW ON CARD CHANGE ====================
     // Call this function whenever cards are purchased/refunded
     function updateCardPreview() {
