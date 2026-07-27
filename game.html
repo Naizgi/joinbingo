@@ -396,7 +396,7 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* ==================== PLAYER CARDS - FIXED & FIT TO SCREEN ==================== */
+        /* ==================== PLAYER CARDS - FIXED & FIT TO SCREEN (COLUMN LAYOUT) ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
@@ -412,13 +412,12 @@
 
         .player-cards-container-inner {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             gap: 4px;
             padding: 4px;
             flex: 1;
             align-items: stretch;
             justify-content: center;
-            flex-wrap: nowrap;
             overflow: hidden;
             height: 100%;
             max-height: 280px;
@@ -432,10 +431,11 @@
             border: 1px solid var(--border-light);
             flex: 1;
             min-width: 0;
-            max-width: 50%;
+            max-width: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: auto;
+            max-height: 50%;
         }
 
         .p-card-title {
@@ -1165,7 +1165,7 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== PLAYER CARDS RESPONSIVE FIXES ===== */
+        /* ===== PLAYER CARDS RESPONSIVE FIXES (COLUMN LAYOUT) ===== */
         @media (max-width: 600px) {
             .player-cards-container {
                 max-height: 200px;
@@ -1176,6 +1176,7 @@
             }
             .p-card-wrapper {
                 padding: 2px;
+                max-height: 50%;
             }
             .p-card-cell {
                 font-size: 7px !important;
