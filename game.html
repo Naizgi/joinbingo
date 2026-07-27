@@ -396,18 +396,17 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* ==================== PLAYER CARDS - FIXED & FIT TO SCREEN (COLUMN LAYOUT) ==================== */
+        /* ==================== PLAYER CARDS - LARGER & EXTEND LIKE BINGO GRID ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 4px;
             border: 1px solid rgba(255, 255, 255, 0.5);
-            min-height: 150px;
-            max-height: 280px;
-            overflow: hidden;
-            flex: 1;
+            min-height: 180px;
+            flex: 2;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .player-cards-container-inner {
@@ -420,13 +419,12 @@
             justify-content: center;
             overflow: hidden;
             height: 100%;
-            max-height: 280px;
         }
 
         .p-card-wrapper {
             background: var(--surface-white);
             border-radius: 6px;
-            padding: 3px;
+            padding: 4px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border-light);
             flex: 1;
@@ -435,32 +433,41 @@
             display: flex;
             flex-direction: column;
             height: auto;
+            min-height: 0;
+        }
+
+        .p-card-wrapper:only-child {
+            flex: 1;
+        }
+
+        .p-card-wrapper:not(:only-child) {
+            flex: 1;
             max-height: 50%;
         }
 
         .p-card-title {
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--orange-accent);
             text-align: center;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             flex-shrink: 0;
         }
 
         .p-card-header-row {
             display: flex;
-            gap: 1px;
-            margin-bottom: 2px;
+            gap: 2px;
+            margin-bottom: 3px;
             flex-shrink: 0;
         }
 
         .p-card-header-cell {
             flex: 1;
             text-align: center;
-            border-radius: 2px;
-            padding: 1px 0;
+            border-radius: 3px;
+            padding: 2px 0;
             font-weight: 700;
-            font-size: 8px;
+            font-size: 11px;
             color: var(--text-white);
         }
         .p-card-header-cell.b { background: var(--letter-b); }
@@ -472,7 +479,7 @@
         .p-card-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1.5px;
+            gap: 2px;
             width: 100%;
             flex: 1;
             aspect-ratio: 1;
@@ -481,12 +488,12 @@
         .p-card-cell {
             aspect-ratio: 1;
             background: #f5f5f5;
-            border-radius: 2px;
+            border-radius: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 10px;
+            font-weight: 700;
+            font-size: 14px;
             color: var(--text-main);
             border: 1px solid var(--border-light);
             cursor: pointer;
@@ -503,7 +510,7 @@
         .p-card-cell.free {
             background: #CFD8DC;
             border-color: #90A4AE;
-            font-size: 7px;
+            font-size: 9px;
         }
 
         .p-card-cell.star { position: relative; }
@@ -513,7 +520,7 @@
             top: -2px;
             right: -2px;
             color: var(--orange-accent);
-            font-size: 6px;
+            font-size: 8px;
         }
 
         .p-card-cell.empty {
@@ -529,12 +536,12 @@
             text-align: center;
             color: var(--purple-dark);
             font-weight: 800;
-            font-size: 12px;
+            font-size: 14px;
             line-height: 1.6;
             backdrop-filter: blur(2px);
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            min-height: 80px;
+            min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1165,32 +1172,28 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== PLAYER CARDS RESPONSIVE FIXES (COLUMN LAYOUT) ===== */
+        /* ===== PLAYER CARDS RESPONSIVE FIXES (LARGER) ===== */
         @media (max-width: 600px) {
             .player-cards-container {
-                max-height: 200px;
-                min-height: 120px;
+                min-height: 160px;
+                flex: 2;
             }
-            .player-cards-container-inner {
-                max-height: 200px;
-            }
-            .p-card-wrapper {
-                padding: 2px;
+            .p-card-wrapper:not(:only-child) {
                 max-height: 50%;
             }
             .p-card-cell {
-                font-size: 7px !important;
-                border-radius: 1px;
+                font-size: 11px !important;
+                border-radius: 2px;
             }
             .p-card-header-cell {
-                font-size: 6px !important;
-                padding: 0px 0;
+                font-size: 9px !important;
+                padding: 1px 0;
             }
             .p-card-title {
-                font-size: 7px !important;
+                font-size: 9px !important;
             }
             .p-card-grid {
-                gap: 1px;
+                gap: 1.5px;
             }
             
             .game-layout {
@@ -1244,17 +1247,17 @@
 
         @media (min-width: 601px) and (max-width: 1024px) {
             .player-cards-container {
-                max-height: 240px;
-                min-height: 150px;
-            }
-            .player-cards-container-inner {
-                max-height: 240px;
+                min-height: 200px;
+                flex: 2;
             }
             .p-card-cell {
-                font-size: 9px !important;
+                font-size: 13px !important;
             }
             .p-card-header-cell {
-                font-size: 7px !important;
+                font-size: 10px !important;
+            }
+            .p-card-title {
+                font-size: 11px !important;
             }
             
             .board-cell {
@@ -1284,13 +1287,13 @@
 
         @media (min-width: 1025px) {
             .player-cards-container {
-                max-height: 320px;
-                min-height: 200px;
-            }
-            .player-cards-container-inner {
-                max-height: 320px;
+                min-height: 250px;
+                flex: 2;
             }
             .p-card-cell {
+                font-size: 16px !important;
+            }
+            .p-card-header-cell {
                 font-size: 12px !important;
             }
             
