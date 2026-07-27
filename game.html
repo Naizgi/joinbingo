@@ -491,14 +491,14 @@
         .p-card-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
             gap: 1.5px;
             width: 100%;
             flex: 1;
-            aspect-ratio: 1;
+            min-height: 0;
         }
 
         .p-card-cell {
-            aspect-ratio: 1;
             background: #f5f5f5;
             border-radius: 2px;
             display: flex;
