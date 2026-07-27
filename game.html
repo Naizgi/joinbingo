@@ -3754,7 +3754,7 @@ async function loadWalletHistoryPage(page = 1) {
     }
 
 
-        // ==================== RENDER ALL CARDS PREVIEW IN WAITING SCREEN ====================
+    // ==================== RENDER ALL CARDS PREVIEW IN WAITING SCREEN ====================
     function renderAllCardsPreview() {
         const container = document.getElementById("all-cards-preview");
         const infoContainer = document.getElementById("selected-card-info");
@@ -3840,12 +3840,11 @@ async function loadWalletHistoryPage(page = 1) {
                     cell.style.color = "#2E7D32";
                     cell.style.fontWeight = "bold";
                 } else {
+                    // ============ FIX: REMOVE THE CALLED NUMBERS CHECK ============
+                    // Just show the number without any highlighting
                     cell.textContent = num;
-                    // Check if this number has been called
-                    if (gameState.calledNumbers && gameState.calledNumbers.includes(num)) {
-                        cell.style.background = "#4CAF50";
-                        cell.style.color = "white";
-                    }
+                    // No background color change for called numbers
+                    // No gameState.calledNumbers check
                 }
                 
                 grid.appendChild(cell);
@@ -3855,7 +3854,7 @@ async function loadWalletHistoryPage(page = 1) {
             container.appendChild(cardWrapper);
         });
     }
-
+    
     // ==================== UPDATE PREVIEW ON CARD CHANGE ====================
     // Call this function whenever cards are purchased/refunded
     function updateCardPreview() {
