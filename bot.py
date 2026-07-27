@@ -232,7 +232,7 @@ class TelebirrVerificationApiClient:
         return None
     
     def _process_response(self, api_data: dict, transaction_id: str):
-        """Process API response for bot use - FIXED to use settledAmount"""
+        """Process API response for bot use - FIXED phone matching"""
         if not api_data:
             return None
             
@@ -255,7 +255,10 @@ class TelebirrVerificationApiClient:
         receiver_name = data.get('creditedPartyName', '')
         transaction_status = data.get('transactionStatus', '')
         
-        # Check phone match
+        # LOG FOR DEBUGGING
+        logger.info(f"🔍 Phone matching - Admin: {PAYMENT_PHONE_NUMBER}, API returned: {receiver_phone_raw}")
+        
+        # Check phone match - FIXED
         phone_match = False
         if receiver_phone_raw and receiver_phone_raw != 'N/A':
             admin_digits = re.sub(r'[^\d]', '', PAYMENT_PHONE_NUMBER)
@@ -265,12 +268,53 @@ class TelebirrVerificationApiClient:
                 if len(visible_parts) == 2:
                     prefix = visible_parts[0]
                     suffix = visible_parts[1]
-                    if admin_digits.startswith(prefix) and admin_digits.endswith(suffix):
+                    
+                    # Remove any non-digit characters
+                    prefix_digits = re.sub(r'[^\d]', '', prefix)
+                    suffix_digits = re.sub(r'[^\d]', '', suffix)
+                    
+                    logger.info(f"🔍 Masked - Prefix: {prefix_digits}, Suffix: {suffix_digits}")
+                    logger.info(f"🔍 Admin digits: {admin_digits}")
+                    
+                    # Check if admin digits start with prefix
+                    starts_with_prefix = admin_digits.startswith(prefix_digits)
+                    # Check if admin digits END with the suffix
+                    ends_with_suffix = admin_digits.endswith(suffix_digits)
+                    
+                    logger.info(f"🔍 Starts with {prefix_digits}: {starts_with_prefix}, Ends with {suffix_digits}: {ends_with_suffix}")
+                    
+                    if starts_with_prefix and ends_with_suffix:
                         phone_match = True
+                        logger.info(f"✅ Phone matched via masking: {prefix_digits}****{suffix_digits}")
+                    else:
+                        # Try alternative: check if suffix appears at the end of admin digits
+                        if suffix_digits and admin_digits.endswith(suffix_digits):
+                            phone_match = True
+                            logger.info(f"✅ Phone matched via suffix only: admin ends with {suffix_digits}")
+                        # Try alternative: check if prefix appears at the start
+                        elif prefix_digits and admin_digits.startswith(prefix_digits):
+                            phone_match = True
+                            logger.info(f"✅ Phone matched via prefix only: admin starts with {prefix_digits}")
             else:
                 receiver_digits = re.sub(r'[^\d]', '', receiver_phone_raw)
-                if admin_digits[-9:] == receiver_digits[-9:]:
+                logger.info(f"🔍 Full phone - Receiver: {receiver_digits}, Admin: {admin_digits}")
+                
+                # Check last 9 digits (account for country code variations)
+                if len(admin_digits) >= 9 and len(receiver_digits) >= 9:
+                    if admin_digits[-9:] == receiver_digits[-9:]:
+                        phone_match = True
+                        logger.info(f"✅ Phone matched via last 9 digits")
+                # Exact match
+                elif admin_digits == receiver_digits:
                     phone_match = True
+                    logger.info(f"✅ Phone matched via exact digits")
+                # Check if one contains the other
+                elif admin_digits in receiver_digits or receiver_digits in admin_digits:
+                    phone_match = True
+                    logger.info(f"✅ Phone matched via contains")
+        
+        if not phone_match:
+            logger.warning(f"❌ Phone mismatch! Admin: {admin_digits}, Receiver raw: {receiver_phone_raw}")
         
         # Check name match
         name_match = False
@@ -281,6 +325,9 @@ class TelebirrVerificationApiClient:
             if (payment_name_norm in receiver_name_norm or 
                 receiver_name_norm in payment_name_norm):
                 name_match = True
+                logger.info(f"✅ Name matched: {receiver_name}")
+            else:
+                logger.warning(f"❌ Name mismatch! Admin: {PAYMENT_RECEIVER_NAME}, Receiver: {receiver_name}")
         
         result = {
             'success': success,
@@ -302,6 +349,8 @@ class TelebirrVerificationApiClient:
             result.get('phone_match') == True and
             result.get('transaction_status') == 'Completed'
         )
+        
+        logger.info(f"Telebirr verification result: is_valid={result['is_valid']}, phone_match={phone_match}")
         
         return result
 
