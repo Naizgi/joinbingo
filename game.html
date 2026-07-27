@@ -3635,9 +3635,10 @@ async function loadWalletHistoryPage(page = 1) {
 
             const wrapper = document.createElement('div');
             wrapper.className = 'p-card-wrapper';
-            wrapper.style.flex = cardCount === 1 ? '1' : '1 1 0';
-            wrapper.style.maxWidth = cardCount === 1 ? '100%' : '50%';
+            wrapper.style.flex = '1';
+            wrapper.style.maxWidth = '100%';
             wrapper.style.minWidth = '0';
+            wrapper.style.width = '100%';
             
             const title = document.createElement('div');
             title.className = 'p-card-title';
