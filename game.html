@@ -493,8 +493,10 @@
             grid-template-rows: repeat(5, 1fr);
             gap: 1.5px;
             width: 100%;
+            height: 100%;
             flex: 1;
             min-height: 0;
+            align-content: stretch;
         }
 
         .p-card-cell {
@@ -503,14 +505,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 12px;
+            font-weight: 700;
+            font-size: 14px;
             color: var(--text-main);
             border: 1px solid var(--border-light);
             cursor: pointer;
             min-width: 0;
             min-height: 0;
             width: 100%;
+            height: 100%;
         }
 
         .p-card-cell.marked {
