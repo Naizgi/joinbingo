@@ -205,6 +205,8 @@
             flex-wrap: nowrap;
             padding: 0 2px;
             flex: 1;
+            height: calc(100vh - 180px);
+            min-height: 350px;
         }
 
         .board-container {
@@ -214,14 +216,17 @@
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             width: 38%;
-            height: inherit;
+            height: 100%;
             flex-shrink: 0;
             flex-grow: 0;
+            display: flex;
+            flex-direction: column;
         }
         .board-header-row {
             display: flex;
             gap: 2px;
             margin-bottom: 3px;
+            flex-shrink: 0;
         }
         .board-header-cell {
             flex: 1;
@@ -242,12 +247,15 @@
         .board-columns {
             display: flex;
             gap: 4px !important;
+            flex: 1;
+            height: 100%;
         }
         .board-column {
             display: flex;
             flex-direction: column;
             gap: 4px !important;
             flex: 1;
+            height: 100%;
         }
         .board-cell {
             display: flex;
@@ -263,6 +271,7 @@
             transition: all 0.2s ease;
             min-height: 28px;
             min-width: 28px;
+            flex: 1;
         }
         .board-cell.called {
             background: var(--surface-white);
@@ -298,6 +307,7 @@
             flex-direction: column;
             gap: 4px;
             min-width: 0;
+            height: 100%;
         }
 
         .current-call-card {
@@ -309,6 +319,7 @@
             align-items: center;
             color: var(--text-white);
             box-shadow: 0 2px 4px rgba(106, 27, 154, 0.2);
+            flex-shrink: 0;
         }
         .current-call-label {
             font-weight: 700;
@@ -340,6 +351,7 @@
             width: 100%;
             align-self: center;
             margin: 2px 0;
+            flex-shrink: 0;
         }
         .call-bubble {
             border-radius: 50%;
@@ -368,6 +380,7 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid rgba(255, 255, 255, 0.8);
+            flex-shrink: 0;
         }
         .control-group {
             display: flex;
@@ -396,18 +409,18 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* ==================== PLAYER CARDS - VERTICAL (TOP & BOTTOM) ==================== */
+        /* ==================== PLAYER CARDS - RIGHT CORNER, FULL HEIGHT ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 4px;
             border: 1px solid rgba(255, 255, 255, 0.5);
-            min-height: 180px;
-            max-height: 320px;
-            overflow: hidden;
             flex: 1;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+            height: 100%;
         }
 
         .player-cards-container-inner {
@@ -420,7 +433,7 @@
             justify-content: center;
             overflow: hidden;
             height: 100%;
-            max-height: 320px;
+            min-height: 0;
         }
 
         .p-card-wrapper {
@@ -440,6 +453,7 @@
 
         .p-card-wrapper:only-child {
             flex: 1;
+            max-height: 100%;
         }
 
         .p-card-wrapper:not(:only-child) {
@@ -1175,14 +1189,14 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== PLAYER CARDS RESPONSIVE - VERTICAL ===== */
+        /* ===== PLAYER CARDS RESPONSIVE - FULL HEIGHT ===== */
         @media (max-width: 600px) {
-            .player-cards-container {
-                min-height: 140px;
-                max-height: 220px;
+            .game-layout {
+                height: calc(100vh - 160px);
+                min-height: 300px;
             }
-            .player-cards-container-inner {
-                max-height: 220px;
+            .player-cards-container {
+                min-height: 0;
             }
             .p-card-wrapper {
                 padding: 2px;
@@ -1255,12 +1269,12 @@
         }
 
         @media (min-width: 601px) and (max-width: 1024px) {
-            .player-cards-container {
-                min-height: 160px;
-                max-height: 260px;
+            .game-layout {
+                height: calc(100vh - 170px);
+                min-height: 350px;
             }
-            .player-cards-container-inner {
-                max-height: 260px;
+            .player-cards-container {
+                min-height: 0;
             }
             .p-card-wrapper:not(:only-child) {
                 max-height: 50%;
@@ -1301,12 +1315,12 @@
         }
 
         @media (min-width: 1025px) {
-            .player-cards-container {
-                min-height: 180px;
-                max-height: 320px;
+            .game-layout {
+                height: calc(100vh - 180px);
+                min-height: 400px;
             }
-            .player-cards-container-inner {
-                max-height: 320px;
+            .player-cards-container {
+                min-height: 0;
             }
             .p-card-wrapper:not(:only-child) {
                 max-height: 50%;
