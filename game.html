@@ -1336,22 +1336,17 @@
                 </div>
 
                 <div class="selected-card-info" id="selected-card-info" style="display: none">
-                    <div style="background: var(--surface-white); border-radius: 8px; padding: 10px; border: 1px solid var(--border-light);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <div style="font-size:12px;"><strong>Your Board:</strong> <span id="selected-card-id">#0</span></div>
-                            <div style="color: var(--orange-accent); font-weight: 600; font-size:12px;">10 birr</div>
-                        </div>
-                        <div style="font-size: 10px; color: var(--text-muted);">8 birr to prize pool (20% platform fee)</div>
-                        <div style="margin-top: 8px;">
-                            <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-eye"></i> Your Board Preview
-                            </div>
-                            <div style="background: #f9f9f9; border-radius: 8px; padding: 6px; display: flex; justify-content: center;">
-                                <div class="card-preview-grid" id="card-preview-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 140px; height: 140px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div style="background: var(--surface-white); border-radius: 8px; padding: 10px; border: 1px solid var(--border-light);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-size:12px;"><strong>Your Boards:</strong> <span id="boards-count-text">0/2</span></div>
+            <div style="color: var(--orange-accent); font-weight: 600; font-size:12px;">10 birr each</div>
+        </div>
+   
+        
+        <!-- Container for ALL cards preview -->
+        <div id="all-cards-preview" style="margin-top: 8px; display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+</div>
 
                 <div class="countdown-status-with-round" id="countdown-status" style="display: none">
                     <div class="countdown-round-info" style="font-weight: 600; font-size:12px;"><i class="fas fa-flag"></i> Round <span id="current-round-number">1</span> - Card Purchase Phase</div>
@@ -3699,6 +3694,10 @@ async function loadWalletHistoryPage(page = 1) {
                     showPreviewForIndex(cardIndex, data.card_numbers);
                     updateBoardCountText();
                     showNotification(`Board #${cardIndex} purchased successfully!`, "success");
+                    
+                    // ============ ADD THIS LINE ============
+                    renderAllCardsPreview();
+                    
                 } else if (action === "refund") {
                     if (gameState.ownedCardIndices) { const idx = gameState.ownedCardIndices.indexOf(cardIndex); if (idx > -1) gameState.ownedCardIndices.splice(idx, 1); }
                     if (gameState.ownedCardsData) { const idx = gameState.ownedCardsData.findIndex(c => c.card_index === cardIndex); if (idx > -1) gameState.ownedCardsData.splice(idx, 1); }
@@ -3709,6 +3708,9 @@ async function loadWalletHistoryPage(page = 1) {
                     if (gameState.uiSelectedCardIndex === cardIndex) { const preview = document.getElementById("selected-card-info"); if (preview) preview.style.display = "none"; gameState.uiSelectedCardIndex = null; }
                     updateBoardCountText();
                     showNotification(`Board #${cardIndex} refunded.`, "info");
+                    
+                    // ============ ADD THIS LINE ============
+                    renderAllCardsPreview();
                 }
                 const walletBalanceDisplay = document.getElementById("wallet-balance");
                 if (walletBalanceDisplay && gameState.walletBalance !== undefined) { walletBalanceDisplay.textContent = gameState.walletBalance.toFixed(2); }
@@ -3750,6 +3752,122 @@ async function loadWalletHistoryPage(page = 1) {
             });
         }
     }
+
+
+        // ==================== RENDER ALL CARDS PREVIEW IN WAITING SCREEN ====================
+    function renderAllCardsPreview() {
+        const container = document.getElementById("all-cards-preview");
+        const infoContainer = document.getElementById("selected-card-info");
+        
+        if (!container) return;
+        
+        // Clear container
+        container.innerHTML = "";
+        
+        // Check if user has cards
+        if (!gameState.ownedCardsData || gameState.ownedCardsData.length === 0) {
+            if (infoContainer) infoContainer.style.display = "none";
+            return;
+        }
+        
+        // Show the container
+        if (infoContainer) infoContainer.style.display = "block";
+        
+        // Update boards count
+        const countSpan = document.getElementById("boards-count-text");
+        if (countSpan) {
+            countSpan.textContent = `${gameState.ownedCardsData.length}/2`;
+        }
+        
+        // Render each card
+        gameState.ownedCardsData.forEach((cardData, index) => {
+            const cardIndex = cardData.card_index;
+            const numbers = cardData.numbers || [];
+            
+            if (!numbers || numbers.length !== 25) return;
+            
+            // Create card wrapper
+            const cardWrapper = document.createElement("div");
+            cardWrapper.style.cssText = `
+                background: #f9f9f9;
+                border-radius: 6px;
+                padding: 6px;
+                border: 1px solid #e0e0e0;
+                margin-bottom: 4px;
+            `;
+            
+            // Card title with board number
+            const title = document.createElement("div");
+            title.style.cssText = `
+                font-size: 10px;
+                font-weight: 700;
+                color: #6A1B9A;
+                text-align: center;
+                margin-bottom: 4px;
+            `;
+            title.textContent = `Board #${cardIndex}`;
+            cardWrapper.appendChild(title);
+            
+            // Card grid
+            const grid = document.createElement("div");
+            grid.style.cssText = `
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 2px;
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            `;
+            
+            numbers.forEach((num, i) => {
+                const cell = document.createElement("div");
+                cell.style.cssText = `
+                    aspect-ratio: 1;
+                    background: #ffffff;
+                    border-radius: 3px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                    font-size: 11px;
+                    color: #212121;
+                    border: 1px solid #e0e0e0;
+                `;
+                
+                if (num === 0 || num === "0" || i === 12) {
+                    cell.textContent = "★";
+                    cell.style.background = "#C8E6C9";
+                    cell.style.color = "#2E7D32";
+                    cell.style.fontWeight = "bold";
+                } else {
+                    cell.textContent = num;
+                    // Check if this number has been called
+                    if (gameState.calledNumbers && gameState.calledNumbers.includes(num)) {
+                        cell.style.background = "#4CAF50";
+                        cell.style.color = "white";
+                    }
+                }
+                
+                grid.appendChild(cell);
+            });
+            
+            cardWrapper.appendChild(grid);
+            container.appendChild(cardWrapper);
+        });
+    }
+
+    // ==================== UPDATE PREVIEW ON CARD CHANGE ====================
+    // Call this function whenever cards are purchased/refunded
+    function updateCardPreview() {
+        renderAllCardsPreview();
+    }
+
+
+
+
+
+
+
 
     function updateCardsGridInstant() {
         const grid = document.getElementById("cards-grid"); if (!grid) return;
