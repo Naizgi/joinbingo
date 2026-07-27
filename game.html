@@ -170,6 +170,7 @@
             margin-bottom: 4px;
             width: 100%;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
         .stat-box {
             background: var(--surface-white);
@@ -205,8 +206,7 @@
             flex-wrap: nowrap;
             padding: 0 2px;
             flex: 1;
-            height: calc(100vh - 180px);
-            min-height: 350px;
+            min-height: 0;
         }
 
         .board-container {
@@ -216,17 +216,14 @@
             border: 2px solid #FFFFFF;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             width: 38%;
-            height: 100%;
+            height: inherit;
             flex-shrink: 0;
             flex-grow: 0;
-            display: flex;
-            flex-direction: column;
         }
         .board-header-row {
             display: flex;
             gap: 2px;
             margin-bottom: 3px;
-            flex-shrink: 0;
         }
         .board-header-cell {
             flex: 1;
@@ -247,15 +244,12 @@
         .board-columns {
             display: flex;
             gap: 4px !important;
-            flex: 1;
-            height: 100%;
         }
         .board-column {
             display: flex;
             flex-direction: column;
             gap: 4px !important;
             flex: 1;
-            height: 100%;
         }
         .board-cell {
             display: flex;
@@ -271,7 +265,6 @@
             transition: all 0.2s ease;
             min-height: 28px;
             min-width: 28px;
-            flex: 1;
         }
         .board-cell.called {
             background: var(--surface-white);
@@ -409,7 +402,7 @@
         .control-pill.orange { background: var(--orange-accent); }
         .control-pill.green { background: var(--btn-green); }
 
-        /* ==================== PLAYER CARDS - RIGHT CORNER, FULL HEIGHT ==================== */
+        /* ==================== PLAYER CARDS - FILL BOTH HORIZONTAL & VERTICAL SPACE ==================== */
         .player-cards-container {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 8px;
@@ -420,7 +413,7 @@
             flex-direction: column;
             overflow: hidden;
             min-height: 0;
-            height: 100%;
+            width: 100%;
         }
 
         .player-cards-container-inner {
@@ -434,12 +427,13 @@
             overflow: hidden;
             height: 100%;
             min-height: 0;
+            width: 100%;
         }
 
         .p-card-wrapper {
             background: var(--surface-white);
             border-radius: 4px;
-            padding: 3px;
+            padding: 4px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border-light);
             flex: 1;
@@ -449,6 +443,7 @@
             flex-direction: column;
             height: auto;
             min-height: 0;
+            width: 100%;
         }
 
         .p-card-wrapper:only-child {
@@ -462,7 +457,7 @@
         }
 
         .p-card-title {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 700;
             color: #7F1089;
             text-align: center;
@@ -484,7 +479,7 @@
             border-radius: 2px;
             padding: 1px 0;
             font-weight: 700;
-            font-size: 8px;
+            font-size: 9px;
             color: var(--text-white);
         }
         .p-card-header-cell.b { background: var(--letter-b); }
@@ -510,12 +505,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 12px;
             color: var(--text-main);
             border: 1px solid var(--border-light);
             cursor: pointer;
             min-width: 0;
             min-height: 0;
+            width: 100%;
         }
 
         .p-card-cell.marked {
@@ -527,7 +523,7 @@
         .p-card-cell.free {
             background: #CFD8DC;
             border-color: #90A4AE;
-            font-size: 7px;
+            font-size: 8px;
         }
 
         .p-card-cell.star { position: relative; }
@@ -553,7 +549,7 @@
             text-align: center;
             color: var(--purple-dark);
             font-weight: 800;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.6;
             backdrop-filter: blur(2px);
             border: 2px solid #FFFFFF;
@@ -563,6 +559,7 @@
             align-items: center;
             justify-content: center;
             flex: 1;
+            width: 100%;
         }
 
         /* ==================== WAITING SCREEN ==================== */
@@ -1189,14 +1186,11 @@
         }
         .profile-toggle.on { background: var(--btn-green); }
 
-        /* ===== PLAYER CARDS RESPONSIVE - FULL HEIGHT ===== */
+        /* ===== PLAYER CARDS RESPONSIVE - FILL SPACE ===== */
         @media (max-width: 600px) {
-            .game-layout {
-                height: calc(100vh - 160px);
-                min-height: 300px;
-            }
             .player-cards-container {
                 min-height: 0;
+                flex: 1;
             }
             .p-card-wrapper {
                 padding: 2px;
@@ -1205,15 +1199,15 @@
                 max-height: 50%;
             }
             .p-card-cell {
-                font-size: 7px !important;
+                font-size: 8px !important;
                 border-radius: 1px;
             }
             .p-card-header-cell {
-                font-size: 6px !important;
+                font-size: 7px !important;
                 padding: 0px 0;
             }
             .p-card-title {
-                font-size: 7px !important;
+                font-size: 8px !important;
             }
             .p-card-grid {
                 gap: 1px;
@@ -1269,24 +1263,21 @@
         }
 
         @media (min-width: 601px) and (max-width: 1024px) {
-            .game-layout {
-                height: calc(100vh - 170px);
-                min-height: 350px;
-            }
             .player-cards-container {
                 min-height: 0;
+                flex: 1;
             }
             .p-card-wrapper:not(:only-child) {
                 max-height: 50%;
             }
             .p-card-cell {
-                font-size: 9px !important;
+                font-size: 10px !important;
             }
             .p-card-header-cell {
-                font-size: 7px !important;
+                font-size: 8px !important;
             }
             .p-card-title {
-                font-size: 8px !important;
+                font-size: 9px !important;
             }
             
             .board-cell {
@@ -1315,21 +1306,18 @@
         }
 
         @media (min-width: 1025px) {
-            .game-layout {
-                height: calc(100vh - 180px);
-                min-height: 400px;
-            }
             .player-cards-container {
                 min-height: 0;
+                flex: 1;
             }
             .p-card-wrapper:not(:only-child) {
                 max-height: 50%;
             }
             .p-card-cell {
-                font-size: 11px !important;
+                font-size: 13px !important;
             }
             .p-card-header-cell {
-                font-size: 8px !important;
+                font-size: 9px !important;
             }
             
             .board-container { width: 34%; }
