@@ -1952,77 +1952,12 @@ async function loadWalletHistoryPage(page = 1) {
         }
     }
     
-    // ==================== AUDIO SYSTEM - FIXED ====================
-    // Global audio references for proper cleanup
-    let audioContext = null;
-    let currentOscillator = null;
-    let currentGain = null;
-    let speechUtterance = null;
-
-    function stopAllAudio() {
-        // Stop Web Audio
-        try {
-            if (currentOscillator) {
-                try {
-                    currentOscillator.stop();
-                    currentOscillator.disconnect();
-                } catch(e) {}
-                currentOscillator = null;
-            }
-            if (currentGain) {
-                try {
-                    currentGain.disconnect();
-                } catch(e) {}
-                currentGain = null;
-            }
-            if (audioContext && audioContext.state !== 'closed') {
-                try {
-                    audioContext.close();
-                } catch(e) {}
-                audioContext = null;
-            }
-        } catch (error) {
-            console.warn('Error stopping Web Audio:', error);
-        }
-
-        // Stop Speech Synthesis
-        try {
-            if (window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-            }
-            speechUtterance = null;
-        } catch (error) {
-            console.warn('Error stopping speech:', error);
-        }
-
-        // Stop all audio elements
-        try {
-            document.querySelectorAll('audio').forEach((audio) => {
-                try {
-                    audio.pause();
-                    audio.currentTime = 0;
-                } catch (e) {}
-            });
-        } catch (error) {
-            console.warn('Error stopping audio elements:', error);
-        }
-
-        gameState.audioQueue = [];
-        gameState.isPlayingAudio = false;
-        gameState.currentAudio = null;
-    }
-
     // ==================== TOGGLES ====================
     function toggleAudio() {
-        // Toggle audio state
+        // Simply toggle the audio enabled state
         gameState.audioEnabled = !gameState.audioEnabled;
-        gameState.audioInitialized = true;
-
-        // If turning off, stop all audio immediately
-        if (!gameState.audioEnabled) {
-            stopAllAudio();
-        }
-
+        gameState.audioInitialized = true; // Mark as initialized
+        
         // Update UI toggles
         const toggle = document.getElementById('profile-sound-toggle');
         const gameToggle = document.getElementById('audio-toggle');
@@ -2040,6 +1975,8 @@ async function loadWalletHistoryPage(page = 1) {
                 gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
                 gameToggle.classList.add('muted');
             }
+            // Stop any playing audio
+            stopAllAudio();
             showNotification('🔇 Sound Disabled', 'info', 1500);
         }
     }
@@ -2074,211 +2011,6 @@ async function loadWalletHistoryPage(page = 1) {
     function closeDisqualifiedOverlay() {
         const overlay = document.getElementById('disqualified-overlay');
         if (overlay) overlay.classList.remove('active');
-    }
-
-    function initializeAudio() {
-        gameState.audioInitialized = true;
-        gameState.audioEnabled = true;
-        
-        // Update UI
-        const toggle = document.getElementById('audio-toggle');
-        if (toggle) {
-            toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
-            toggle.classList.remove('muted');
-        }
-        
-        const profileToggle = document.getElementById('profile-sound-toggle');
-        if (profileToggle) {
-            profileToggle.className = 'profile-toggle on';
-            profileToggle.textContent = 'ON';
-        }
-        
-        showNotification('🔊 Sound Enabled', 'success', 1500);
-    }
-    window.initializeAudio = initializeAudio;
-
-    function playNumberAudio(number) {
-        // Check if audio is enabled
-        if (!gameState.audioEnabled) return;
-        if (gameState.winnerAnnounced || gameState.isWinnerDisplayActive) return;
-        if (!number || number === 0) return;
-        
-        // Stop any currently playing audio
-        stopAllAudio();
-        
-        const letter = getBingoLetter(number);
-        const numberStr = number.toString();
-        
-        // Try Speech Synthesis first
-        try {
-            if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance(`${letter} ${numberStr}`);
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 0.8;
-                
-                // Try to find English voice
-                const voices = window.speechSynthesis.getVoices();
-                const englishVoice = voices.find(v => v.lang.startsWith('en'));
-                if (englishVoice) {
-                    utterance.voice = englishVoice;
-                }
-                
-                speechUtterance = utterance;
-                window.speechSynthesis.speak(utterance);
-                return;
-            }
-        } catch (error) {
-            // Fall through to Web Audio
-        }
-        
-        // Fallback: Web Audio with two tones
-        try {
-            if (!audioContext || audioContext.state === 'closed') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            // First tone for the letter (short beep)
-            const osc1 = audioContext.createOscillator();
-            const gain1 = audioContext.createGain();
-            osc1.connect(gain1);
-            gain1.connect(audioContext.destination);
-            
-            const letterFreqs = { 'B': 523.25, 'I': 587.33, 'N': 659.25, 'G': 783.99, 'O': 880.00 };
-            osc1.frequency.value = letterFreqs[letter] || 660;
-            osc1.type = 'sine';
-            gain1.gain.value = 0.12;
-            
-            osc1.start();
-            gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
-            osc1.stop(audioContext.currentTime + 0.15);
-            
-            currentOscillator = osc1;
-            currentGain = gain1;
-            
-            // Second tone for the number (slightly longer)
-            setTimeout(() => {
-                if (!gameState.audioEnabled) return;
-                try {
-                    const osc2 = audioContext.createOscillator();
-                    const gain2 = audioContext.createGain();
-                    osc2.connect(gain2);
-                    gain2.connect(audioContext.destination);
-                    
-                    osc2.frequency.value = 440 + (number % 10) * 20;
-                    osc2.type = 'sine';
-                    gain2.gain.value = 0.1;
-                    
-                    osc2.start();
-                    gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-                    osc2.stop(audioContext.currentTime + 0.25);
-                    
-                    currentOscillator = osc2;
-                    currentGain = gain2;
-                } catch (e) {}
-            }, 200);
-        } catch (error) {
-            // Ultimate fallback - simple beep
-            try {
-                if (!audioContext || audioContext.state === 'closed') {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
-                osc.frequency.value = 600;
-                osc.type = 'sine';
-                gain.gain.value = 0.15;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
-                osc.stop(audioContext.currentTime + 0.2);
-                currentOscillator = osc;
-                currentGain = gain;
-            } catch (e) {}
-        }
-    }
-
-    function playWinnerSound() {
-        if (gameState.winnerSoundPlayed) return;
-        if (!gameState.audioEnabled) return;
-        
-        gameState.winnerSoundPlayed = true;
-        
-        // Stop any currently playing audio
-        stopAllAudio();
-        
-        // Try Speech Synthesis
-        try {
-            if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance('Bingo!');
-                utterance.rate = 1.2;
-                utterance.pitch = 1.3;
-                utterance.volume = 0.9;
-                
-                const voices = window.speechSynthesis.getVoices();
-                const englishVoice = voices.find(v => v.lang.startsWith('en'));
-                if (englishVoice) {
-                    utterance.voice = englishVoice;
-                }
-                
-                speechUtterance = utterance;
-                window.speechSynthesis.speak(utterance);
-            }
-        } catch (error) {
-            // Fall through to Web Audio
-        }
-        
-        // Also play celebratory melody using Web Audio
-        try {
-            if (!audioContext || audioContext.state === 'closed') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, index) => {
-                setTimeout(() => {
-                    if (!gameState.audioEnabled) return;
-                    try {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.frequency.value = freq;
-                        osc.type = 'sine';
-                        gain.gain.value = 0.12;
-                        osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-                        osc.stop(audioContext.currentTime + 0.25);
-                    } catch (e) {}
-                }, index * 150);
-            });
-        } catch (error) {
-            console.warn('Winner melody error:', error);
-        }
-    }
-
-    function updateAudioToggle() {
-        const toggle = document.getElementById("audio-toggle");
-        if (toggle) {
-            if (gameState.audioEnabled) {
-                toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
-            } else {
-                toggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
-            }
-        }
-    }
-
-    function getBingoLetter(number) {
-        if (number === 0) return "";
-        if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N";
-        if (number <= 60) return "G"; return "O";
-    }
-
-    function updateFakeCardsImmediately(fakeCardIndices) {
-        if (!fakeCardIndices || fakeCardIndices.length === 0) return;
-        fakeCardIndices.forEach((cardIndex) => { instantCardUpdate(cardIndex, "sold"); });
-        updateGameStats();
     }
 
     // ==================== GAME STATE ====================
@@ -2351,6 +2083,156 @@ async function loadWalletHistoryPage(page = 1) {
             return false;
         }
         return true;
+    }
+
+    // ==================== AUDIO FUNCTIONS - FIXED ====================
+    function stopAllAudio() {
+        try {
+            // Close any active audio context
+            if (gameState.currentAudio) {
+                if (gameState.currentAudio.close) {
+                    gameState.currentAudio.close().catch(() => {});
+                } else if (gameState.currentAudio.pause) {
+                    gameState.currentAudio.pause();
+                    gameState.currentAudio.currentTime = 0;
+                }
+                gameState.currentAudio = null;
+            }
+            
+            // Stop all audio elements
+            document.querySelectorAll('audio').forEach((audio) => {
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch (e) {}
+            });
+            
+            gameState.audioQueue = [];
+            gameState.isPlayingAudio = false;
+            Object.values(gameState.audioCache).forEach((audio) => {
+                if (audio) {
+                    try { audio.pause(); audio.currentTime = 0; } catch (error) {}
+                }
+            });
+        } catch (error) {
+            console.warn('Error stopping audio:', error);
+        }
+    }
+
+    function initializeAudio() {
+        gameState.audioInitialized = true;
+        gameState.audioEnabled = true;
+        
+        // Update UI
+        const toggle = document.getElementById('audio-toggle');
+        if (toggle) {
+            toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
+            toggle.classList.remove('muted');
+        }
+        
+        const profileToggle = document.getElementById('profile-sound-toggle');
+        if (profileToggle) {
+            profileToggle.className = 'profile-toggle on';
+            profileToggle.textContent = 'ON';
+        }
+        
+        showNotification('🔊 Sound Enabled', 'success', 1500);
+    }
+    window.initializeAudio = initializeAudio;
+
+    function playNumberAudio(number) {
+        // Only play if audio is enabled
+        if (!gameState.audioEnabled) return;
+        if (gameState.winnerAnnounced || gameState.isWinnerDisplayActive) return;
+        if (!number || number === 0) return;
+        
+        try {
+            // Use Web Audio API for simple beep sounds
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Different frequency for different number ranges
+            let frequency = 440; // A4
+            if (number <= 15) frequency = 523.25; // C5
+            else if (number <= 30) frequency = 587.33; // D5
+            else if (number <= 45) frequency = 659.25; // E5
+            else if (number <= 60) frequency = 783.99; // G5
+            else frequency = 880; // A5
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            gainNode.gain.value = 0.15; // Lower volume
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            oscillator.stop(audioContext.currentTime + 0.3);
+            
+            // Store the context for cleanup
+            gameState.currentAudio = audioContext;
+        } catch (error) {
+            // Silently fail - audio is not critical
+        }
+    }
+
+    function playWinnerSound() {
+        if (gameState.winnerSoundPlayed) return;
+        if (!gameState.audioEnabled) return;
+        
+        gameState.winnerSoundPlayed = true;
+        stopAllAudio();
+        
+        try {
+            // Create a celebratory sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Play a sequence of ascending notes
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    gain.gain.value = 0.15;
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                    osc.stop(audioContext.currentTime + 0.2);
+                }, index * 150);
+            });
+            
+            gameState.currentAudio = audioContext;
+        } catch (error) {
+            console.warn('Winner sound error:', error);
+        }
+    }
+
+    function updateAudioToggle() {
+        const toggle = document.getElementById("audio-toggle");
+        if (toggle) {
+            if (gameState.audioEnabled) {
+                toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
+            } else {
+                toggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
+            }
+        }
+    }
+
+    function getBingoLetter(number) {
+        if (number === 0) return "";
+        if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N";
+        if (number <= 60) return "G"; return "O";
+    }
+
+    function updateFakeCardsImmediately(fakeCardIndices) {
+        if (!fakeCardIndices || fakeCardIndices.length === 0) return;
+        fakeCardIndices.forEach((cardIndex) => { instantCardUpdate(cardIndex, "sold"); });
+        updateGameStats();
     }
 
     // ==================== CLAIM BINGO ====================
@@ -2615,7 +2497,7 @@ async function loadWalletHistoryPage(page = 1) {
             autoMarkNumber(number);
         }
         
-        // Play number announcement - only if audio is enabled
+        // Simplified audio check - just check if audio is enabled
         if (gameState.audioEnabled && !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) {
             playNumberAudio(number);
         }
@@ -3180,11 +3062,7 @@ async function loadWalletHistoryPage(page = 1) {
         gameState.lastUpdateTime = Date.now();
         if (data.game_id) gameState.gameId = data.game_id;
         switch (data.type) {
-            case "winner_confirmed": 
-                // Stop any playing audio before showing winner
-                stopAllAudio();
-                handleWinnerConfirmed(data); 
-                break;
+            case "winner_confirmed": stopAllAudio(); handleWinnerConfirmed(data); break;
             case "winner_display_started": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds) timerElement.textContent = data.remaining_seconds; } break;
             case "winner_display_countdown": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.seconds_remaining !== undefined) timerElement.textContent = data.seconds_remaining; } break;
             case "winner_display_completed": handleWinnerDisplayCompleted(data); break;
@@ -3243,90 +3121,25 @@ async function loadWalletHistoryPage(page = 1) {
     }
 
     function handleWinnerConfirmed(data) {
-        if (!data) return; 
-        
-        // Stop any playing audio
-        stopAllAudio();
-        
-        let winnerData = null; 
-        let winnersList = [];
-        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { 
-            winnersList = data.winners; 
-            winnerData = winnersList[winnersList.length - 1]; 
-            if (winnerData) { 
-                if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; 
-                if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; 
-            } 
-        } else if (data.user_id) { 
-            winnersList = [data]; 
-            winnerData = data; 
-        }
+        if (!data) return; stopAllAudio(); let winnerData = null; let winnersList = [];
+        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { winnersList = data.winners; winnerData = winnersList[winnersList.length - 1]; if (winnerData) { if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; } } else if (data.user_id) { winnersList = [data]; winnerData = data; }
         if (!winnerData || winnersList.length === 0) return;
-        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; 
-        if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
-        if (typeof winningPattern === "string") { 
-            try { winningPattern = JSON.parse(winningPattern); } 
-            catch (e) { winningPattern = []; } 
-        }
+        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
+        if (typeof winningPattern === "string") { try { winningPattern = JSON.parse(winningPattern); } catch (e) { winningPattern = []; } }
         if (!Array.isArray(winningPattern)) winningPattern = [];
         let cardNumbers = [];
         if (winnerData.card_numbers && Array.isArray(winnerData.card_numbers) && winnerData.card_numbers.length > 0) cardNumbers = winnerData.card_numbers;
         else if (data.card_numbers && Array.isArray(data.card_numbers) && data.card_numbers.length > 0) cardNumbers = data.card_numbers;
-        else if (data.corner_details && data.corner_details.corner_indices) { 
-            cardNumbers = Array(25).fill("?"); 
-            const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; 
-            const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; 
-            cornerIndices.forEach((index, i) => { 
-                if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; 
-            }); 
-            cardNumbers[12] = 0; 
-        }
-        const processedWinners = winnersList.map((winner) => { 
-            if (!winner.card_numbers || winner.card_numbers.length === 0) { 
-                if (data.card_numbers) winner.card_numbers = data.card_numbers; 
-                else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; 
-            } 
-            return winner; 
-        });
-        gameState.winners = processedWinners; 
-        gameState.winnersCount = processedWinners.length; 
-        gameState.maxWinners = data.max_winners || 2; 
-        gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
-        gameState.winnerData = { 
-            user_id: winnerData.user_id, 
-            full_name: winnerData.full_name || data.full_name || "Unknown Player", 
-            username: winnerData.username || data.username || `User ${winnerData.user_id}`, 
-            prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), 
-            card_index: winnerData.card_index || data.card_index || 0, 
-            card_numbers: cardNumbers, 
-            winning_pattern: winningPattern, 
-            pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", 
-            prize_pool: parseFloat(data.prize_pool || 0), 
-            game_id: data.game_id || winnerData.game_id, 
-            winner_number: winnerData.winner_number || data.winner_number || 1, 
-            total_winners: processedWinners.length, 
-            all_winners: processedWinners, 
-            is_final_winner: data.is_final_winner || false, 
-            corner_details: data.corner_details || winnerData.corner_details || null, 
-            column_details: data.column_details || winnerData.column_details || null 
-        };
-        clearInterval(gameState.numberCallInterval); 
-        gameState.numberCallInterval = null;
-        if (gameState.countdownInterval) { 
-            clearInterval(gameState.countdownInterval); 
-            gameState.countdownInterval = null; 
-        }
-        gameState.winnerAnnounced = true; 
-        gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; 
-        gameState.bingoClaimInProgress = false; 
-        gameState.phaseChangeRequested = false;
+        else if (data.corner_details && data.corner_details.corner_indices) { cardNumbers = Array(25).fill("?"); const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; cornerIndices.forEach((index, i) => { if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; }); cardNumbers[12] = 0; }
+        const processedWinners = winnersList.map((winner) => { if (!winner.card_numbers || winner.card_numbers.length === 0) { if (data.card_numbers) winner.card_numbers = data.card_numbers; else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; } return winner; });
+        gameState.winners = processedWinners; gameState.winnersCount = processedWinners.length; gameState.maxWinners = data.max_winners || 2; gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
+        gameState.winnerData = { user_id: winnerData.user_id, full_name: winnerData.full_name || data.full_name || "Unknown Player", username: winnerData.username || data.username || `User ${winnerData.user_id}`, prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), card_index: winnerData.card_index || data.card_index || 0, card_numbers: cardNumbers, winning_pattern: winningPattern, pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", prize_pool: parseFloat(data.prize_pool || 0), game_id: data.game_id || winnerData.game_id, winner_number: winnerData.winner_number || data.winner_number || 1, total_winners: processedWinners.length, all_winners: processedWinners, is_final_winner: data.is_final_winner || false, corner_details: data.corner_details || winnerData.corner_details || null, column_details: data.column_details || winnerData.column_details || null };
+        clearInterval(gameState.numberCallInterval); gameState.numberCallInterval = null;
+        if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
+        gameState.winnerAnnounced = true; gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false;
         if (winnerData.user_id == gameState.userId) getUserBalance();
-        
-        // Play winner sound only if audio is enabled
-        if (gameState.audioEnabled) {
-            playWinnerSound();
-        }
-        
+        // Simplified audio check
+        if (gameState.audioEnabled) playWinnerSound();
         showWinnerAnnouncementScreen(gameState.winnerData);
     }
 
@@ -4420,6 +4233,6 @@ async function loadWalletHistoryPage(page = 1) {
             });
         } catch (error) { console.error("Failed to initialize game:", error); showNotification("Failed to initialize game. Please refresh the page.", "error"); setTimeout(() => { window.location.reload(); }, 10000); }
     });
-</script>
+    </script>
 </body>
 </html>
