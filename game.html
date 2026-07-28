@@ -606,8 +606,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
             gap: 3px;
-            max-height: 300px;
-            min-height: 250px;
+            max-height: 450px;
+            min-height: 350px;
             overflow-y: auto;
             padding: 4px;
             background: rgba(255, 255, 255, 0.4);
@@ -1257,11 +1257,11 @@
                 right: 8px;
             }
             .cards-grid {
-                grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
-                min-height: 200px;
-                max-height: 250px;
+                grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+                min-height: 280px;
+                max-height: 380px;
             }
-        }
+          }
 
         @media (min-width: 601px) and (max-width: 1024px) {
             .player-cards-container {
@@ -1304,6 +1304,11 @@
                 height: 50px;
                 font-size: 16px;
             }
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+                min-height: 350px;
+                max-height: 450px;
+            }
         }
 
         @media (min-width: 1025px) {
@@ -1339,6 +1344,12 @@
             .stat-box .label { font-size: 13px; }
             .stat-box .value { font-size: 16px; }
             .stat-box { padding: 8px 4px; }
+
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+                min-height: 400px;
+                max-height: 500px;
+            }
         }
     </style>
 </head>
