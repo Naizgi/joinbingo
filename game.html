@@ -1590,7 +1590,7 @@
         <button class="action-btn yellow" id="claim-bingo-btn" onclick="window.claimBingo()">BINGO!</button>
     </div>
 
-   <script>
+    <script>
     // ================================================================
     // COMPLETE SCRIPT - All functionality preserved
     // ================================================================
@@ -1670,198 +1670,181 @@
 
         if(tabName === 'history') { loadPlayerHistory(1); }
         if(tabName === 'profile') { loadPlayerProfile(); }
-        if(tabName === 'wallet') { 
-            updateWalletUI(); 
-            // Show balances by default when wallet tab is opened
-            switchWalletTab('balances');
-        }
+        if(tabName === 'wallet') { updateWalletUI(); }
     }
     window.switchTab = switchTab;
 
-    // ==================== WALLET TAB SWITCHING - FIXED ====================
-    function switchWalletTab(tab) {
-        document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
-        const tabs = document.querySelectorAll('.wallet-tab');
-        
-        // Get the transaction container
-        const container = document.getElementById('wallet-transactions-container');
-        const walletTotalCard = document.querySelector('.wallet-total-card');
-        const walletSplitGrid = document.querySelector('.wallet-split-grid');
-        
-        if(tab === 'balances') { 
-            tabs[0].classList.add('active');
-            // Show balance info, hide transaction history
-            if (walletTotalCard) walletTotalCard.style.display = 'block';
-            if (walletSplitGrid) walletSplitGrid.style.display = 'grid';
-            if (container) {
-                container.style.display = 'none';
-                container.innerHTML = '';
-            }
-        } else { 
-            tabs[1].classList.add('active');
-            // Hide balance info, show transaction history
-            if (walletTotalCard) walletTotalCard.style.display = 'none';
-            if (walletSplitGrid) walletSplitGrid.style.display = 'none';
-            if (container) {
-                container.style.display = 'block';
-                walletHistoryPage = 1;
-                loadWalletHistory();
-            }
-        }
+    // ==================== WALLET TAB SWITCHING ====================
+function switchWalletTab(tab) {
+    document.querySelectorAll('.wallet-tab').forEach(el => el.classList.remove('active'));
+    const tabs = document.querySelectorAll('.wallet-tab');
+    if(tab === 'balances') { 
+        tabs[0].classList.add('active'); 
+    } else { 
+        tabs[1].classList.add('active'); 
     }
-    window.switchWalletTab = switchWalletTab;
+
+    const balancesView = document.getElementById('wallet-balances-view');
+    const historyView = document.getElementById('wallet-history-view');
+    if (balancesView) balancesView.style.display = tab === 'balances' ? 'block' : 'none';
+    if (historyView) historyView.classList.toggle('active', tab === 'history');
+    
+    if(tab === 'history') { 
+        walletHistoryPage = 1;
+        loadWalletHistory(); 
+    }
+}
 
     async function loadWalletHistory() {
-        const container = document.getElementById('wallet-transactions-container');
-        if (!container) return;
+    const container = document.getElementById('wallet-transactions-container');
+    if (!container) return;
+    
+    container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading transactions...</div>';
+    
+    try {
+        const userId = getUserId();
+        const response = await fetchWithTimeout(`${API_BASE_URL}/user/${userId}/transactions`, 8000);
         
-        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;"><i class="fas fa-spinner fa-spin"></i> Loading transactions...</div>';
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         
-        try {
-            const userId = getUserId();
-            const response = await fetchWithTimeout(`${API_BASE_URL}/user/${userId}/transactions`, 8000);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            if (!data.success) {
-                throw new Error(data.message || 'Failed to load transactions');
-            }
-            
-            const transactions = data.transactions || [];
-            
-            if (transactions.length === 0) {
-                container.innerHTML = `
-                    <div class="card" style="text-align: center; padding: 30px 20px; color: var(--text-muted);">
-                        <i class="fas fa-inbox" style="font-size: 30px; display: block; margin-bottom: 10px; color: var(--purple-light);"></i>
-                        <p style="font-size: 14px;">No transactions yet</p>
-                        <p style="font-size: 12px; color: #999;">Your transaction history will appear here</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            transactions.forEach(tx => {
-                const isCredit = tx.amount > 0;
-                const isDebit = tx.amount < 0;
-                const typeIcon = isCredit ? 'fa-arrow-circle-down' : (isDebit ? 'fa-arrow-circle-up' : 'fa-circle');
-                const typeColor = isCredit ? '#4CAF50' : (isDebit ? '#F44336' : '#FF9800');
-                const amountClass = isCredit ? 'positive' : (isDebit ? 'negative' : 'neutral');
-                const amountSign = isCredit ? '+' : '';
-                const formattedAmount = Math.abs(tx.amount).toFixed(2);
-                
-                // Format transaction type display name
-                let typeDisplay = tx.transaction_type || 'Unknown';
-                const typeMap = {
-                    'deposit': 'Deposit',
-                    'withdrawal': 'Withdrawal',
-                    'withdrawal_approved': 'Withdrawal Approved',
-                    'withdrawal_rejected': 'Withdrawal Rejected',
-                    'withdrawal_requested': 'Withdrawal Requested',
-                    'withdrawal_refund': 'Withdrawal Refund',
-                    'card_purchase': 'Card Purchase',
-                    'card_refund': 'Card Refund',
-                    'winning': 'BINGO Win! 🎉',
-                    'bingo_win': 'BINGO Win! 🎉',
-                    'admin_add': 'Admin Added',
-                    'admin_deduct': 'Admin Deducted',
-                    'system_refund': 'System Refund',
-                    'initial_deposit': 'Signup Bonus',
-                    'refund': 'Refund'
-                };
-                typeDisplay = typeMap[tx.transaction_type] || tx.transaction_type;
-                
-                // Format date
-                let dateStr = 'Unknown date';
-                if (tx.created_at) {
-                    try {
-                        const date = new Date(tx.created_at);
-                        dateStr = date.toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-                    } catch(e) {
-                        dateStr = tx.created_at;
-                    }
-                }
-                
-                // Game ID if available
-                const gameInfo = tx.game_id ? `<span style="font-size: 10px; color: var(--text-muted);">Game: ${tx.game_id.substring(0, 12)}</span>` : '';
-                
-                html += `
-                    <div class="wallet-history-card" style="
-                        background: white;
-                        border-radius: 12px;
-                        padding: 12px 14px;
-                        margin-bottom: 8px;
-                        border: 1px solid #e8e8e8;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-                    ">
-                        <div class="wallet-tx-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <div class="wallet-tx-type" style="display: flex; align-items: center; gap: 8px;">
-                                <i class="fas ${typeIcon}" style="color: ${typeColor}; font-size: 16px;"></i>
-                                <span style="font-weight: 600; font-size: 13px; color: var(--text-main);">${typeDisplay}</span>
-                            </div>
-                            <div class="wallet-tx-amount ${amountClass}" style="font-weight: 700; font-size: 15px; color: ${typeColor};">
-                                ${amountSign}Br ${formattedAmount}
-                            </div>
-                        </div>
-                        <div class="wallet-tx-meta" style="font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                            <span><i class="far fa-calendar-alt" style="margin-right: 3px;"></i> ${dateStr}</span>
-                            ${gameInfo ? `<span style="color: #999;">• ${gameInfo}</span>` : ''}
-                        </div>
-                        ${tx.description ? `<div style="font-size: 11px; color: #888; margin-top: 4px; font-style: italic;">${tx.description}</div>` : ''}
-                        ${tx.balance_after !== null && tx.balance_after !== undefined ? 
-                            `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Balance after: Br ${tx.balance_after.toFixed(2)}</div>` : ''}
-                    </div>
-                `;
-            });
-            
-            // Add pagination if more transactions
-            if (data.pagination && data.pagination.total > data.pagination.limit) {
-                const totalPages = data.pagination.pages || 1;
-                const currentPage = data.pagination.page || 1;
-                
-                html += `
-                    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding: 8px;">
-                        ${currentPage > 1 ? `<button onclick="loadWalletHistoryPage(${currentPage - 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Previous</button>` : ''}
-                        <span style="font-size: 12px; color: var(--text-muted); padding: 6px 10px;">Page ${currentPage} of ${totalPages}</span>
-                        ${currentPage < totalPages ? `<button onclick="loadWalletHistoryPage(${currentPage + 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Next</button>` : ''}
-                    </div>
-                `;
-            }
-            
-            container.innerHTML = html;
-            
-        } catch (error) {
-            console.error("Error loading wallet history:", error);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to load transactions');
+        }
+        
+        const transactions = data.transactions || [];
+        
+        if (transactions.length === 0) {
             container.innerHTML = `
-                <div class="card" style="text-align: center; padding: 30px 20px; color: var(--red-accent);">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 30px; display: block; margin-bottom: 10px;"></i>
-                    <p style="font-size: 14px; font-weight: 600;">Failed to load transactions</p>
-                    <p style="font-size: 12px; color: #999; margin-top: 4px;">${error.message}</p>
-                    <button onclick="loadWalletHistory()" style="margin-top: 12px; background: var(--purple-dark); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 12px; cursor: pointer;">
-                        <i class="fas fa-sync-alt"></i> Retry
-                    </button>
+                <div class="card" style="text-align: center; padding: 30px 20px; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 30px; display: block; margin-bottom: 10px; color: var(--purple-light);"></i>
+                    <p style="font-size: 14px;">No transactions yet</p>
+                    <p style="font-size: 12px; color: #999;">Your transaction history will appear here</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        transactions.forEach(tx => {
+            const isCredit = tx.amount > 0;
+            const isDebit = tx.amount < 0;
+            const typeIcon = isCredit ? 'fa-arrow-circle-down' : (isDebit ? 'fa-arrow-circle-up' : 'fa-circle');
+            const typeColor = isCredit ? '#4CAF50' : (isDebit ? '#F44336' : '#FF9800');
+            const amountClass = isCredit ? 'positive' : (isDebit ? 'negative' : 'neutral');
+            const amountSign = isCredit ? '+' : '';
+            const formattedAmount = Math.abs(tx.amount).toFixed(2);
+            
+            // Format transaction type display name
+            let typeDisplay = tx.transaction_type || 'Unknown';
+            const typeMap = {
+                'deposit': 'Deposit',
+                'withdrawal': 'Withdrawal',
+                'withdrawal_approved': 'Withdrawal Approved',
+                'withdrawal_rejected': 'Withdrawal Rejected',
+                'withdrawal_requested': 'Withdrawal Requested',
+                'withdrawal_refund': 'Withdrawal Refund',
+                'card_purchase': 'Card Purchase',
+                'card_refund': 'Card Refund',
+                'winning': 'BINGO Win! 🎉',
+                'bingo_win': 'BINGO Win! 🎉',
+                'admin_add': 'Admin Added',
+                'admin_deduct': 'Admin Deducted',
+                'system_refund': 'System Refund',
+                'initial_deposit': 'Signup Bonus',
+                'refund': 'Refund'
+            };
+            typeDisplay = typeMap[tx.transaction_type] || tx.transaction_type;
+            
+            // Format date
+            let dateStr = 'Unknown date';
+            if (tx.created_at) {
+                try {
+                    const date = new Date(tx.created_at);
+                    dateStr = date.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch(e) {
+                    dateStr = tx.created_at;
+                }
+            }
+            
+            // Game ID if available
+            const gameInfo = tx.game_id ? `<span style="font-size: 10px; color: var(--text-muted);">Game: ${tx.game_id.substring(0, 12)}</span>` : '';
+            
+            html += `
+                <div class="wallet-history-card" style="
+                    background: white;
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                    margin-bottom: 8px;
+                    border: 1px solid #e8e8e8;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                ">
+                    <div class="wallet-tx-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <div class="wallet-tx-type" style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas ${typeIcon}" style="color: ${typeColor}; font-size: 16px;"></i>
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text-main);">${typeDisplay}</span>
+                        </div>
+                        <div class="wallet-tx-amount ${amountClass}" style="font-weight: 700; font-size: 15px; color: ${typeColor};">
+                            ${amountSign}Br ${formattedAmount}
+                        </div>
+                    </div>
+                    <div class="wallet-tx-meta" style="font-size: 11px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        <span><i class="far fa-calendar-alt" style="margin-right: 3px;"></i> ${dateStr}</span>
+                        ${gameInfo ? `<span style="color: #999;">• ${gameInfo}</span>` : ''}
+                    </div>
+                    ${tx.description ? `<div style="font-size: 11px; color: #888; margin-top: 4px; font-style: italic;">${tx.description}</div>` : ''}
+                    ${tx.balance_after !== null && tx.balance_after !== undefined ? 
+                        `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Balance after: Br ${tx.balance_after.toFixed(2)}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        // Add pagination if more transactions
+        if (data.pagination && data.pagination.total > data.pagination.limit) {
+            const totalPages = data.pagination.pages || 1;
+            const currentPage = data.pagination.page || 1;
+            
+            html += `
+                <div style="display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding: 8px;">
+                    ${currentPage > 1 ? `<button onclick="loadWalletHistoryPage(${currentPage - 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Previous</button>` : ''}
+                    <span style="font-size: 12px; color: var(--text-muted); padding: 6px 10px;">Page ${currentPage} of ${totalPages}</span>
+                    ${currentPage < totalPages ? `<button onclick="loadWalletHistoryPage(${currentPage + 1})" style="background: var(--purple-dark); color: white; border: none; padding: 6px 14px; border-radius: 16px; font-size: 12px; cursor: pointer;">Next</button>` : ''}
                 </div>
             `;
         }
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error("Error loading wallet history:", error);
+        container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 30px 20px; color: var(--red-accent);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 30px; display: block; margin-bottom: 10px;"></i>
+                <p style="font-size: 14px; font-weight: 600;">Failed to load transactions</p>
+                <p style="font-size: 12px; color: #999; margin-top: 4px;">${error.message}</p>
+                <button onclick="loadWalletHistory()" style="margin-top: 12px; background: var(--purple-dark); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
     }
+}
 
-    // Add pagination support
-    let walletHistoryPage = 1;
-    async function loadWalletHistoryPage(page = 1) {
-        walletHistoryPage = page;
-        await loadWalletHistory();
-    }
-    
+// Add pagination support
+let walletHistoryPage = 1;
+async function loadWalletHistoryPage(page = 1) {
+    walletHistoryPage = page;
+    await loadWalletHistory();
+}    
     async function loadPlayerHistory(page = 1) {
         const listContainer = document.getElementById('history-list-container');
         const statsContainer = document.getElementById('history-stats-container');
@@ -1969,96 +1952,18 @@
             throw error;
         }
     }
-    
-    // ==================== AUDIO SYSTEM - FIXED ====================
-    // Global audio references for proper cleanup
-    let audioContext = null;
-    let currentOscillator = null;
-    let currentGain = null;
-    let speechUtterance = null;
-
-    function stopAllAudio() {
-        // Stop Web Audio
-        try {
-            if (currentOscillator) {
-                try {
-                    currentOscillator.stop();
-                    currentOscillator.disconnect();
-                } catch(e) {}
-                currentOscillator = null;
-            }
-            if (currentGain) {
-                try {
-                    currentGain.disconnect();
-                } catch(e) {}
-                currentGain = null;
-            }
-            if (audioContext && audioContext.state !== 'closed') {
-                try {
-                    audioContext.close();
-                } catch(e) {}
-                audioContext = null;
-            }
-        } catch (error) {
-            console.warn('Error stopping Web Audio:', error);
-        }
-
-        // Stop Speech Synthesis
-        try {
-            if (window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-            }
-            speechUtterance = null;
-        } catch (error) {
-            console.warn('Error stopping speech:', error);
-        }
-
-        // Stop all audio elements
-        try {
-            document.querySelectorAll('audio').forEach((audio) => {
-                try {
-                    audio.pause();
-                    audio.currentTime = 0;
-                } catch (e) {}
-            });
-        } catch (error) {
-            console.warn('Error stopping audio elements:', error);
-        }
-
-        gameState.audioQueue = [];
-        gameState.isPlayingAudio = false;
-        gameState.currentAudio = null;
-    }
-
     // ==================== TOGGLES ====================
     function toggleAudio() {
-        // Toggle audio state
+        if (!gameState.audioInitialized) { initializeAudio(); return; }
         gameState.audioEnabled = !gameState.audioEnabled;
-        gameState.audioInitialized = true;
-
-        // If turning off, stop all audio immediately
-        if (!gameState.audioEnabled) {
-            stopAllAudio();
-        }
-
-        // Update UI toggles
         const toggle = document.getElementById('profile-sound-toggle');
         const gameToggle = document.getElementById('audio-toggle');
-        
         if (gameState.audioEnabled) {
             if (toggle) { toggle.className = 'profile-toggle on'; toggle.textContent = 'ON'; }
-            if (gameToggle) {
-                gameToggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
-                gameToggle.classList.remove('muted');
-            }
-            showNotification('🔊 Sound Enabled', 'success', 1500);
+            if (gameToggle) gameToggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
         } else {
             if (toggle) { toggle.className = 'profile-toggle'; toggle.textContent = 'OFF'; }
-            if (gameToggle) {
-                gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
-                gameToggle.classList.add('muted');
-            }
-            showNotification('🔇 Sound Disabled', 'info', 1500);
+            if (gameToggle) gameToggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
         }
     }
     window.toggleAudio = toggleAudio;
@@ -2092,211 +1997,6 @@
     function closeDisqualifiedOverlay() {
         const overlay = document.getElementById('disqualified-overlay');
         if (overlay) overlay.classList.remove('active');
-    }
-
-    function initializeAudio() {
-        gameState.audioInitialized = true;
-        gameState.audioEnabled = true;
-        
-        // Update UI
-        const toggle = document.getElementById('audio-toggle');
-        if (toggle) {
-            toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
-            toggle.classList.remove('muted');
-        }
-        
-        const profileToggle = document.getElementById('profile-sound-toggle');
-        if (profileToggle) {
-            profileToggle.className = 'profile-toggle on';
-            profileToggle.textContent = 'ON';
-        }
-        
-        showNotification('🔊 Sound Enabled', 'success', 1500);
-    }
-    window.initializeAudio = initializeAudio;
-
-    function playNumberAudio(number) {
-        // Check if audio is enabled
-        if (!gameState.audioEnabled) return;
-        if (gameState.winnerAnnounced || gameState.isWinnerDisplayActive) return;
-        if (!number || number === 0) return;
-        
-        // Stop any currently playing audio
-        stopAllAudio();
-        
-        const letter = getBingoLetter(number);
-        const numberStr = number.toString();
-        
-        // Try Speech Synthesis first
-        try {
-            if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance(`${letter} ${numberStr}`);
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 0.8;
-                
-                // Try to find English voice
-                const voices = window.speechSynthesis.getVoices();
-                const englishVoice = voices.find(v => v.lang.startsWith('en'));
-                if (englishVoice) {
-                    utterance.voice = englishVoice;
-                }
-                
-                speechUtterance = utterance;
-                window.speechSynthesis.speak(utterance);
-                return;
-            }
-        } catch (error) {
-            // Fall through to Web Audio
-        }
-        
-        // Fallback: Web Audio with two tones
-        try {
-            if (!audioContext || audioContext.state === 'closed') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            // First tone for the letter (short beep)
-            const osc1 = audioContext.createOscillator();
-            const gain1 = audioContext.createGain();
-            osc1.connect(gain1);
-            gain1.connect(audioContext.destination);
-            
-            const letterFreqs = { 'B': 523.25, 'I': 587.33, 'N': 659.25, 'G': 783.99, 'O': 880.00 };
-            osc1.frequency.value = letterFreqs[letter] || 660;
-            osc1.type = 'sine';
-            gain1.gain.value = 0.12;
-            
-            osc1.start();
-            gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
-            osc1.stop(audioContext.currentTime + 0.15);
-            
-            currentOscillator = osc1;
-            currentGain = gain1;
-            
-            // Second tone for the number (slightly longer)
-            setTimeout(() => {
-                if (!gameState.audioEnabled) return;
-                try {
-                    const osc2 = audioContext.createOscillator();
-                    const gain2 = audioContext.createGain();
-                    osc2.connect(gain2);
-                    gain2.connect(audioContext.destination);
-                    
-                    osc2.frequency.value = 440 + (number % 10) * 20;
-                    osc2.type = 'sine';
-                    gain2.gain.value = 0.1;
-                    
-                    osc2.start();
-                    gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-                    osc2.stop(audioContext.currentTime + 0.25);
-                    
-                    currentOscillator = osc2;
-                    currentGain = gain2;
-                } catch (e) {}
-            }, 200);
-        } catch (error) {
-            // Ultimate fallback - simple beep
-            try {
-                if (!audioContext || audioContext.state === 'closed') {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
-                osc.frequency.value = 600;
-                osc.type = 'sine';
-                gain.gain.value = 0.15;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
-                osc.stop(audioContext.currentTime + 0.2);
-                currentOscillator = osc;
-                currentGain = gain;
-            } catch (e) {}
-        }
-    }
-
-    function playWinnerSound() {
-        if (gameState.winnerSoundPlayed) return;
-        if (!gameState.audioEnabled) return;
-        
-        gameState.winnerSoundPlayed = true;
-        
-        // Stop any currently playing audio
-        stopAllAudio();
-        
-        // Try Speech Synthesis
-        try {
-            if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance('Bingo!');
-                utterance.rate = 1.2;
-                utterance.pitch = 1.3;
-                utterance.volume = 0.9;
-                
-                const voices = window.speechSynthesis.getVoices();
-                const englishVoice = voices.find(v => v.lang.startsWith('en'));
-                if (englishVoice) {
-                    utterance.voice = englishVoice;
-                }
-                
-                speechUtterance = utterance;
-                window.speechSynthesis.speak(utterance);
-            }
-        } catch (error) {
-            // Fall through to Web Audio
-        }
-        
-        // Also play celebratory melody using Web Audio
-        try {
-            if (!audioContext || audioContext.state === 'closed') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, index) => {
-                setTimeout(() => {
-                    if (!gameState.audioEnabled) return;
-                    try {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.frequency.value = freq;
-                        osc.type = 'sine';
-                        gain.gain.value = 0.12;
-                        osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-                        osc.stop(audioContext.currentTime + 0.25);
-                    } catch (e) {}
-                }, index * 150);
-            });
-        } catch (error) {
-            console.warn('Winner melody error:', error);
-        }
-    }
-
-    function updateAudioToggle() {
-        const toggle = document.getElementById("audio-toggle");
-        if (toggle) {
-            if (gameState.audioEnabled) {
-                toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
-            } else {
-                toggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
-            }
-        }
-    }
-
-    function getBingoLetter(number) {
-        if (number === 0) return "";
-        if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N";
-        if (number <= 60) return "G"; return "O";
-    }
-
-    function updateFakeCardsImmediately(fakeCardIndices) {
-        if (!fakeCardIndices || fakeCardIndices.length === 0) return;
-        fakeCardIndices.forEach((cardIndex) => { instantCardUpdate(cardIndex, "sold"); });
-        updateGameStats();
     }
 
     // ==================== GAME STATE ====================
@@ -2369,6 +2069,110 @@
             return false;
         }
         return true;
+    }
+
+    function stopAllAudio() {
+        if (gameState.currentAudio) { try { gameState.currentAudio.pause(); gameState.currentAudio.currentTime = 0; } catch (error) {} gameState.currentAudio = null; }
+        gameState.audioQueue = []; gameState.isPlayingAudio = false;
+        Object.values(gameState.audioCache).forEach((audio) => { if (audio) { try { audio.pause(); audio.currentTime = 0; } catch (error) {} } });
+        document.querySelectorAll("audio").forEach((audio) => { try { audio.pause(); audio.currentTime = 0; } catch (error) {} });
+    }
+
+    function initializeAudio() {
+        gameState.audioInitialized = true; gameState.audioEnabled = true;
+        const toggle = document.getElementById('audio-toggle');
+        if(toggle) toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
+        preloadAudioFiles();
+    }
+    window.initializeAudio = initializeAudio;
+
+    async function preloadAudioFiles() {
+        console.log("Preloading MP3 audio files...");
+        if (!gameState.audioInitialized) return false;
+        const loadingElement = document.getElementById("audio-loading");
+        const progressElement = document.getElementById("audio-loading-progress");
+        const progressBar = document.getElementById("audio-loading-bar");
+        if (loadingElement) loadingElement.style.display = "block";
+        try {
+            let loadedCount = 0; const loadPromises = [];
+            for (let i = 1; i <= gameState.totalAudioFiles; i++) {
+                const audio = new Audio(); audio.preload = "auto"; audio.volume = gameState.audioEnabled ? 1.0 : 0;
+                const loadPromise = new Promise((resolve, reject) => {
+                    audio.oncanplaythrough = () => {
+                        loadedCount++; gameState.audioLoadProgress = Math.floor((loadedCount / gameState.totalAudioFiles) * 100);
+                        if (progressElement) progressElement.textContent = `${loadedCount}/${gameState.totalAudioFiles} loaded`;
+                        if (progressBar) progressBar.style.width = `${gameState.audioLoadProgress}%`;
+                        gameState.audioCache[i] = audio; resolve();
+                    };
+                    audio.onerror = (error) => { console.warn(`Failed to load audio for number ${i}:`, error); loadedCount++; gameState.audioLoadProgress = Math.floor((loadedCount / gameState.totalAudioFiles) * 100); gameState.audioCache[i] = null; if (progressElement) progressElement.textContent = `${loadedCount}/${gameState.totalAudioFiles} loaded`; if (progressBar) progressBar.style.width = `${gameState.audioLoadProgress}%`; resolve(); };
+                });
+                audio.src = `${SOUNDS_BASE_URL}/${i}.m4a`; audio.load(); loadPromises.push(loadPromise);
+                if (i % 5 === 0) await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            await Promise.all(loadPromises);
+            console.log("All MP3 audio files preloaded"); gameState.audioPreloaded = true;
+            setTimeout(() => {
+                if (loadingElement) loadingElement.style.display = "none";
+                testAudioPlayback();
+            }, 500);
+            return true;
+        } catch (error) { console.error("Error preloading audio:", error); gameState.audioEnabled = false; updateAudioToggle(); if (loadingElement) loadingElement.style.display = "none"; return false; }
+    }
+
+    function testAudioPlayback() {
+        if (!gameState.audioEnabled || !gameState.audioPreloaded || !gameState.audioInitialized) return;
+        try {
+            const testAudio = new Audio(); testAudio.volume = 0.001;
+            testAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+            testAudio.play().then(() => { console.log("Audio autoplay test successful"); testAudio.pause(); }).catch((error) => { console.warn("Audio autoplay test failed:", error); });
+        } catch (error) { console.warn("Audio test error:", error); }
+    }
+
+    function playNumberAudio(number) {
+        if (!gameState.audioEnabled || !gameState.audioPreloaded || !gameState.audioInitialized) return;
+        if (gameState.winnerAnnounced || gameState.isWinnerDisplayActive) return;
+        const audio = gameState.audioCache[number]; if (!audio) return;
+        if (gameState.currentAudio) { try { gameState.currentAudio.pause(); gameState.currentAudio.currentTime = 0; } catch (error) {} }
+        try {
+            audio.currentTime = 0; audio.volume = gameState.audioEnabled ? 1.0 : 0;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) playPromise.catch((error) => console.warn("Audio play failed:", error));
+            gameState.currentAudio = audio;
+        } catch (error) { console.error("Error playing audio:", error); }
+    }
+
+    function playWinnerSound() {
+        if (gameState.winnerSoundPlayed) return;
+        if (!gameState.audioEnabled || !gameState.audioInitialized) return;
+        gameState.winnerSoundPlayed = true; stopAllAudio();
+        try {
+            const winnerAudio = new Audio(); winnerAudio.volume = gameState.audioEnabled ? 0.7 : 0;
+            winnerAudio.src = `${SOUNDS_BASE_URL}/winner.mp3`;
+            winnerAudio.play().then(() => console.log("Winner sound playing")).catch((error) => console.log("Winner sound play failed:", error.message));
+        } catch (error) { console.warn("Error playing winner sound:", error); }
+    }
+
+    function updateAudioToggle() {
+        const toggle = document.getElementById("audio-toggle");
+        if (toggle) {
+            if (gameState.audioEnabled && gameState.audioInitialized) {
+                toggle.innerHTML = '<i class="fas fa-volume-up" style="font-size:10px;"></i>';
+            } else {
+                toggle.innerHTML = '<i class="fas fa-volume-mute" style="font-size:10px;"></i>';
+            }
+        }
+    }
+
+    function getBingoLetter(number) {
+        if (number === 0) return "";
+        if (number <= 15) return "B"; if (number <= 30) return "I"; if (number <= 45) return "N";
+        if (number <= 60) return "G"; return "O";
+    }
+
+    function updateFakeCardsImmediately(fakeCardIndices) {
+        if (!fakeCardIndices || fakeCardIndices.length === 0) return;
+        fakeCardIndices.forEach((cardIndex) => { instantCardUpdate(cardIndex, "sold"); });
+        updateGameStats();
     }
 
     // ==================== CLAIM BINGO ====================
@@ -2633,8 +2437,8 @@
             autoMarkNumber(number);
         }
         
-        // Play number announcement - only if audio is enabled
-        if (gameState.audioEnabled && !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) {
+        if (gameState.audioEnabled && gameState.audioPreloaded && gameState.audioInitialized && 
+            !gameState.winnerAnnounced && !gameState.isWinnerDisplayActive) {
             playNumberAudio(number);
         }
         
@@ -3198,11 +3002,7 @@
         gameState.lastUpdateTime = Date.now();
         if (data.game_id) gameState.gameId = data.game_id;
         switch (data.type) {
-            case "winner_confirmed": 
-                // Stop any playing audio before showing winner
-                stopAllAudio();
-                handleWinnerConfirmed(data); 
-                break;
+            case "winner_confirmed": stopAllAudio(); handleWinnerConfirmed(data); break;
             case "winner_display_started": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.remaining_seconds) timerElement.textContent = data.remaining_seconds; } break;
             case "winner_display_countdown": if (gameState.isWinnerDisplayActive) { const timerElement = document.getElementById("winner-announcement-timer"); if (timerElement && data.seconds_remaining !== undefined) timerElement.textContent = data.seconds_remaining; } break;
             case "winner_display_completed": handleWinnerDisplayCompleted(data); break;
@@ -3261,90 +3061,24 @@
     }
 
     function handleWinnerConfirmed(data) {
-        if (!data) return; 
-        
-        // Stop any playing audio
-        stopAllAudio();
-        
-        let winnerData = null; 
-        let winnersList = [];
-        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { 
-            winnersList = data.winners; 
-            winnerData = winnersList[winnersList.length - 1]; 
-            if (winnerData) { 
-                if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; 
-                if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; 
-            } 
-        } else if (data.user_id) { 
-            winnersList = [data]; 
-            winnerData = data; 
-        }
+        if (!data) return; stopAllAudio(); let winnerData = null; let winnersList = [];
+        if (data.winners && Array.isArray(data.winners) && data.winners.length > 0) { winnersList = data.winners; winnerData = winnersList[winnersList.length - 1]; if (winnerData) { if (!winnerData.card_numbers && data.card_numbers) winnerData.card_numbers = data.card_numbers; if (!winnerData.winning_pattern && data.winning_pattern) winnerData.winning_pattern = data.winning_pattern; } } else if (data.user_id) { winnersList = [data]; winnerData = data; }
         if (!winnerData || winnersList.length === 0) return;
-        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; 
-        if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
-        if (typeof winningPattern === "string") { 
-            try { winningPattern = JSON.parse(winningPattern); } 
-            catch (e) { winningPattern = []; } 
-        }
+        let winningPattern = winnerData.winning_pattern || winnerData.marked_numbers || []; if (data.winning_pattern && (!winningPattern || winningPattern.length === 0)) winningPattern = data.winning_pattern;
+        if (typeof winningPattern === "string") { try { winningPattern = JSON.parse(winningPattern); } catch (e) { winningPattern = []; } }
         if (!Array.isArray(winningPattern)) winningPattern = [];
         let cardNumbers = [];
         if (winnerData.card_numbers && Array.isArray(winnerData.card_numbers) && winnerData.card_numbers.length > 0) cardNumbers = winnerData.card_numbers;
         else if (data.card_numbers && Array.isArray(data.card_numbers) && data.card_numbers.length > 0) cardNumbers = data.card_numbers;
-        else if (data.corner_details && data.corner_details.corner_indices) { 
-            cardNumbers = Array(25).fill("?"); 
-            const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; 
-            const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; 
-            cornerIndices.forEach((index, i) => { 
-                if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; 
-            }); 
-            cardNumbers[12] = 0; 
-        }
-        const processedWinners = winnersList.map((winner) => { 
-            if (!winner.card_numbers || winner.card_numbers.length === 0) { 
-                if (data.card_numbers) winner.card_numbers = data.card_numbers; 
-                else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; 
-            } 
-            return winner; 
-        });
-        gameState.winners = processedWinners; 
-        gameState.winnersCount = processedWinners.length; 
-        gameState.maxWinners = data.max_winners || 2; 
-        gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
-        gameState.winnerData = { 
-            user_id: winnerData.user_id, 
-            full_name: winnerData.full_name || data.full_name || "Unknown Player", 
-            username: winnerData.username || data.username || `User ${winnerData.user_id}`, 
-            prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), 
-            card_index: winnerData.card_index || data.card_index || 0, 
-            card_numbers: cardNumbers, 
-            winning_pattern: winningPattern, 
-            pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", 
-            prize_pool: parseFloat(data.prize_pool || 0), 
-            game_id: data.game_id || winnerData.game_id, 
-            winner_number: winnerData.winner_number || data.winner_number || 1, 
-            total_winners: processedWinners.length, 
-            all_winners: processedWinners, 
-            is_final_winner: data.is_final_winner || false, 
-            corner_details: data.corner_details || winnerData.corner_details || null, 
-            column_details: data.column_details || winnerData.column_details || null 
-        };
-        clearInterval(gameState.numberCallInterval); 
-        gameState.numberCallInterval = null;
-        if (gameState.countdownInterval) { 
-            clearInterval(gameState.countdownInterval); 
-            gameState.countdownInterval = null; 
-        }
-        gameState.winnerAnnounced = true; 
-        gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; 
-        gameState.bingoClaimInProgress = false; 
-        gameState.phaseChangeRequested = false;
+        else if (data.corner_details && data.corner_details.corner_indices) { cardNumbers = Array(25).fill("?"); const cornerIndices = data.corner_details.corner_indices || [0, 4, 20, 24]; const cornerNumbers = [data.corner_details.top_left, data.corner_details.top_right, data.corner_details.bottom_left, data.corner_details.bottom_right]; cornerIndices.forEach((index, i) => { if (index < 25 && cornerNumbers[i]) cardNumbers[index] = cornerNumbers[i]; }); cardNumbers[12] = 0; }
+        const processedWinners = winnersList.map((winner) => { if (!winner.card_numbers || winner.card_numbers.length === 0) { if (data.card_numbers) winner.card_numbers = data.card_numbers; else if (cardNumbers.length > 0) winner.card_numbers = cardNumbers; } return winner; });
+        gameState.winners = processedWinners; gameState.winnersCount = processedWinners.length; gameState.maxWinners = data.max_winners || 2; gameState.gameComplete = data.is_final_winner || processedWinners.length >= gameState.maxWinners;
+        gameState.winnerData = { user_id: winnerData.user_id, full_name: winnerData.full_name || data.full_name || "Unknown Player", username: winnerData.username || data.username || `User ${winnerData.user_id}`, prize_amount: parseFloat(winnerData.prize_amount || data.prize_amount || 0), card_index: winnerData.card_index || data.card_index || 0, card_numbers: cardNumbers, winning_pattern: winningPattern, pattern_type: winnerData.pattern_type || data.pattern_type || "BINGO", prize_pool: parseFloat(data.prize_pool || 0), game_id: data.game_id || winnerData.game_id, winner_number: winnerData.winner_number || data.winner_number || 1, total_winners: processedWinners.length, all_winners: processedWinners, is_final_winner: data.is_final_winner || false, corner_details: data.corner_details || winnerData.corner_details || null, column_details: data.column_details || winnerData.column_details || null };
+        clearInterval(gameState.numberCallInterval); gameState.numberCallInterval = null;
+        if (gameState.countdownInterval) { clearInterval(gameState.countdownInterval); gameState.countdownInterval = null; }
+        gameState.winnerAnnounced = true; gameState.hasClaimedBingo = winnerData.user_id == gameState.userId; gameState.bingoClaimInProgress = false; gameState.phaseChangeRequested = false;
         if (winnerData.user_id == gameState.userId) getUserBalance();
-        
-        // Play winner sound only if audio is enabled
-        if (gameState.audioEnabled) {
-            playWinnerSound();
-        }
-        
+        if (gameState.audioEnabled && gameState.audioInitialized) playWinnerSound();
         showWinnerAnnouncementScreen(gameState.winnerData);
     }
 
@@ -3874,6 +3608,7 @@
     }
 
     // ==================== RENDER PLAYER CARDS FROM OWNED ====================
+        // ==================== RENDER PLAYER CARDS FROM OWNED ====================
     function renderPlayerCardsFromOwned() {
         const innerContainer = document.getElementById("player-cards-inner");
         if(!innerContainer) return;
@@ -3968,6 +3703,11 @@
         updateBingoButton();
     }
     window.renderPlayerCardsFromOwned = renderPlayerCardsFromOwned;
+
+
+
+
+
 
     function showPreviewForIndex(cardIndex, numbers) {
         const previewContainer = document.getElementById("selected-card-info");
@@ -4203,6 +3943,13 @@
         renderAllCardsPreview();
     }
 
+
+
+
+
+
+
+
     function updateCardsGridInstant() {
         const grid = document.getElementById("cards-grid"); if (!grid) return;
         for (let i = 1; i <= 400; i++) {
@@ -4436,6 +4183,6 @@
             });
         } catch (error) { console.error("Failed to initialize game:", error); showNotification("Failed to initialize game. Please refresh the page.", "error"); setTimeout(() => { window.location.reload(); }, 10000); }
     });
-</script>
+    </script>
 </body>
 </html>
